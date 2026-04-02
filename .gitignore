@@ -1,0 +1,40 @@
+# Laravel / PHP
+/vendor/
+/node_modules/
+/.phpunit.cache/
+
+# Environment — NEVER commit
+.env
+.env.*
+!.env.example
+
+# Storage (server manages these)
+/storage/*.key
+/public/storage
+/public/hot
+
+# Build outputs
+/public/build/
+/public/css/app.css
+/public/js/app.js
+
+# Laravel bootstrap cache
+/bootstrap/cache/*.php
+
+# Misc
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+
+# Composer lock — keep it! (ensures reproducible installs)
+# composer.lock is NOT in this list on purpose

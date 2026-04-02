@@ -1,0 +1,209 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Category;
+use App\Models\Product;
+use App\Models\ProductImage;
+use App\Models\ProductVariant;
+use Illuminate\Support\Str;
+
+/**
+ * WooCommerce Products CSV Importer
+ *
+ * Handles both simple and variable products.
+ */
+class WooImporter
+{
+    public function __construct(private readonly ImageFetchPipeline $images) {}
+
+    public function dryRun(string $filePath): array
+    {
+        $rows = $this->readCsv($filePath);
+        [$parents, $variations] = $this->split($rows);
+
+        $cats = [];
+        foreach ($parents as $r) {
+            foreach ($this->parseCategories($r['Categories'] ?? '') as $c) {
+                $cats[$c] = true;
+            }
+        }
+
+        $totalImages = 0;
+        foreach ($parents as $r) {
+            $imgs = array_filter(explode(',', $r['Images'] ?? ''));
+            $totalImages += count($imgs);
+        }
+
+        return [
+            'products'   => count($parents),
+            'variants'   => count($variations),
+            'categories' => count($cats),
+            'images'     => $totalImages,
+            'dry_run'    => true,
+        ];
+    }
+
+    public function import(string $filePath): array
+    {
+        $rows = $this->readCsv($filePath);
+        [$parents, $variations] = $this->split($rows);
+        $counts = ['products' => 0, 'variants' => 0, 'images' => 0, 'errors' => []];
+
+        foreach ($parents as $row) {
+            try {
+                $name     = trim($row['Name'] ?? '');
+                $sku      = trim($row['SKU'] ?? '');
+                $slug     = $this->uniqueSlug($sku ?: $name);
+                $catPaths = $this->parseCategories($row['Categories'] ?? '');
+                $category = $this->resolveFirstCategory($catPaths);
+
+                $p = Product::query()->updateOrCreate(
+                    ['slug' => $slug],
+                    [
+                        'name'            => $name,
+                        'description'     => trim($row['Description'] ?? ''),
+                        'short_description' => trim($row['Short description'] ?? ''),
+                        'status'          => ($row['Published'] ?? '1') === '1'
+                                             ? Product::STATUS_ACTIVE : 'draft',
+                        'category_id'     => $category?->id,
+                        'is_bestseller'   => false,
+                    ]
+                );
+                $counts['products']++;
+
+                $type = strtolower(trim($row['Type'] ?? 'simple'));
+
+                if ($type === 'simple') {
+                    ProductVariant::query()->updateOrCreate(
+                        ['product_id' => $p->id, 'sku' => $sku ?: null],
+                        [
+                            'title'            => 'Default',
+                            'price_retail'     => (float) ($row['Regular price'] ?? 0),
+                            'price_compare_at' => (float) ($row['Sale price'] ?? 0) ?: null,
+                            'stock_qty'        => max(0, (int) ($row['Stock'] ?? 0)),
+                            'track_inventory'  => true,
+                            'is_active'        => true,
+                        ]
+                    );
+                    $counts['variants']++;
+                } else {
+                    // Variable — pick up child variations
+                    $id  = trim($row['ID'] ?? '');
+                    $children = array_filter($variations, fn ($v) => trim($v['Parent'] ?? '') === $id);
+                    foreach ($children as $v) {
+                        $attrParts = [];
+                        for ($i = 1; $i <= 3; $i++) {
+                            $val = trim($v["Attribute {$i} value(s)"] ?? '');
+                            if ($val) {
+                                $attrParts[] = $val;
+                            }
+                        }
+                        ProductVariant::query()->updateOrCreate(
+                            ['product_id' => $p->id, 'sku' => trim($v['SKU'] ?? '') ?: null],
+                            [
+                                'title'            => implode(' / ', $attrParts) ?: 'Variant',
+                                'price_retail'     => (float) ($v['Regular price'] ?? 0),
+                                'price_compare_at' => (float) ($v['Sale price'] ?? 0) ?: null,
+                                'stock_qty'        => max(0, (int) ($v['Stock'] ?? 0)),
+                                'track_inventory'  => true,
+                                'is_active'        => true,
+                            ]
+                        );
+                        $counts['variants']++;
+                    }
+                }
+
+                // Images
+                foreach (array_filter(explode(',', $row['Images'] ?? '')) as $imgUrl) {
+                    $imgUrl = trim($imgUrl);
+                    try {
+                        $path = $this->images->fetch($imgUrl);
+                        if ($path) {
+                            ProductImage::query()->firstOrCreate(
+                                ['product_id' => $p->id, 'path' => $path],
+                                ['alt_text' => $name, 'sort_order' => 0]
+                            );
+                            $counts['images']++;
+                        }
+                    } catch (\Throwable) {
+                        $counts['errors'][] = "Image failed: {$imgUrl}";
+                    }
+                }
+            } catch (\Throwable $e) {
+                $counts['errors'][] = ($row['Name'] ?? '?').': '.$e->getMessage();
+            }
+        }
+
+        return $counts;
+    }
+
+    // ─── Helpers ──────────────────────────────────────────────────────────────
+
+    private function readCsv(string $path): array
+    {
+        $rows   = [];
+        $handle = fopen($path, 'r');
+        $header = fgetcsv($handle);
+        $header = array_map('trim', $header ?? []);
+
+        while (($row = fgetcsv($handle)) !== false) {
+            if (count($row) === count($header)) {
+                $rows[] = array_combine($header, $row);
+            }
+        }
+        fclose($handle);
+
+        return $rows;
+    }
+
+    /** Split into parents and child variations */
+    private function split(array $rows): array
+    {
+        $parents    = [];
+        $variations = [];
+
+        foreach ($rows as $row) {
+            $type = strtolower(trim($row['Type'] ?? ''));
+            if ($type === 'variation') {
+                $variations[] = $row;
+            } else {
+                $parents[] = $row;
+            }
+        }
+
+        return [$parents, $variations];
+    }
+
+    /** "Tops > T-Shirts, Bottoms" → ['Tops > T-Shirts', 'Bottoms'] */
+    private function parseCategories(string $raw): array
+    {
+        return array_filter(array_map('trim', explode(',', $raw)));
+    }
+
+    private function resolveFirstCategory(array $paths): ?Category
+    {
+        if (empty($paths)) {
+            return null;
+        }
+
+        $parts = array_map('trim', explode('>', $paths[0]));
+        $name  = end($parts);
+
+        return Category::query()->firstOrCreate(
+            ['slug' => Str::slug($name)],
+            ['name' => $name, 'is_active' => true]
+        );
+    }
+
+    private function uniqueSlug(string $base): string
+    {
+        $slug = Str::slug($base);
+        $i    = 1;
+        while (Product::query()->where('slug', $slug)->exists()) {
+            $slug = Str::slug($base).'-'.$i++;
+        }
+
+        return $slug;
+    }
+}
