@@ -16,7 +16,7 @@
             <td>{{ $c->email }}</td>
             <td>{{ $c->phone ?? '—' }}</td>
             <td>{{ $c->orders_count }}</td>
-            <td>{{ $c->created_at->format('d M Y') }}</td>
+            <td>{{ $c->created_at ? $c->created_at->format('d M Y') : '—' }}</td>
         </tr>
     @empty
         <tr><td colspan="6" class="text-center text-muted py-3">No customers yet.</td></tr>
