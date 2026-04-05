@@ -253,6 +253,10 @@
            class="sidebar-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
             <i class="bi bi-gear"></i> Settings
         </a>
+        <a href="{{ route('admin.notification-templates.index') }}"
+           class="sidebar-link {{ request()->routeIs('admin.notification-templates.*') ? 'active' : '' }}">
+            <i class="bi bi-bell"></i> Message Templates
+        </a>
     </nav>
 
     <!-- Storefront link -->

@@ -133,6 +133,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('settings', [AdminSettingController::class, 'edit'])->name('settings.edit');
     Route::put('settings', [AdminSettingController::class, 'update'])->name('settings.update');
 
+    // Notification Templates
+    Route::resource('notification-templates', \App\Http\Controllers\Admin\NotificationTemplateController::class)->only(['index', 'edit', 'update']);
+
     // Redirects
     Route::resource('redirects', AdminRedirectController::class)->except(['show']);
 
