@@ -11,6 +11,52 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="{{ asset('css/storefront.css') }}" rel="stylesheet">
+    
+    {{-- ── Dynamic Theme Engine ──────────────────────────────────── --}}
+    @php $ss = app(\App\Services\SettingsService::class); @endphp
+    <style>
+        :root {
+            --brand-primary: {{ $ss->get('theme.primary_color', '#000000') }};
+            --brand-secondary: {{ $ss->get('theme.secondary_color', '#6c757d') }};
+            --brand-radius: {{ $ss->get('theme.border_radius', '0.375rem') }};
+            --brand-font: {!! $ss->get('theme.font_family', 'Inter, sans-serif') !!};
+        }
+        
+        body, h1, h2, h3, h4, h5, h6, .nav-link, .btn {
+            font-family: var(--brand-font) !important;
+        }
+        
+        .btn-primary { 
+            background-color: var(--brand-primary) !important; 
+            border-color: var(--brand-primary) !important; 
+            color: #fff !important;
+            border-radius: var(--brand-radius);
+        }
+        @if($ss->get('theme.button_style') === 'outline')
+        .btn-primary {
+            background-color: transparent !important;
+            color: var(--brand-primary) !important;
+        }
+        .btn-primary:hover {
+            background-color: var(--brand-primary) !important;
+            color: #fff !important;
+        }
+        @endif
+
+        .badge.bg-primary { background-color: var(--brand-primary) !important; }
+        .text-primary { color: var(--brand-primary) !important; }
+        .bg-primary { background-color: var(--brand-primary) !important; }
+        .sf-header { background-color: var(--brand-primary) !important; }
+        
+        .card { 
+            border-radius: var(--brand-radius) !important; 
+            @if($ss->get('theme.card_shadow') === 'shadow-sm')
+            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075) !important; border: none !important;
+            @elseif($ss->get('theme.card_shadow') === 'shadow')
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.125) !important; border: none !important;
+            @endif
+        }
+    </style>
     @stack('styles')
 </head>
 <body>
@@ -24,14 +70,26 @@
             <i class="bi bi-list text-white" style="font-size:1.5rem;"></i>
         </button>
         <div class="collapse navbar-collapse" id="navMain">
-            {{-- Categories --}}
-            @php $navCategories = \App\Models\Category::where('is_active', true)->whereNull('parent_id')->orderBy('sort_order')->take(6)->get(); @endphp
-            @if ($navCategories->isNotEmpty())
+            {{-- Dynamic Header Menu --}}
+            @if (isset($globalMenus['header']) && $globalMenus['header']->parentItems->isNotEmpty())
                 <ul class="navbar-nav me-auto gap-1">
-                    @foreach ($navCategories as $cat)
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('category.show', $cat) }}">{{ $cat->name }}</a>
-                        </li>
+                    @foreach ($globalMenus['header']->parentItems as $item)
+                        @if($item->children->count() > 0)
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="{{ $item->link ?: '#' }}" role="button" data-bs-toggle="dropdown" aria-expanded="false" @if($item->is_external) target="_blank" @endif>
+                                    {{ $item->label }}
+                                </a>
+                                <ul class="dropdown-menu border-0 shadow-sm">
+                                    @foreach($item->children as $child)
+                                        <li><a class="dropdown-item" href="{{ $child->link ?: '#' }}" @if($child->is_external) target="_blank" @endif>{{ $child->label }}</a></li>
+                                    @endforeach
+                                </ul>
+                            </li>
+                        @else
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ $item->link ?: '#' }}" @if($item->is_external) target="_blank" @endif>{{ $item->label }}</a>
+                            </li>
+                        @endif
                     @endforeach
                 </ul>
             @endif
@@ -100,12 +158,18 @@
             <div class="col-6 col-lg-3">
                 <h6>Policies</h6>
                 <ul class="footer-links">
-                    @foreach (['privacy-policy','return-policy','shipping-policy','terms-conditions'] as $slug)
-                        @php $pg = \App\Models\Page::where('slug', $slug)->where('is_active', true)->first(); @endphp
-                        @if ($pg)
-                            <li><a href="{{ route('page.show', $pg) }}">{{ $pg->title }}</a></li>
-                        @endif
-                    @endforeach
+                    @if(isset($globalMenus['footer']) && $globalMenus['footer']->parentItems->isNotEmpty())
+                        @foreach($globalMenus['footer']->parentItems as $item)
+                            <li><a href="{{ $item->link ?: '#' }}" @if($item->is_external) target="_blank" @endif>{{ $item->label }}</a></li>
+                        @endforeach
+                    @else
+                        @foreach (['privacy-policy','return-policy','shipping-policy','terms-conditions'] as $slug)
+                            @php $pg = \App\Models\Page::where('slug', $slug)->where('is_active', true)->first(); @endphp
+                            @if ($pg)
+                                <li><a href="{{ route('page.show', $pg) }}">{{ $pg->title }}</a></li>
+                            @endif
+                        @endforeach
+                    @endif
                 </ul>
             </div>
             <div class="col-lg-3">

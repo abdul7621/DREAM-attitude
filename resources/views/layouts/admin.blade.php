@@ -216,6 +216,14 @@
 
         {{-- ─── STORE ─────────────────────────────────────── --}}
         <div class="sidebar-section-label">Store</div>
+        <a href="{{ route('admin.theme.index') }}"
+           class="sidebar-link {{ request()->routeIs('admin.theme.*') ? 'active' : '' }}">
+            <i class="bi bi-palette"></i> Theme Builder
+        </a>
+        <a href="{{ route('admin.menus.index') }}"
+           class="sidebar-link {{ request()->routeIs('admin.menus.*') ? 'active' : '' }}">
+            <i class="bi bi-list-nested"></i> Navigation
+        </a>
         <a href="{{ route('admin.pages.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.pages.*') ? 'active' : '' }}">
             <i class="bi bi-file-earmark-text"></i> Pages

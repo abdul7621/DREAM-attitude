@@ -1,74 +1,73 @@
 @extends('layouts.storefront')
 
-@section('title', config('app.name') . ' — Premium Quality Products')
+@section('title', config('app.name') . ' — ' . app(\App\Services\SettingsService::class)->get('theme.hero_title', 'Premium Quality Products'))
 
 @section('content')
-    {{-- ── Hero Banner ───────────────────────────────────────── --}}
-    <section class="sf-hero">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-6">
-                    <h1>Discover Premium Quality Products</h1>
-                    <p class="mt-3">Handpicked collection of authentic products. Fast delivery across India with easy returns.</p>
-                    <a href="{{ route('search') }}" class="btn btn-hero mt-3">Shop Now <i class="bi bi-arrow-right ms-2"></i></a>
-                </div>
-            </div>
-        </div>
-    </section>
+@php
+    $ss = app(\App\Services\SettingsService::class);
+    $sections = json_decode($ss->get('theme.home_sections', '[]'), true) ?: ['hero', 'categories', 'featured', 'bestsellers', 'trust', 'reviews'];
+@endphp
 
-    {{-- ── Trust Bar ─────────────────────────────────────────── --}}
-    <section class="sf-trust-bar">
-        <div class="container">
-            <div class="row g-2">
-                <div class="col-6 col-md-3">
-                    <div class="sf-trust-item">
-                        <i class="bi bi-truck"></i>
-                        <div class="trust-label">Free Shipping</div>
-                        <div class="trust-desc">On orders above ₹499</div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="sf-trust-item">
-                        <i class="bi bi-cash-coin"></i>
-                        <div class="trust-label">COD Available</div>
-                        <div class="trust-desc">Cash on delivery</div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="sf-trust-item">
-                        <i class="bi bi-arrow-return-left"></i>
-                        <div class="trust-label">Easy Returns</div>
-                        <div class="trust-desc">7-day return policy</div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="sf-trust-item">
-                        <i class="bi bi-shield-check"></i>
-                        <div class="trust-label">Secure Checkout</div>
-                        <div class="trust-desc">100% secure payment</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+@foreach($sections as $sectionKey)
 
-    {{-- ── Categories ────────────────────────────────────────── --}}
-    @if ($categories->isNotEmpty())
-        <section class="sf-section">
+    @if ($sectionKey === 'hero')
+        {{-- ── Hero Banner ───────────────────────────────────────── --}}
+        <section class="sf-hero" style="
+            @if($ss->get('theme.hero_image')) background-image: url('{{ asset('storage/' . $ss->get('theme.hero_image')) }}'); background-size: cover; background-position: center; @endif
+            padding: 80px 0; background-color: var(--brand-primary); color: #fff;
+        ">
             <div class="container">
-                <h2 class="sf-section-title">Shop by Category</h2>
-                <p class="sf-section-subtitle">Browse our curated collections</p>
+                <div class="row align-items-center">
+                    <div class="col-lg-6" style="background: rgba(0,0,0,0.4); padding: 2rem; border-radius: 12px; backdrop-filter: blur(4px);">
+                        <h1 class="fw-bold">{{ $ss->get('theme.hero_title', 'Discover Premium Quality Products') }}</h1>
+                        <p class="mt-3 fs-5">{{ $ss->get('theme.hero_subtitle', 'Handpicked collection of authentic products. Fast delivery across India with easy returns.') }}</p>
+                        <a href="{{ $ss->get('theme.hero_cta_link', '/search') }}" class="btn btn-light btn-lg mt-3 fw-bold text-dark px-4 round shadow-sm">
+                            {{ $ss->get('theme.hero_cta_text', 'Shop Now') }} <i class="bi bi-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    @endif
+
+    @if ($sectionKey === 'trust')
+        {{-- ── Trust Bar ─────────────────────────────────────────── --}}
+        <section class="sf-trust-bar py-4 bg-light border-bottom">
+            <div class="container">
+                <div class="row g-3 text-center">
+                    @php
+                        $trustText = explode('|', $ss->get('theme.trust_text', 'Authentic Products | Secure Checkout | Easy Returns | Fast Shipping'));
+                    @endphp
+                    @foreach($trustText as $text)
+                        <div class="col-6 col-md-3">
+                            <div class="d-flex flex-column align-items-center p-3 bg-white shadow-sm rounded h-100">
+                                <i class="bi bi-patch-check-fill text-primary" style="font-size: 2rem;"></i>
+                                <span class="mt-2 fw-medium">{{ trim($text) }}</span>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
+
+    @if ($sectionKey === 'categories' && isset($categories) && $categories->isNotEmpty())
+        {{-- ── Categories ────────────────────────────────────────── --}}
+        <section class="sf-section py-5">
+            <div class="container">
+                <h2 class="sf-section-title fw-bold">Shop by Category</h2>
+                <p class="sf-section-subtitle text-muted mb-4">Browse our curated collections</p>
                 <div class="row g-3">
                     @foreach ($categories as $cat)
                         <div class="col-6 col-md-4 col-lg-2">
-                            <a href="{{ route('category.show', $cat) }}" class="sf-cat-card">
+                            <a href="{{ route('category.show', $cat) }}" class="sf-cat-card d-block position-relative rounded overflow-hidden shadow-sm" style="height: 140px;">
                                 @if ($cat->image_path)
-                                    <img src="{{ asset('storage/'.$cat->image_path) }}" alt="{{ $cat->name }}">
+                                    <img src="{{ asset('storage/'.$cat->image_path) }}" alt="{{ $cat->name }}" class="w-100 h-100 object-fit-cover">
                                 @else
-                                    <div style="width:100%;height:100%;background:linear-gradient(135deg,#1a1a2e,#16213e);"></div>
+                                    <div class="w-100 h-100 bg-secondary"></div>
                                 @endif
-                                <div class="cat-overlay">
-                                    <span class="cat-name">{{ $cat->name }}</span>
+                                <div class="position-absolute bottom-0 w-100 bg-dark bg-opacity-75 text-white text-center py-2" style="backdrop-filter: blur(2px);">
+                                    <span class="cat-name fw-medium">{{ $cat->name }}</span>
                                 </div>
                             </a>
                         </div>
@@ -78,13 +77,12 @@
         </section>
     @endif
 
-    {{-- ── Featured Products ─────────────────────────────────── --}}
-    @if ($featured->isNotEmpty())
-        <section class="sf-section" style="background:var(--sf-bg-alt);">
+    @if ($sectionKey === 'featured' && isset($featured) && $featured->isNotEmpty())
+        {{-- ── Featured Products ─────────────────────────────────── --}}
+        <section class="sf-section py-5" style="background:var(--sf-bg-alt);">
             <div class="container">
-                <h2 class="sf-section-title">Featured Products</h2>
-                <p class="sf-section-subtitle">Our top picks for you</p>
-                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+                <h2 class="sf-section-title fw-bold">Featured Products</h2>
+                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3 mt-2">
                     @foreach ($featured as $product)
                         <div class="col">
                             <x-product-card :product="$product" />
@@ -95,13 +93,12 @@
         </section>
     @endif
 
-    {{-- ── Bestsellers ───────────────────────────────────────── --}}
-    @if ($bestsellers->isNotEmpty())
-        <section class="sf-section">
+    @if ($sectionKey === 'bestsellers' && isset($bestsellers) && $bestsellers->isNotEmpty())
+        {{-- ── Bestsellers ───────────────────────────────────────── --}}
+        <section class="sf-section py-5">
             <div class="container">
-                <h2 class="sf-section-title">🔥 Bestsellers</h2>
-                <p class="sf-section-subtitle">Most loved by our customers</p>
-                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+                <h2 class="sf-section-title fw-bold">🔥 Bestsellers</h2>
+                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3 mt-2">
                     @foreach ($bestsellers as $product)
                         <div class="col">
                             <x-product-card :product="$product" />
@@ -112,51 +109,27 @@
         </section>
     @endif
 
-    {{-- ── Latest Products ───────────────────────────────────── --}}
-    @if ($latest->isNotEmpty())
-        <section class="sf-section" style="background:var(--sf-bg-alt);">
+    @if ($sectionKey === 'reviews' && isset($topReviews) && $topReviews->isNotEmpty())
+        {{-- ── Customer Reviews ───────────────────── --}}
+        <section class="sf-section py-5 bg-light">
             <div class="container">
-                <h2 class="sf-section-title">New Arrivals</h2>
-                <p class="sf-section-subtitle">Fresh additions to our store</p>
-                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
-                    @foreach ($latest as $product)
-                        <div class="col">
-                            <x-product-card :product="$product" />
-                        </div>
-                    @endforeach
-                </div>
-                <div class="text-center mt-4">
-                    <a href="{{ route('search') }}" class="btn btn-outline-dark px-4 rounded-pill">View All Products <i class="bi bi-arrow-right ms-1"></i></a>
-                </div>
-            </div>
-        </section>
-    @endif
-
-    {{-- ── Customer Reviews / Testimonials ───────────────────── --}}
-    @if ($topReviews->isNotEmpty())
-        <section class="sf-section">
-            <div class="container">
-                <h2 class="sf-section-title">What Our Customers Say</h2>
-                <p class="sf-section-subtitle">Real reviews from real customers</p>
-                <div class="row g-3">
+                <h2 class="sf-section-title fw-bold">Customer Stories</h2>
+                <div class="row g-4 mt-2">
                     @foreach ($topReviews as $review)
                         <div class="col-md-6 col-lg-3">
-                            <div class="sf-review-card h-100">
-                                <div class="review-stars mb-2">
+                            <div class="card h-100 shadow-sm border-0 p-3">
+                                <div class="mb-2 text-warning">
                                     @for ($i = 1; $i <= 5; $i++)
                                         <i class="bi bi-star{{ $i <= $review->rating ? '-fill' : '' }}"></i>
                                     @endfor
                                 </div>
-                                <p class="review-body">{{ \Illuminate\Support\Str::limit($review->body, 120) }}</p>
-                                <div class="d-flex align-items-center gap-2 mt-auto">
-                                    <span class="review-author">{{ $review->reviewer_name }}</span>
+                                <p class="review-body fst-italic text-secondary small">"{{ \Illuminate\Support\Str::limit($review->body, 120) }}"</p>
+                                <div class="d-flex align-items-center mt-auto">
+                                    <div class="fw-bold small">{{ $review->reviewer_name }}</div>
                                     @if ($review->verified_purchase)
-                                        <span class="verified-badge"><i class="bi bi-patch-check-fill"></i> Verified</span>
+                                        <span class="ms-auto text-success small"><i class="bi bi-patch-check-fill"></i> Verified</span>
                                     @endif
                                 </div>
-                                @if ($review->product)
-                                    <a href="{{ route('product.show', $review->product) }}" class="small text-muted text-decoration-none mt-1 d-block">{{ $review->product->name }}</a>
-                                @endif
                             </div>
                         </div>
                     @endforeach
@@ -164,4 +137,7 @@
             </div>
         </section>
     @endif
+
+@endforeach
+
 @endsection

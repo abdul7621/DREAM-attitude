@@ -41,6 +41,15 @@
     <h5 class="mb-3">🏪 Store Information</h5>
     <div class="row g-3">
         <div class="col-md-6">
+            <label class="form-label">Store Mode</label>
+            <select name="store__mode" class="form-select border-primary fw-bold text-primary">
+                <option value="live" {{ ($groups['store']['mode'] ?? 'live') === 'live' ? 'selected' : '' }}>🟢 Live Storefront</option>
+                <option value="maintenance" {{ ($groups['store']['mode'] ?? '') === 'maintenance' ? 'selected' : '' }}>🟡 Maintenance Mode</option>
+                <option value="coming_soon" {{ ($groups['store']['mode'] ?? '') === 'coming_soon' ? 'selected' : '' }}>🟣 Coming Soon</option>
+            </select>
+            <div class="form-text">Admins can always bypass Maintenance/Coming Soon.</div>
+        </div>
+        <div class="col-md-6">
             <label class="form-label">Store Name</label>
             <input type="text" name="store__name" class="form-control" value="{{ $groups['store']['name'] ?? '' }}">
         </div>

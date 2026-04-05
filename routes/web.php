@@ -34,6 +34,10 @@ use App\Http\Controllers\Storefront\SitemapController;
 use Illuminate\Support\Facades\Route;
 
 // ── Public Storefront ──────────────────────────────────────────────────────
+// Store Lifecycle Mode Routes
+Route::view('/maintenance', 'storefront.maintenance')->name('maintenance');
+Route::view('/coming-soon', 'storefront.coming_soon')->name('coming_soon');
+
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
@@ -133,8 +137,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('settings', [AdminSettingController::class, 'edit'])->name('settings.edit');
     Route::put('settings', [AdminSettingController::class, 'update'])->name('settings.update');
 
+    // Theme Engine Operations
+    Route::get('theme', [\App\Http\Controllers\Admin\ThemeController::class, 'index'])->name('theme.index');
+    Route::put('theme', [\App\Http\Controllers\Admin\ThemeController::class, 'update'])->name('theme.update');
+
     // Notification Templates
     Route::resource('notification-templates', \App\Http\Controllers\Admin\NotificationTemplateController::class)->only(['index', 'edit', 'update']);
+
+    // Menu Builder
+    Route::resource('menus', \App\Http\Controllers\Admin\MenuController::class);
+    Route::resource('menus.items', \App\Http\Controllers\Admin\MenuItemController::class)->except(['index', 'show']);
 
     // Redirects
     Route::resource('redirects', AdminRedirectController::class)->except(['show']);
