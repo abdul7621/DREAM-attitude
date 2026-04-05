@@ -36,16 +36,32 @@ class PaymentController extends Controller
         }
 
         if ($order->razorpay_order_id && $order->razorpay_order_id !== $data['razorpay_order_id']) {
+            \App\Models\AuditLog::log('payment_failed', $order, [], [
+                'reason' => 'mismatch_order_id',
+                'gateway' => 'razorpay',
+                'expected' => $order->razorpay_order_id,
+                'received' => $data['razorpay_order_id'],
+            ]);
             abort(422);
         }
 
-        $this->orders->finalizeRazorpayPayment(
-            $order,
-            $data['razorpay_order_id'],
-            $data['razorpay_payment_id'],
-            $data['razorpay_signature'],
-            $this->razorpay
-        );
+        try {
+            $this->orders->finalizeRazorpayPayment(
+                $order,
+                $data['razorpay_order_id'],
+                $data['razorpay_payment_id'],
+                $data['razorpay_signature'],
+                $this->razorpay
+            );
+        } catch (\Exception $e) {
+            \App\Models\AuditLog::log('payment_failed', $order, [], [
+                'reason' => 'signature_verification_failed_or_other_error',
+                'gateway' => 'razorpay',
+                'error_message' => $e->getMessage(),
+                'payment_id' => $data['razorpay_payment_id'] ?? null
+            ]);
+            throw $e;
+        }
 
         return redirect()->route('order.success', ['orderNumber' => $order->fresh()->order_number]);
     }

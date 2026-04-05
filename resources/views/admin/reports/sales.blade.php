@@ -12,19 +12,29 @@
 </div>
 
 <div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="text-muted small">Gross Revenue</div>
-                <div class="h3 fw-bold mb-0">₹{{ number_format($grossRevenue, 2) }}</div>
+        <div class="col-md-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <h6 class="text-uppercase mb-2" style="font-size: 0.75rem; letter-spacing: 0.5px;">Gross Revenue</h6>
+                    <h2 class="mb-1">₹{{ number_format($grossRevenue) }}</h2>
+                    <p class="mb-0 small">
+                        @if($revenueTrend > 0)
+                            <i class="bi bi-arrow-up-right-circle text-white"></i> +{{ $revenueTrend }}% vs prior period
+                        @elseif($revenueTrend < 0)
+                            <i class="bi bi-arrow-down-right-circle text-white"></i> {{ $revenueTrend }}% vs prior period
+                        @else
+                            <i class="bi bi-dash-circle text-white"></i> Flat vs prior period
+                        @endif
+                    </p>
+                </div>
             </div>
         </div>
-    </div>
     <div class="col-md-3">
         <div class="card h-100 border-danger">
             <div class="card-body">
                 <div class="text-muted small">Refunded Amount</div>
                 <div class="h3 fw-bold text-danger mb-0">₹{{ number_format($refundAmount, 2) }}</div>
+                <div class="text-muted small">{{ $refundValuePercent }}% of gross revenue</div>
             </div>
         </div>
     </div>
@@ -47,14 +57,17 @@
 </div>
 
 <div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="text-muted small">Total Orders</div>
-                <div class="h3 fw-bold mb-0">{{ $totalOrders }}</div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body">
+                    <h6 class="text-uppercase mb-2" style="font-size: 0.75rem; letter-spacing: 0.5px;">Total Orders</h6>
+                    <h2 class="mb-1">{{ number_format($totalOrders) }}</h2>
+                    <p class="mb-0 small">
+                        ~{{ $conversionRate }}% Conversion (Orders/Carts)
+                    </p>
+                </div>
             </div>
         </div>
-    </div>
     <div class="col-md-3">
         <div class="card h-100">
             <div class="card-body">

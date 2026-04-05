@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cart;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
@@ -17,33 +18,59 @@ class ReportController extends Controller
     // ── 1. Sales Report ──────────────────────────────────────────────
     public function sales(Request $request): View
     {
-        $startDate = $request->input('start_date', now()->subDays(6)->toDateString());
-        $endDate = $request->input('end_date', now()->toDateString());
+        $startDateStr = $request->input('start_date', now()->subDays(6)->toDateString());
+        $endDateStr = $request->input('end_date', now()->toDateString());
+        
+        $startDate = \Carbon\Carbon::parse($startDateStr)->startOfDay();
+        $endDate = \Carbon\Carbon::parse($endDateStr)->endOfDay();
 
-        // Base query for valid orders in range
+        // ── Current Period ──
         $ordersQuery = Order::query()
-            ->whereBetween('placed_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-            ->whereNotIn('order_status', [Order::ORDER_STATUS_CANCELLED]); // exclude cancelled
+            ->whereBetween('placed_at', [$startDate, $endDate]);
 
-        $totalOrders = (clone $ordersQuery)->count();
-        $grossRevenue = (float) (clone $ordersQuery)->sum('grand_total');
+        $validOrdersQuery = (clone $ordersQuery)->whereNotIn('order_status', [Order::ORDER_STATUS_CANCELLED]);
+        
+        $totalOrders = (clone $validOrdersQuery)->count();
+        $grossRevenue = (float) (clone $validOrdersQuery)->sum('grand_total');
 
-        // Refund calculation
-        // Refunds can be tracked if order_status == refunded or payment_status == refunded
-        $refundAmount = (float) Order::query()
-            ->whereBetween('placed_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-            ->where('order_status', Order::ORDER_STATUS_REFUNDED)
+        // ── Previous Period (Trend Calculation) ──
+        $periodLength = $startDate->diffInDays($endDate) + 1;
+        $prevStartDate = (clone $startDate)->subDays($periodLength);
+        $prevEndDate = (clone $endDate)->subDays($periodLength);
+        
+        $prevGrossRevenue = (float) Order::query()
+            ->whereBetween('placed_at', [$prevStartDate, $prevEndDate])
+            ->whereNotIn('order_status', [Order::ORDER_STATUS_CANCELLED])
             ->sum('grand_total');
             
+        $revenueTrend = 0;
+        if ($prevGrossRevenue > 0) {
+            $revenueTrend = round((($grossRevenue - $prevGrossRevenue) / $prevGrossRevenue) * 100, 2);
+        } elseif ($grossRevenue > 0) {
+            $revenueTrend = 100; // 100% up if prev was 0
+        }
+
+        // ── Deep Refund Metrics ──
+        $refundedOrdersQuery = (clone $ordersQuery)->where('order_status', Order::ORDER_STATUS_REFUNDED);
+        $refundCount = $refundedOrdersQuery->count();
+        $refundAmount = (float) $refundedOrdersQuery->sum('grand_total');
+        
         $netRevenue = $grossRevenue - $refundAmount;
         $aov = $totalOrders > 0 ? round($grossRevenue / $totalOrders, 2) : 0;
+        
+        $refundRate = $totalOrders > 0 ? round(($refundCount / $totalOrders) * 100, 2) : 0;
+        $refundValuePercent = $grossRevenue > 0 ? round(($refundAmount / $grossRevenue) * 100, 2) : 0;
 
-        // COD vs Prepaid split
-        $codOrders = (clone $ordersQuery)->where('payment_method', Order::PAYMENT_COD)->count();
+        // ── COD vs Prepaid split ──
+        $codOrders = (clone $validOrdersQuery)->where('payment_method', Order::PAYMENT_COD)->count();
         $prepaidOrders = $totalOrders - $codOrders;
 
-        // Line chart data (Revenue per day in range)
-        $chartDataObj = (clone $ordersQuery)
+        // ── Conversion Proxy (Orders / Carts) ──
+        $cartsCreated = Cart::whereBetween('created_at', [$startDate, $endDate])->count();
+        $conversionRate = $cartsCreated > 0 ? round(($totalOrders / $cartsCreated) * 100, 2) : 0;
+
+        // ── Line chart data (Revenue per day in range) ──
+        $chartDataObj = (clone $validOrdersQuery)
             ->select(DB::raw('DATE(placed_at) as date'), DB::raw('SUM(grand_total) as revenue'))
             ->groupBy(DB::raw('DATE(placed_at)'))
             ->orderBy(DB::raw('DATE(placed_at)'))
@@ -51,10 +78,9 @@ class ReportController extends Controller
             ->keyBy('date');
 
         $chartData = [];
-        $current = \Carbon\Carbon::parse($startDate);
-        $end = \Carbon\Carbon::parse($endDate);
+        $current = clone $startDate;
 
-        while ($current <= $end) {
+        while ($current <= $endDate) {
             $d = $current->toDateString();
             $chartData[] = [
                 'date' => $current->format('d M'),
@@ -66,24 +92,42 @@ class ReportController extends Controller
         return view('admin.reports.sales', compact(
             'startDate', 'endDate', 'grossRevenue', 'netRevenue', 
             'totalOrders', 'aov', 'codOrders', 'prepaidOrders', 
-            'refundAmount', 'chartData'
+            'refundAmount', 'chartData', 'revenueTrend', 
+            'refundRate', 'refundValuePercent', 'cartsCreated', 'conversionRate'
         ));
     }
 
     // ── 2. Product Report ────────────────────────────────────────────
     public function products(Request $request): View
     {
-        // Top selling products by revenue & qty
-        $topProducts = DB::table('order_items')
+        // ── True Pareto Analysis (Top 80% Revenue Contributors) ──
+        $allProductsRev = DB::table('order_items')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
-            ->whereNotIn('orders.order_status', [Order::ORDER_STATUS_CANCELLED])
+            ->whereNotIn('orders.order_status', [Order::ORDER_STATUS_CANCELLED, Order::ORDER_STATUS_REFUNDED])
             ->select('order_items.product_id', 'order_items.product_name_snapshot', 
-                DB::raw('SUM(order_items.qty) as total_qty'), 
                 DB::raw('SUM(order_items.line_total) as total_revenue'))
             ->groupBy('order_items.product_id', 'order_items.product_name_snapshot')
             ->orderByDesc('total_revenue')
-            ->limit(20)
             ->get();
+
+        $storeTotalRev = $allProductsRev->sum('total_revenue');
+        $paretoTarget = $storeTotalRev * 0.8;
+        $cumulativeRev = 0;
+        
+        $paretoProducs = collect();
+        foreach ($allProductsRev as $prod) {
+            $cumulativeRev += $prod->total_revenue;
+            $paretoProducs->push($prod);
+            if ($cumulativeRev >= $paretoTarget) {
+                break;
+            }
+        }
+        
+        $totalCatalogSize = Product::count();
+        $paretoPercent = $totalCatalogSize > 0 ? round(($paretoProducs->count() / $totalCatalogSize) * 100, 1) : 0;
+        $paretoRevenuePercent = $storeTotalRev > 0 ? round(($cumulativeRev / $storeTotalRev) * 100, 1) : 0;
+        
+        $topProducts = $paretoProducs->take(20);
 
         // Dead products (no sales in last 30 days)
         $recentSalesProductIds = DB::table('order_items')
@@ -100,6 +144,18 @@ class ReportController extends Controller
             ->orderByDesc('id')
             ->paginate(15);
 
+        // ── Top Refunded Products ──
+        $refundedProducts = DB::table('order_items')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->where('orders.order_status', Order::ORDER_STATUS_REFUNDED)
+            ->select('order_items.product_name_snapshot', 
+                DB::raw('SUM(order_items.qty) as returned_qty'), 
+                DB::raw('SUM(order_items.line_total) as returned_revenue'))
+            ->groupBy('order_items.product_name_snapshot')
+            ->orderByDesc('returned_revenue')
+            ->limit(10)
+            ->get();
+
         // Revenue per product across time (Paginated)
         $productRevenues = DB::table('order_items')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
@@ -109,9 +165,12 @@ class ReportController extends Controller
                 DB::raw('SUM(order_items.line_total) as total_revenue'))
             ->groupBy('order_items.product_name_snapshot')
             ->orderByDesc('total_revenue')
-            ->paginate(20, ['*'], 'rev_page');
+            ->paginate(15, ['*'], 'rev_page');
 
-        return view('admin.reports.products', compact('topProducts', 'deadProducts', 'productRevenues'));
+        return view('admin.reports.products', compact(
+            'topProducts', 'deadProducts', 'productRevenues', 'refundedProducts',
+            'paretoPercent', 'paretoRevenuePercent', 'paretoProducs', 'totalCatalogSize'
+        ));
     }
 
     // ── 3. Customer Report ───────────────────────────────────────────

@@ -112,7 +112,7 @@ class Order extends Model
     {
         static::updated(function (Order $order) {
             $changes = $order->getChanges();
-            $watched = ['order_status', 'payment_status', 'grand_total'];
+            $watched = ['order_status', 'payment_status', 'grand_total', 'shipping_total', 'tax_total', 'discount_total'];
             
             $logChanges = [];
             $logOriginal = [];

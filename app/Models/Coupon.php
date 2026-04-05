@@ -45,4 +45,36 @@ class Coupon extends Model
 
         return true;
     }
+
+    protected static function booted(): void
+    {
+        static::created(function (Coupon $coupon) {
+            if (auth()->check()) {
+                AuditLog::log('coupon_created', $coupon, null, $coupon->toArray());
+            }
+        });
+
+        static::updated(function (Coupon $coupon) {
+            $changes = $coupon->getChanges();
+            $logChanges = [];
+            $logOriginal = [];
+            
+            foreach ($changes as $field => $val) {
+                if ($field !== 'updated_at' && $field !== 'used_count') {
+                    $logChanges[$field] = $val;
+                    $logOriginal[$field] = $coupon->getOriginal($field);
+                }
+            }
+
+            if (!empty($logChanges) && auth()->check()) {
+                AuditLog::log('coupon_updated', $coupon, $logOriginal, $logChanges);
+            }
+        });
+
+        static::deleted(function (Coupon $coupon) {
+            if (auth()->check()) {
+                AuditLog::log('coupon_deleted', $coupon, $coupon->toArray(), null);
+            }
+        });
+    }
 }

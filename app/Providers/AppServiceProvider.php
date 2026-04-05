@@ -54,8 +54,30 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useBootstrapFive();
 
-        Event::listen(Login::class, function (Login $event): void {
+        Event::listen(\Illuminate\Auth\Events\Login::class, function (\Illuminate\Auth\Events\Login $event): void {
             app(CartService::class)->mergeOnLogin($event->user);
+            
+            \App\Models\AuditLog::log(
+                'login_success',
+                $event->user,
+                [],
+                [
+                    'user_agent' => request()->userAgent(),
+                    'email' => $event->user->email
+                ]
+            );
+        });
+
+        Event::listen(\Illuminate\Auth\Events\Failed::class, function (\Illuminate\Auth\Events\Failed $event): void {
+            \App\Models\AuditLog::log(
+                'login_failed',
+                $event->user, // Might be null, supported by signature
+                [],
+                [
+                    'user_agent' => request()->userAgent(),
+                    'email' => $event->credentials['email'] ?? 'Unknown'
+                ]
+            );
         });
 
         Event::listen(OrderPlaced::class, SendOrderPlacedNotification::class);
