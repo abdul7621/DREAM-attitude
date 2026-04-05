@@ -49,24 +49,26 @@ git push origin ${BRANCH}
 echo "  ✓ Push complete"
 echo ""
 
-# ── Step 2: Remote — pull ─────────────────────────────────────
-echo "📥 [SERVER] Pulling latest code…"
-${SSH_CMD} -t "cd ${APP_DIR} && git pull origin ${BRANCH}"
-echo "  ✓ Pull complete"
-echo ""
+# ── Step 2-4: Remote Execution ────────────────────────────────
+echo "🌐 [SERVER] Executing remote deployment commands..."
 
-# ── Step 3: Remote — migrate (optional) ──────────────────────
 if [ "$RUN_MIGRATE" = true ]; then
-    echo "🗄  [SERVER] Running migrations…"
-    ${SSH_CMD} -t "cd ${APP_DIR} && php artisan migrate --force"
-    echo "  ✓ Migrations complete"
-    echo ""
+    MIGRATE_CMD="php artisan migrate --force && "
+else
+    MIGRATE_CMD=""
 fi
 
-# ── Step 4: Remote — clear + rebuild caches ───────────────────
-echo "🔄 [SERVER] Clearing and rebuilding caches…"
-${SSH_CMD} -t "cd ${APP_DIR} && php artisan optimize:clear && php artisan config:cache && php artisan view:cache"
-echo "  ✓ Caches rebuilt"
+${SSH_CMD} -t "cd ${APP_DIR} && \
+    echo '📥 Pulling latest code...' && \
+    git pull origin ${BRANCH} && \
+    echo '🗄  Running migrations (if any)...' && \
+    ${MIGRATE_CMD} \
+    echo '🔄 Rebuilding caches...' && \
+    php artisan optimize:clear && \
+    php artisan config:cache && \
+    php artisan view:cache && \
+    echo '✅ All remote tasks completed successfully!'"
+    
 echo ""
 
 echo "═══════════════════════════════════════════════════"
