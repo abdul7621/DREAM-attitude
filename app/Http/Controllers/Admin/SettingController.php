@@ -21,6 +21,8 @@ class SettingController extends Controller
             'payment'  => $this->settings->group('payment'),
             'notify'   => $this->settings->group('notify'),
             'shipping' => $this->settings->group('shipping'),
+            'checkout' => $this->settings->group('checkout'),
+            'policies' => $this->settings->group('policies'),
         ];
 
         return view('admin.settings.edit', compact('groups'));
@@ -28,14 +30,14 @@ class SettingController extends Controller
 
     public function update(Request $request): RedirectResponse
     {
-        $all = $request->except(['_token', '_method']);
+        $tab = $request->input('_tab', 'store');
+        $all = $request->except(['_token', '_method', '_tab']);
 
         foreach ($all as $key => $value) {
-            // Convert dot notation keys (group_key → group.key)
             $dotKey = str_replace('__', '.', (string) $key);
             $this->settings->set($dotKey, (string) $value);
         }
 
-        return redirect()->route('admin.settings.edit')->with('success', 'Settings saved.');
+        return redirect()->route('admin.settings.edit', ['tab' => $tab])->with('success', 'Settings saved.');
     }
 }

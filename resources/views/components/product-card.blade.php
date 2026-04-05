@@ -2,22 +2,35 @@
 @php
     $variant = $product->variants->firstWhere('is_active', true) ?? $product->variants->first();
     $img = $product->primaryImage();
+    $compare = $variant?->compare_at_price;
+    $price = $variant?->price_retail;
+    $discount = ($compare && $price && $compare > $price) ? round((($compare - $price) / $compare) * 100) : 0;
 @endphp
-<div class="card h-100 shadow-sm">
-    @if ($img)
-        <a href="{{ route('product.show', $product) }}"><img src="{{ asset('storage/'.$img->path) }}" class="card-img-top" alt="{{ $img->alt_text ?? $product->name }}" style="object-fit:cover;height:220px;"></a>
-    @else
-        <div class="bg-secondary-subtle d-flex align-items-center justify-content-center" style="height:220px;">No image</div>
-    @endif
+<div class="sf-product-card">
+    <a href="{{ route('product.show', $product) }}">
+        <div class="card-img-wrap">
+            @if ($img)
+                <img src="{{ asset('storage/'.$img->path) }}" alt="{{ $img->alt_text ?? $product->name }}" loading="lazy">
+            @else
+                <div class="d-flex align-items-center justify-content-center h-100 bg-light text-muted"><i class="bi bi-image" style="font-size:2rem;"></i></div>
+            @endif
+            @if ($product->is_bestseller)
+                <span class="badge-featured">Bestseller</span>
+            @elseif ($product->is_featured)
+                <span class="badge-featured" style="background:#2563eb;">Featured</span>
+            @endif
+        </div>
+    </a>
     <div class="card-body d-flex flex-column">
-        <h2 class="h6 card-title"><a class="text-decoration-none text-dark" href="{{ route('product.show', $product) }}">{{ $product->name }}</a></h2>
+        <a href="{{ route('product.show', $product) }}" class="product-title">{{ $product->name }}</a>
         @if ($variant)
-            <p class="mb-0 mt-auto">
-                <span class="fw-semibold">₹{{ number_format($variant->price_retail, 2) }}</span>
-                @if ($variant->compare_at_price)
-                    <span class="text-muted text-decoration-line-through ms-1">₹{{ number_format($variant->compare_at_price, 2) }}</span>
+            <div class="product-price mt-auto">
+                ₹{{ number_format($price, 0) }}
+                @if ($compare && $compare > $price)
+                    <span class="compare">₹{{ number_format($compare, 0) }}</span>
+                    <span class="discount-tag">{{ $discount }}% OFF</span>
                 @endif
-            </p>
+            </div>
         @endif
     </div>
 </div>

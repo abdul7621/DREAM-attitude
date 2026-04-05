@@ -113,6 +113,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Customers
     Route::get('customers', [AdminCustomerController::class, 'index'])->name('customers.index');
+    Route::get('customers/{user}', [AdminCustomerController::class, 'show'])->name('customers.show');
 
     // Settings
     Route::get('settings', [AdminSettingController::class, 'edit'])->name('settings.edit');

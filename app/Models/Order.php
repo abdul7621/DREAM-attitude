@@ -8,21 +8,55 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
+    // ── Payment methods ──────────────────────────────────────
     public const PAYMENT_COD = 'cod';
-
     public const PAYMENT_RAZORPAY = 'razorpay';
 
+    // ── Payment statuses ─────────────────────────────────────
     public const PAYMENT_STATUS_PENDING = 'pending';
-
     public const PAYMENT_STATUS_PAID = 'paid';
-
     public const PAYMENT_STATUS_FAILED = 'failed';
+    public const PAYMENT_STATUS_REFUNDED = 'refunded';
 
+    // ── Order statuses (full lifecycle) ──────────────────────
     public const ORDER_STATUS_AWAITING_PAYMENT = 'awaiting_payment';
-
     public const ORDER_STATUS_PLACED = 'placed';
-
+    public const ORDER_STATUS_CONFIRMED = 'confirmed';
+    public const ORDER_STATUS_PACKED = 'packed';
+    public const ORDER_STATUS_SHIPPED = 'shipped';
+    public const ORDER_STATUS_DELIVERED = 'delivered';
     public const ORDER_STATUS_CANCELLED = 'cancelled';
+    public const ORDER_STATUS_REFUNDED = 'refunded';
+
+    // ── Allowed forward transitions ──────────────────────────
+    public const STATUS_TRANSITIONS = [
+        'placed'    => ['confirmed', 'cancelled'],
+        'confirmed' => ['packed', 'cancelled'],
+        'packed'    => ['shipped', 'cancelled'],
+        'shipped'   => ['delivered'],
+        'delivered' => ['refunded'],
+    ];
+
+    /**
+     * Status display labels with colors for the admin UI.
+     */
+    public const STATUS_LABELS = [
+        'awaiting_payment' => ['label' => 'Awaiting Payment', 'color' => 'secondary'],
+        'placed'           => ['label' => 'Placed',           'color' => 'info'],
+        'confirmed'        => ['label' => 'Confirmed',        'color' => 'primary'],
+        'packed'           => ['label' => 'Packed',           'color' => 'warning'],
+        'shipped'          => ['label' => 'Shipped',          'color' => 'dark'],
+        'delivered'        => ['label' => 'Delivered',        'color' => 'success'],
+        'cancelled'        => ['label' => 'Cancelled',        'color' => 'danger'],
+        'refunded'         => ['label' => 'Refunded',         'color' => 'danger'],
+    ];
+
+    public const PAYMENT_LABELS = [
+        'pending'  => ['label' => 'Pending',  'color' => 'warning'],
+        'paid'     => ['label' => 'Paid',     'color' => 'success'],
+        'failed'   => ['label' => 'Failed',   'color' => 'danger'],
+        'refunded' => ['label' => 'Refunded', 'color' => 'secondary'],
+    ];
 
     protected $fillable = [
         'order_number',
@@ -72,6 +106,41 @@ class Order extends Model
         ];
     }
 
+    // ── Helpers ───────────────────────────────────────────────
+
+    public function canTransitionTo(string $newStatus): bool
+    {
+        $allowed = self::STATUS_TRANSITIONS[$this->order_status] ?? [];
+        return in_array($newStatus, $allowed, true);
+    }
+
+    public function statusLabel(): string
+    {
+        return self::STATUS_LABELS[$this->order_status]['label'] ?? ucfirst($this->order_status);
+    }
+
+    public function statusColor(): string
+    {
+        return self::STATUS_LABELS[$this->order_status]['color'] ?? 'secondary';
+    }
+
+    public function paymentLabel(): string
+    {
+        return self::PAYMENT_LABELS[$this->payment_status]['label'] ?? ucfirst($this->payment_status);
+    }
+
+    public function paymentColor(): string
+    {
+        return self::PAYMENT_LABELS[$this->payment_status]['color'] ?? 'secondary';
+    }
+
+    public function nextStatuses(): array
+    {
+        return self::STATUS_TRANSITIONS[$this->order_status] ?? [];
+    }
+
+    // ── Relationships ────────────────────────────────────────
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -90,5 +159,10 @@ class Order extends Model
     public function shipments(): HasMany
     {
         return $this->hasMany(Shipment::class);
+    }
+
+    public function returnRequests(): HasMany
+    {
+        return $this->hasMany(ReturnRequest::class);
     }
 }

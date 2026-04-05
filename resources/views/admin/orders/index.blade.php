@@ -1,26 +1,79 @@
 @extends('layouts.admin')
-
 @section('title', 'Orders')
 
 @section('content')
-    <h1 class="h4 mb-3">Orders</h1>
-    <div class="table-responsive bg-white rounded shadow-sm">
-        <table class="table table-sm mb-0">
-            <thead><tr><th>#</th><th>Order</th><th>Customer</th><th>Total</th><th>Payment</th><th>Status</th><th></th></tr></thead>
-            <tbody>
-                @foreach ($orders as $o)
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h4 mb-0">Orders</h1>
+    </div>
+
+    {{-- ── Filters ──────────────────────────────────────────── --}}
+    <div class="card mb-3">
+        <div class="card-body py-2">
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <input type="text" name="q" class="form-control form-control-sm" placeholder="Search order, name, phone…" value="{{ request('q') }}">
+                </div>
+                <div class="col-md-2">
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="">All Status</option>
+                        @foreach (\App\Models\Order::STATUS_LABELS as $key => $meta)
+                            <option value="{{ $key }}" {{ request('status') === $key ? 'selected' : '' }}>{{ $meta['label'] }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="payment" class="form-select form-select-sm">
+                        <option value="">All Payment</option>
+                        <option value="cod" {{ request('payment') === 'cod' ? 'selected' : '' }}>COD</option>
+                        <option value="razorpay" {{ request('payment') === 'razorpay' ? 'selected' : '' }}>Razorpay</option>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-funnel"></i> Filter</button>
+                    <a href="{{ route('admin.orders.index') }}" class="btn btn-sm btn-outline-secondary">Clear</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- ── Table ─────────────────────────────────────────────── --}}
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0 align-middle">
+                <thead class="table-light">
                     <tr>
-                        <td>{{ $o->id }}</td>
-                        <td>{{ $o->order_number }}</td>
-                        <td>{{ $o->customer_name }}<br><span class="small text-muted">{{ $o->phone }}</span></td>
-                        <td>₹{{ number_format((float) $o->grand_total, 2) }}</td>
-                        <td>{{ $o->payment_method }} / {{ $o->payment_status }}</td>
-                        <td>{{ $o->order_status }}</td>
-                        <td><a href="{{ route('admin.orders.show', $o) }}" class="btn btn-sm btn-outline-primary">View</a></td>
+                        <th>Order</th>
+                        <th>Customer</th>
+                        <th class="text-end">Total</th>
+                        <th>Payment</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th></th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @forelse ($orders as $o)
+                        <tr>
+                            <td class="fw-semibold">{{ $o->order_number }}</td>
+                            <td>
+                                {{ $o->customer_name }}
+                                <br><span class="small text-muted">{{ $o->phone }}</span>
+                            </td>
+                            <td class="text-end fw-semibold">₹{{ number_format((float) $o->grand_total, 2) }}</td>
+                            <td>
+                                <span class="badge bg-{{ $o->payment_method === 'cod' ? 'warning text-dark' : 'primary' }}" style="font-size:.7rem;">{{ strtoupper($o->payment_method) }}</span>
+                                <span class="badge bg-{{ $o->paymentColor() }}" style="font-size:.65rem;">{{ $o->paymentLabel() }}</span>
+                            </td>
+                            <td><span class="badge bg-{{ $o->statusColor() }}">{{ $o->statusLabel() }}</span></td>
+                            <td class="small text-muted">{{ $o->placed_at?->format('d M Y, h:i A') ?? '—' }}</td>
+                            <td><a href="{{ route('admin.orders.show', $o) }}" class="btn btn-sm btn-outline-primary py-0 px-2"><i class="bi bi-eye"></i></a></td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="7" class="text-center text-muted py-4">No orders found.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
     <div class="mt-3">{{ $orders->links() }}</div>
 @endsection

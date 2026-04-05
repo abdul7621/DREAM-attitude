@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Storefront;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Product;
+use App\Models\Review;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -15,7 +17,15 @@ class HomeController extends Controller
             ->where('is_featured', true)
             ->with(['variants', 'images'])
             ->latest()
-            ->take(12)
+            ->take(8)
+            ->get();
+
+        $bestsellers = Product::query()
+            ->where('status', Product::STATUS_ACTIVE)
+            ->where('is_bestseller', true)
+            ->with(['variants', 'images'])
+            ->orderByDesc('sales_count')
+            ->take(8)
             ->get();
 
         $latest = Product::query()
@@ -25,6 +35,24 @@ class HomeController extends Controller
             ->take(12)
             ->get();
 
-        return view('storefront.home', compact('featured', 'latest'));
+        $categories = Category::query()
+            ->where('is_active', true)
+            ->whereNull('parent_id')
+            ->orderBy('sort_order')
+            ->take(6)
+            ->get();
+
+        // For testimonials on home page
+        $topReviews = Review::query()
+            ->where('is_approved', true)
+            ->where('rating', '>=', 4)
+            ->with('product')
+            ->latest()
+            ->take(4)
+            ->get();
+
+        return view('storefront.home', compact(
+            'featured', 'bestsellers', 'latest', 'categories', 'topReviews'
+        ));
     }
 }
