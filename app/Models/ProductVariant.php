@@ -37,6 +37,28 @@ class ProductVariant extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::updated(function (ProductVariant $variant) {
+            $changes = $variant->getChanges();
+            $watched = ['price_retail', 'price_reseller', 'stock_qty', 'is_active'];
+            
+            $logChanges = [];
+            $logOriginal = [];
+
+            foreach ($watched as $field) {
+                if (array_key_exists($field, $changes)) {
+                    $logChanges[$field] = $changes[$field];
+                    $logOriginal[$field] = $variant->getOriginal($field);
+                }
+            }
+
+            if (!empty($logChanges) && auth()->check()) {
+                AuditLog::log('variant_updated', $variant, $logOriginal, $logChanges);
+            }
+        });
+    }
+
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);

@@ -235,6 +235,10 @@
            class="sidebar-link {{ request()->routeIs('admin.returns.*') ? 'active' : '' }}">
             <i class="bi bi-arrow-return-left"></i> Returns
         </a>
+        <a href="{{ route('admin.audit-logs.index') }}"
+           class="sidebar-link {{ request()->routeIs('admin.audit-logs.*') ? 'active' : '' }}">
+            <i class="bi bi-shield-lock"></i> Audit Logs
+        </a>
 
         {{-- ─── TOOLS ─────────────────────────────────────── --}}
         <div class="sidebar-section-label">Tools</div>

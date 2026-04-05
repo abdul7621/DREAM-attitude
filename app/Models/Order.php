@@ -108,6 +108,28 @@ class Order extends Model
 
     // ── Helpers ───────────────────────────────────────────────
 
+    protected static function booted(): void
+    {
+        static::updated(function (Order $order) {
+            $changes = $order->getChanges();
+            $watched = ['order_status', 'payment_status', 'grand_total'];
+            
+            $logChanges = [];
+            $logOriginal = [];
+
+            foreach ($watched as $field) {
+                if (array_key_exists($field, $changes)) {
+                    $logChanges[$field] = $changes[$field];
+                    $logOriginal[$field] = $order->getOriginal($field);
+                }
+            }
+
+            if (!empty($logChanges) && auth()->check()) {
+                AuditLog::log('order_updated', $order, $logOriginal, $logChanges);
+            }
+        });
+    }
+
     public function canTransitionTo(string $newStatus): bool
     {
         $allowed = self::STATUS_TRANSITIONS[$this->order_status] ?? [];

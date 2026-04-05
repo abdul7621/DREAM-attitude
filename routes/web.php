@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\RedirectController as AdminRedirectController;
 use App\Http\Controllers\Admin\ReturnRequestController as AdminReturnRequestController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
+use App\Http\Controllers\Admin\AuditLogController as AdminAuditLogController;
 use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\ShippingRuleController as AdminShippingRuleController;
@@ -124,6 +125,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('coupons', [AdminReportController::class, 'coupons'])->name('coupons');
         Route::get('inventory', [AdminReportController::class, 'inventory'])->name('inventory');
     });
+
+    // Audit Logs
+    Route::get('audit-logs', [AdminAuditLogController::class, 'index'])->name('audit-logs.index');
 
     // Settings
     Route::get('settings', [AdminSettingController::class, 'edit'])->name('settings.edit');
