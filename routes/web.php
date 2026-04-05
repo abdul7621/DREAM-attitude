@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\PageController as AdminPageController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\RedirectController as AdminRedirectController;
 use App\Http\Controllers\Admin\ReturnRequestController as AdminReturnRequestController;
+use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\ShippingRuleController as AdminShippingRuleController;
@@ -114,6 +115,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Customers
     Route::get('customers', [AdminCustomerController::class, 'index'])->name('customers.index');
     Route::get('customers/{user}', [AdminCustomerController::class, 'show'])->name('customers.show');
+
+    // Reports
+    Route::prefix('reports')->name('reports.')->group(function (): void {
+        Route::get('sales', [AdminReportController::class, 'sales'])->name('sales');
+        Route::get('products', [AdminReportController::class, 'products'])->name('products');
+        Route::get('customers', [AdminReportController::class, 'customers'])->name('customers');
+        Route::get('coupons', [AdminReportController::class, 'coupons'])->name('coupons');
+        Route::get('inventory', [AdminReportController::class, 'inventory'])->name('inventory');
+    });
 
     // Settings
     Route::get('settings', [AdminSettingController::class, 'edit'])->name('settings.edit');

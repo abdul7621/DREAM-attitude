@@ -191,6 +191,29 @@
             <i class="bi bi-star-half"></i> Reviews
         </a>
 
+        {{-- ─── REPORTS ───────────────────────────────────── --}}
+        <div class="sidebar-section-label">Reports</div>
+        <a href="{{ route('admin.reports.sales') }}"
+           class="sidebar-link {{ request()->routeIs('admin.reports.sales') ? 'active' : '' }}">
+            <i class="bi bi-graph-up"></i> Sales
+        </a>
+        <a href="{{ route('admin.reports.products') }}"
+           class="sidebar-link {{ request()->routeIs('admin.reports.products') ? 'active' : '' }}">
+            <i class="bi bi-box"></i> Products
+        </a>
+        <a href="{{ route('admin.reports.customers') }}"
+           class="sidebar-link {{ request()->routeIs('admin.reports.customers') ? 'active' : '' }}">
+            <i class="bi bi-people"></i> Customers
+        </a>
+        <a href="{{ route('admin.reports.coupons') }}"
+           class="sidebar-link {{ request()->routeIs('admin.reports.coupons') ? 'active' : '' }}">
+            <i class="bi bi-tag"></i> Coupons
+        </a>
+        <a href="{{ route('admin.reports.inventory') }}"
+           class="sidebar-link {{ request()->routeIs('admin.reports.inventory') ? 'active' : '' }}">
+            <i class="bi bi-boxes"></i> Inventory
+        </a>
+
         {{-- ─── STORE ─────────────────────────────────────── --}}
         <div class="sidebar-section-label">Store</div>
         <a href="{{ route('admin.pages.index') }}"
