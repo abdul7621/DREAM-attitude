@@ -29,6 +29,8 @@ class Product extends Model
         'sales_count',
         'seo_title',
         'seo_description',
+        'meta',
+        'layout_config',
     ];
 
     protected function casts(): array
@@ -37,7 +39,19 @@ class Product extends Model
             'tags' => 'array',
             'is_featured' => 'boolean',
             'is_bestseller' => 'boolean',
+            'meta' => 'json',
+            'layout_config' => 'json',
         ];
+    }
+
+    public function getMetaTitleAttribute()
+    {
+        return $this->seo_title ?? ($this->meta['meta_title'] ?? null);
+    }
+
+    public function getMetaDescriptionAttribute()
+    {
+        return $this->seo_description ?? ($this->meta['meta_description'] ?? null);
     }
 
     public function category(): BelongsTo

@@ -45,6 +45,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(ImageFetchPipeline::class);
         $this->app->singleton(ShopifyImporter::class);
         $this->app->singleton(WooImporter::class);
+        
+        $this->app->singleton(\App\Services\PaymentManager::class, function ($app) {
+            $manager = new \App\Services\PaymentManager();
+            $manager->extend('razorpay', $app->make(\App\Services\Payment\RazorpayDriver::class));
+            return $manager;
+        });
     }
 
     /**
@@ -81,10 +87,33 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Event::listen(OrderPlaced::class, SendOrderPlacedNotification::class);
+        Event::listen(OrderPlaced::class, \App\Listeners\UpdateProductSalesCount::class);
+        
         Event::listen(OrderShipped::class, SendOrderShippedNotification::class);
+        
+        Event::listen(\App\Events\OrderStatusChanged::class, \App\Listeners\LogOrderAudit::class);
+        Event::listen(\App\Events\OrderStatusChanged::class, \App\Listeners\CreateStatusLogEntry::class);
+
 
         View::composer('layouts.storefront', function ($view): void {
-            $view->with('cartCount', app(CartService::class)->count());
+            $cartService = app(CartService::class);
+            $settingsService = app(SettingsService::class);
+            
+            $cartCount = $cartService->count();
+            $view->with('cartCount', $cartCount);
+            
+            $view->with('cartSummary', [
+                'count' => $cartCount,
+                'total' => $cartService->subtotalFormatted(),
+            ]);
+            
+            $view->with('storeSettings', [
+                'codEnabled' => (bool)$settingsService->get('payment.cod_enabled', true),
+                'currency' => config('commerce.currency', 'INR'),
+                'deliveryEta' => $settingsService->get('store.delivery_eta', '2-5 Business Days'),
+                'store_name' => $settingsService->get('store.name', config('app.name')),
+                'meta_description' => $settingsService->get('store.meta_description', ''),
+            ]);
         });
     }
 }

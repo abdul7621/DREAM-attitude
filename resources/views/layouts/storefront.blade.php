@@ -4,7 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', config('app.name'))</title>
+    <title>{{ $pageTitle ?? $storeSettings['store_name'] ?? config('app.name') }}</title>
+    <meta name="description" content="{{ $pageDescription ?? $storeSettings['meta_description'] ?? '' }}">
+    <link rel="canonical" href="{{ url()->current() }}">
     @stack('meta')
     @include('partials.tracking-head')
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
@@ -58,6 +60,22 @@
         }
     </style>
     @stack('styles')
+    
+    <script>
+        window.Store = {
+            cart: @json($cartSummary ?? ['count' => 0, 'total' => '0.00']),
+            user: @json(auth()->user() ? ['id' => auth()->id(), 'loggedIn' => true, 'name' => auth()->user()->name] : ['id' => null, 'loggedIn' => false]),
+            settings: @json($storeSettings ?? ['codEnabled' => true, 'currency' => 'INR']),
+
+            emit(event, data) {
+                document.dispatchEvent(new CustomEvent(event, { detail: data }));
+            },
+            on(event, callback) {
+                document.addEventListener(event, (e) => callback(e.detail));
+            }
+        };
+    </script>
+    <script src="{{ asset('js/store.js') }}"></script>
 </head>
 <body>
 @include('partials.tracking-body')
@@ -191,6 +209,7 @@
     </div>
 </footer>
 
+<x-toast />
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 @stack('scripts')
 </body>

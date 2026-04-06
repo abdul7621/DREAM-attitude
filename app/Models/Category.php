@@ -27,6 +27,16 @@ class Category extends Model
         ];
     }
 
+    public function getMetaTitleAttribute()
+    {
+        return $this->seo_title;
+    }
+
+    public function getMetaDescriptionAttribute()
+    {
+        return $this->seo_description;
+    }
+
     public function parent(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'parent_id');
