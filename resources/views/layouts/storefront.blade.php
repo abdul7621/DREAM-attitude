@@ -61,11 +61,16 @@
     </style>
     @stack('styles')
     
+    @php
+        $jsCart = $cartSummary ?? ['count' => 0, 'total' => '0.00'];
+        $jsUser = auth()->check() ? ['id' => auth()->id(), 'loggedIn' => true, 'name' => auth()->user()->name] : ['id' => null, 'loggedIn' => false];
+        $jsSettings = $storeSettings ?? ['codEnabled' => true, 'currency' => 'INR'];
+    @endphp
     <script>
         window.Store = {
-            cart: @json($cartSummary ?? ['count' => 0, 'total' => '0.00']),
-            user: @json(auth()->user() ? ['id' => auth()->id(), 'loggedIn' => true, 'name' => auth()->user()->name] : ['id' => null, 'loggedIn' => false]),
-            settings: @json($storeSettings ?? ['codEnabled' => true, 'currency' => 'INR']),
+            cart: @json($jsCart),
+            user: @json($jsUser),
+            settings: @json($jsSettings),
 
             emit(event, data) {
                 document.dispatchEvent(new CustomEvent(event, { detail: data }));
