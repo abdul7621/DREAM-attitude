@@ -26,9 +26,9 @@ class ShopifyImporter
 
         return [
             'products'    => count($stats['products']),
-            'variants'    => $stats['total_variants'],
+            'variants'    => $stats['totalVariants'],
             'categories'  => count($stats['categories']),
-            'images'      => $stats['total_images'],
+            'images'      => $stats['totalImages'],
             'dry_run'     => true,
             'sample_rows' => array_slice(array_values($stats['products']), 0, 3, true),
         ];
