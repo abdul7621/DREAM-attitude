@@ -8,6 +8,7 @@ use App\Services\ShopifyImporter;
 use App\Services\WooImporter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ImportController extends Controller
@@ -32,7 +33,7 @@ class ImportController extends Controller
         $type   = $request->input('type');
 
         $path = $file->store('imports', 'local');
-        $hash = md5_file(storage_path('app/'.$path));
+        $hash = md5_file(Storage::disk('local')->path($path));
 
         $job = ImportJob::query()->create([
             'source'   => $source.'_'.$type,
@@ -56,7 +57,7 @@ class ImportController extends Controller
             };
 
             if ($importer && $type === 'products') {
-                $preview = $importer->dryRun(storage_path('app/'.$importJob->filename));
+                $preview = $importer->dryRun(Storage::disk('local')->path($importJob->filename));
                 $importJob->update([
                     'status' => 'previewed',
                     'stats'  => array_merge((array) $importJob->stats, $preview),
@@ -83,7 +84,7 @@ class ImportController extends Controller
 
         try {
             if ($importer && $type === 'products') {
-                $stats = $importer->import(storage_path('app/'.$importJob->filename));
+                $stats = $importer->import(Storage::disk('local')->path($importJob->filename));
                 $importJob->update([
                     'status' => 'completed',
                     'stats'  => array_merge((array) $importJob->stats, $stats),
