@@ -147,12 +147,43 @@
 </nav>
 
 {{-- ── Main Content ────────────────────────────────────── --}}
-<main>
     @if (session('status'))
-        <div class="container mt-3"><div class="alert alert-success alert-dismissible fade show"><i class="bi bi-check-circle me-1"></i> {{ session('status') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div></div>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                Store.emit('toast', {type: 'success', message: {!! json_encode(session('status')) !!}});
+            });
+        </script>
+    @endif
+    @if (session('error'))
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                Store.emit('toast', {type: 'error', message: {!! json_encode(session('error')) !!}});
+            });
+        </script>
     @endif
     @if ($errors->any())
-        <div class="container mt-3"><div class="alert alert-danger"><ul class="mb-0">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div></div>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                @foreach ($errors->all() as $e)
+                    Store.emit('toast', {type: 'error', message: {!! json_encode($e) !!}});
+                @endforeach
+            });
+        </script>
+    @endif
+    @if (session('analytics_add_to_cart'))
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                // Ensure single-fire execution logic via window variable state
+                if (!window.analyticsAddCartFired) {
+                    window.analyticsAddCartFired = true;
+                    Store.emit('analytics', {
+                        event: 'add_to_cart',
+                        ecommerce: {!! json_encode(session('analytics_add_to_cart')) !!}
+                    });
+                }
+            });
+        </script>
+        {{ session()->forget('analytics_add_to_cart') /* Force clear to be safe */ }}
     @endif
     @yield('content')
 </main>

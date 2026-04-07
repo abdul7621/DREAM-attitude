@@ -198,7 +198,7 @@
 
 // Call view_item analytics
 @php
-    $v0 = $product->variants->where('is_active', true)->first();
+    $v0 = $product->variants->first();
     $vid = $v0 ? $v0->id : null;
     $vprice = $vid && isset($variantPrices[$vid]) ? (float) $variantPrices[$vid]['display'] : 0;
 @endphp
