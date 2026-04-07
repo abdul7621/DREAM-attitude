@@ -274,6 +274,7 @@
         <div class="col-md-6">
             <label class="form-label">Prepaid Recommendation Text</label>
             <input type="text" name="conversion_copy__checkout__prepaid_message" class="form-control" value="{{ $groups['conversion_copy']['checkout']['prepaid_message'] ?? config('commerce.conversion_copy.checkout.prepaid_message') }}">
+            <div class="form-text">Short aur benefit-based likho (e.g. safe payment, faster delivery).</div>
         </div>
         <div class="col-md-6">
             <label class="form-label">Prepaid Highlight Badge</label>
@@ -282,6 +283,7 @@
         <div class="col-md-6">
             <label class="form-label">COD Message</label>
             <input type="text" name="conversion_copy__checkout__cod_message" class="form-control" value="{{ $groups['conversion_copy']['checkout']['cod_message'] ?? config('commerce.conversion_copy.checkout.cod_message') }}">
+            <div class="form-text">Extra charges ya trust clearly explain karo.</div>
         </div>
         <div class="col-md-6">
             <label class="form-label">COD Fee Message</label>
@@ -290,6 +292,7 @@
         <div class="col-md-6">
             <label class="form-label">Delivery ETA Message</label>
             <input type="text" name="conversion_copy__checkout__delivery_eta" class="form-control" value="{{ $groups['conversion_copy']['checkout']['delivery_eta'] ?? config('commerce.conversion_copy.checkout.delivery_eta') }}">
+            <div class="form-text">Logistics timeline clearly state karo.</div>
         </div>
         <div class="col-md-6">
             <label class="form-label">Secure Checkout Message</label>
@@ -306,15 +309,17 @@
 
         <div class="col-12 mt-4">
             <h6 class="fw-bold border-bottom pb-2">📦 Product Page Copy</h6>
-            <div class="form-text mb-3">Note: Global settings. You can override test urgency per product via Product Meta if needed.</div>
+            <div class="form-text mb-3">Note: Global settings. You can override testing urgency per product via Product Meta if needed.</div>
         </div>
         <div class="col-md-6">
             <label class="form-label">Urgency Message</label>
             <input type="text" name="conversion_copy__product__urgency_message" class="form-control" value="{{ $groups['conversion_copy']['product']['urgency_message'] ?? config('commerce.conversion_copy.product.urgency_message') }}">
+            <div class="form-text">Scarcity ya time-based urgency use karo (e.g. {stock} left, dispatch today).</div>
         </div>
         <div class="col-md-6">
             <label class="form-label">Buy Now Subtext</label>
             <input type="text" name="conversion_copy__product__buy_now_subtext" class="form-control" value="{{ $groups['conversion_copy']['product']['buy_now_subtext'] ?? config('commerce.conversion_copy.product.buy_now_subtext') }}" placeholder="e.g. Fastest checkout">
+            <div class="form-text">Button ke neeche extra micro text.</div>
         </div>
         <div class="col-md-6">
             <label class="form-label">Trust Badges Title</label>
@@ -331,6 +336,7 @@
         <div class="col-md-6">
             <label class="form-label">Offer / Savings Message</label>
             <input type="text" name="conversion_copy__product__offer_message" class="form-control" value="{{ $groups['conversion_copy']['product']['offer_message'] ?? config('commerce.conversion_copy.product.offer_message') }}">
+            <div class="form-text">Extra savings ya discount highlight karein.</div>
         </div>
     </div>
 @endif

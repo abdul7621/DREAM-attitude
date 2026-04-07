@@ -35,8 +35,8 @@
 
     @php
         $copy = app(\App\Services\SettingsService::class)->get('conversion_copy.product', config('commerce.conversion_copy.product'));
-        $urgencyMsg = $product->meta['urgency_message'] ?? $copy['urgency_message'] ?? '';
-        $offerMsg = $product->meta['offer_message'] ?? $copy['offer_message'] ?? '';
+        $urgencyMsg = $product->meta['urgency_message'] ?: ($copy['urgency_message'] ?: '');
+        $offerMsg = $product->meta['offer_message'] ?: ($copy['offer_message'] ?: '');
     @endphp
 
     @if($offerMsg)

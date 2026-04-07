@@ -49,7 +49,7 @@
         const rzp = new Razorpay(options);
         rzp.on('payment.failed', function () {
             if (window.Store) {
-                Store.emit('toast', { type: 'error', message: @json(app(\App\Services\SettingsService::class)->get('conversion_copy.checkout.payment_error', config('commerce.conversion_copy.checkout.payment_error'))) });
+                Store.emit('toast', { type: 'error', message: @json(app(\App\Services\SettingsService::class)->get('conversion_copy.checkout.payment_error', config('commerce.conversion_copy.checkout.payment_error')) ?: 'Payment failed — please try again.') });
             } else {
                 alert('Payment failed. You can try again.');
             }

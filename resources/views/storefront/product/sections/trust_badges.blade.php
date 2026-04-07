@@ -1,8 +1,8 @@
 @php
     $copy = app(\App\Services\SettingsService::class)->get('conversion_copy.product', config('commerce.conversion_copy.product'));
-    $trustTitle = $product->meta['trust_badges_title'] ?? $copy['trust_badges_title'] ?? 'Secure Checkout';
-    $trustText = $product->meta['trust_badges_text'] ?? $copy['trust_badges_text'] ?? '100% safe & protected payments';
-    $deliveryPromise = $product->meta['delivery_promise'] ?? $copy['delivery_promise'] ?? 'Estimated: 2-5 Business Days';
+    $trustTitle = $product->meta['trust_badges_title'] ?: ($copy['trust_badges_title'] ?: 'Secure Checkout');
+    $trustText = $product->meta['trust_badges_text'] ?: ($copy['trust_badges_text'] ?: '100% safe & protected payments');
+    $deliveryPromise = $product->meta['delivery_promise'] ?: ($copy['delivery_promise'] ?: 'Estimated: 2-5 Business Days');
 @endphp
 <div class="sf-trust-badges border rounded p-3 mb-4" style="background-color: var(--sf-bg-light, #f8f9fa);">
     <div class="d-flex align-items-center mb-3">

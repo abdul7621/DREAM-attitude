@@ -184,9 +184,9 @@
                                     <div class="w-100">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <span class="fw-bold fs-6">Pay Online (UPI, Cards, NetBanking)</span>
-                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-2"><i class="bi bi-lightning-fill"></i> {{ $copy['prepaid_badge'] ?? 'Recommended' }}</span>
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-2"><i class="bi bi-lightning-fill"></i> {{ $copy['prepaid_badge'] ?: 'Recommended' }}</span>
                                         </div>
-                                        <p class="text-secondary small mt-1 mb-2">{{ $copy['prepaid_message'] ?? 'Safe and secure payments powered by Razorpay.' }}</p>
+                                        <p class="text-secondary small mt-1 mb-2">{{ $copy['prepaid_message'] ?: 'Most customers choose prepaid for faster delivery' }}</p>
                                         <div class="d-flex gap-2">
                                             <span class="badge bg-light text-dark border"><i class="bi bi-phone"></i> UPI</span>
                                             <span class="badge bg-light text-dark border"><i class="bi bi-credit-card"></i> Cards</span>
@@ -202,9 +202,9 @@
                                     <div class="w-100">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <span class="fw-bold fs-6">Cash on Delivery (COD)</span>
-                                            <span class="fw-semibold text-secondary small">{{ $copy['cod_fee_message'] ?? '₹0 Additional Fee' }}</span>
+                                            <span class="fw-semibold text-secondary small">{{ $copy['cod_fee_message'] ?: '₹0 Additional Fee' }}</span>
                                         </div>
-                                        <p class="text-secondary small mt-1 mb-0">{{ $copy['cod_message'] ?? 'Pay when your order is delivered to you.' }}</p>
+                                        <p class="text-secondary small mt-1 mb-0">{{ $copy['cod_message'] ?: 'Pay when your order is delivered to you.' }}</p>
                                     </div>
                                 </label>
                             </x-sf-card>
@@ -212,12 +212,12 @@
                     </div>
 
                     <button type="submit" class="btn btn-lg w-100 py-3 fw-bold fs-5 shadow sf-hover-lift" id="submitBtn" style="background-color: var(--sf-primary, #000); color: #fff;">
-                        {{ $copy['place_order_cta'] ?? 'Place Order' }} <i class="bi bi-arrow-right ms-2"></i>
+                        {{ $copy['place_order_cta'] ?: 'Place Order' }} <i class="bi bi-arrow-right ms-2"></i>
                     </button>
 
                     <div class="mt-4 p-3 bg-white border rounded shadow-sm">
-                        <x-trust-badge icon="bi-shield-check" title="Secure Checkout" text="{{ $copy['secure_message'] ?? '100% safe & protected payments with SSL encryption' }}" />
-                        <x-trust-badge icon="bi-truck" title="Fast Delivery" text="{{ $copy['delivery_eta'] ?? 'Estimated: 2-5 Business Days' }}" />
+                        <x-trust-badge icon="bi-shield-check" title="Secure Checkout" text="{{ $copy['secure_message'] ?: '100% safe & protected payments with SSL encryption' }}" />
+                        <x-trust-badge icon="bi-truck" title="Fast Delivery" text="{{ $copy['delivery_eta'] ?: 'Estimated: 2-5 Business Days' }}" />
                     </div>
                 </form>
             </div>
