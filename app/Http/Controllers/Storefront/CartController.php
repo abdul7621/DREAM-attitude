@@ -32,6 +32,7 @@ class CartController extends Controller
         $data = $request->validate([
             'variant_id' => ['required', 'exists:product_variants,id'],
             'qty' => ['required', 'integer', 'min:1', 'max:9999'],
+            'redirect' => ['nullable', 'string', 'in:checkout'],
         ]);
 
         $qty = (int) $data['qty'];
@@ -40,7 +41,11 @@ class CartController extends Controller
         $variant = ProductVariant::query()->with('product')->findOrFail((int) $data['variant_id']);
         $unit = (float) $this->pricing->unitPriceForCustomer($variant, auth()->user(), max(1, $qty));
 
-        return redirect()->route('cart.index')
+        $redirectUrl = (isset($data['redirect']) && $data['redirect'] === 'checkout') 
+            ? route('checkout.create') 
+            : route('cart.index');
+
+        return redirect($redirectUrl)
             ->with('status', __('Added to cart.'))
             ->with('analytics_add_to_cart', [
                 'currency' => config('commerce.currency', 'INR'),

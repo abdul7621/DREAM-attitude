@@ -48,7 +48,11 @@
         };
         const rzp = new Razorpay(options);
         rzp.on('payment.failed', function () {
-            alert('Payment failed. You can try again.');
+            if (window.Store) {
+                Store.emit('toast', { type: 'error', message: 'Payment failed — please try again.' });
+            } else {
+                alert('Payment failed. You can try again.');
+            }
         });
         rzp.open();
     });
