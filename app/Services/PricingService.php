@@ -19,11 +19,11 @@ class PricingService
         $bulkMin = (int) $this->settings->get('pricing.bulk_min_qty',
             (int) config('commerce.pricing.bulk_min_qty', 0));
 
-        if ($bulkMin > 0 && $qty >= $bulkMin && $variant->price_bulk !== null) {
+        if ($bulkMin > 0 && $qty >= $bulkMin && (float) $variant->price_bulk > 0) {
             return (string) $variant->price_bulk;
         }
 
-        if ($user && $user->role === 'reseller' && $variant->price_reseller !== null) {
+        if ($user && $user->role === 'reseller' && (float) $variant->price_reseller > 0) {
             return (string) $variant->price_reseller;
         }
 
