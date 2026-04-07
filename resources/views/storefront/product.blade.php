@@ -62,7 +62,10 @@
     <div class="row g-5">
         {{-- ── Left Column: Media Gallery ───────────────────── --}}
         <div class="col-md-6 col-lg-7">
-            @include('storefront.product.sections.gallery')
+            @include('storefront.product.sections.gallery', [
+                'product' => $product,
+                'selectedVariant' => $selectedVariant
+            ])
         </div>
 
         {{-- ── Right Column: Product Information ────────────── --}}
@@ -73,7 +76,10 @@
                 
                 @foreach($layoutSections as $section)
                     @if($section['enabled'] && in_array($section['key'], ['title_price', 'variants', 'buy_buttons', 'trust_badges', 'description', 'specs', 'faq']))
-                        @include('storefront.product.sections.' . $section['key'])
+                        @include('storefront.product.sections.' . $section['key'], [
+                            'product' => $product,
+                            'selectedVariant' => $selectedVariant
+                        ])
                     @endif
                 @endforeach
             </form>
@@ -84,7 +90,10 @@
     <div class="mt-5">
         @foreach($layoutSections as $section)
             @if($section['enabled'] && in_array($section['key'], ['reviews', 'recently_viewed', 'frequently_bought', 'related']))
-                @include('storefront.product.sections.' . $section['key'])
+                @include('storefront.product.sections.' . $section['key'], [
+                    'product' => $product,
+                    'selectedVariant' => $selectedVariant
+                ])
             @endif
         @endforeach
     </div>

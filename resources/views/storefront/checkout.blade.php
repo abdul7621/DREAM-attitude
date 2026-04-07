@@ -285,7 +285,10 @@
                             const info = data[0].PostOffice[0];
                             cityInput.value = info.District;
                             stateInput.value = info.State;
-                            if (window.Store) Store.emit('toast', {type:'success', message: `Delivering to ${info.District}, ${info.State}`});
+                            if (window.Store) {
+                                Store.emit('pincode:resolved', { city: info.District, state: info.State, pincode: this.value });
+                                Store.emit('toast', {type:'success', message: `Delivering to ${info.District}, ${info.State}`});
+                            }
                             
                             // Remove readonly
                             cityInput.setAttribute('readonly', 'true');

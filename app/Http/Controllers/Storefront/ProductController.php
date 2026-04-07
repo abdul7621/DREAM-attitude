@@ -101,6 +101,8 @@ class ProductController extends Controller
             })->values();
         }
 
+        $selectedVariant = $product->variants->first();
+
         // Layout Config
         $defaultLayout = '[{"key":"gallery","enabled":true},{"key":"title_price","enabled":true},{"key":"variants","enabled":true},{"key":"buy_buttons","enabled":true},{"key":"trust_badges","enabled":true},{"key":"description","enabled":true},{"key":"specs","enabled":true},{"key":"faq","enabled":true},{"key":"recently_viewed","enabled":true},{"key":"reviews","enabled":true},{"key":"frequently_bought","enabled":true},{"key":"related","enabled":true}]';
         $layoutSections = json_decode($product->layout_config ?? $this->settings->get('theme.product_layout', $defaultLayout), true) ?? json_decode($defaultLayout, true);
@@ -110,7 +112,8 @@ class ProductController extends Controller
 
         return view('storefront.product', compact(
             'product', 'variantPrices', 'reviews', 'avgRating', 'reviewCount', 'relatedProducts',
-            'frequentlyBought', 'recentlyViewed', 'layoutSections', 'deliveryEta', 'codEnabled'
+            'frequentlyBought', 'recentlyViewed', 'layoutSections', 'deliveryEta', 'codEnabled',
+            'selectedVariant'
         ));
     }
 }

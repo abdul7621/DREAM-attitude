@@ -60,7 +60,9 @@ class PaymentController extends Controller
                 'error_message' => $e->getMessage(),
                 'payment_id' => $data['razorpay_payment_id'] ?? null
             ]);
-            throw $e;
+            return redirect()->route('checkout.create')
+                ->with('error', 'Payment failed. Please try again or use Cash on Delivery.')
+                ->withInput();
         }
 
         return redirect()->route('order.success', ['orderNumber' => $order->fresh()->order_number]);
