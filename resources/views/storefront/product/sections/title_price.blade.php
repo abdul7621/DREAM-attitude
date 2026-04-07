@@ -33,11 +33,30 @@
         <span id="savingsBadge" style="display:none;"><x-sf-badge variant="success"><i class="bi bi-tag-fill"></i> Save <span id="savingsAmount"></span></x-sf-badge></span>
     </div>
 
+    @php
+        $copy = app(\App\Services\SettingsService::class)->get('conversion_copy.product', config('commerce.conversion_copy.product'));
+        $urgencyMsg = $product->meta['urgency_message'] ?? $copy['urgency_message'] ?? '';
+        $offerMsg = $product->meta['offer_message'] ?? $copy['offer_message'] ?? '';
+    @endphp
+
+    @if($offerMsg)
+        <div class="mt-2 text-success fw-semibold small bg-success bg-opacity-10 px-3 py-2 rounded border border-success border-opacity-25 d-inline-block">
+            <i class="bi bi-percent me-1"></i> {{ $offerMsg }}
+        </div>
+    @endif
+
     {{-- Urgency --}}
     @php $firstVariant = $product->variants->first(); @endphp
     @if ($firstVariant && $firstVariant->track_inventory && $firstVariant->stock_qty <= config('commerce.pricing.low_stock_threshold', 5) && $firstVariant->stock_qty > 0)
         <div class="mt-2">
-            <span class="text-danger fw-bold small"><i class="bi bi-lightning-charge-fill"></i> Only {{ $firstVariant->stock_qty }} left in stock!</span>
+            <span class="text-danger fw-bold small">
+                <i class="bi bi-lightning-charge-fill"></i> 
+                {{ str_replace('{stock}', $firstVariant->stock_qty, $urgencyMsg ?: 'Only {stock} left in stock!') }}
+            </span>
+        </div>
+    @elseif($urgencyMsg)
+        <div class="mt-2">
+            <span class="text-danger fw-bold small"><i class="bi bi-fire text-danger"></i> {{ str_replace('{stock}', '', $urgencyMsg) }}</span>
         </div>
     @endif
 </div>

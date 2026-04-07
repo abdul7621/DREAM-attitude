@@ -1,3 +1,7 @@
+@php
+    $copy = app(\App\Services\SettingsService::class)->get('conversion_copy.product', config('commerce.conversion_copy.product'));
+    $subtext = $product->meta['buy_now_subtext'] ?? $copy['buy_now_subtext'] ?? '';
+@endphp
 <div class="mb-4">
     <div class="row g-2">
         <div class="col-3">
@@ -7,9 +11,14 @@
             <x-sf-button type="submit" variant="outline" size="lg" icon="bi-bag-plus" class="flex-grow-1 sf-btn-cart" id="addToCartBtn" style="border-width: 2px;">
                 Add to Cart
             </x-sf-button>
-            <x-sf-button type="button" variant="primary" size="lg" icon="bi-lightning-charge-fill" class="flex-grow-1" id="buyNowBtn" onclick="document.getElementById('redirectInput').value='checkout'; document.getElementById('productForm').submit();">
-                Buy Now
-            </x-sf-button>
+            <div class="flex-grow-1 d-flex flex-column gap-1">
+                <x-sf-button type="button" variant="primary" size="lg" icon="bi-lightning-charge-fill" class="w-100" id="buyNowBtn" onclick="document.getElementById('redirectInput').value='checkout'; document.getElementById('productForm').submit();">
+                    Buy Now
+                </x-sf-button>
+                @if($subtext)
+                    <div class="text-center text-muted small" style="font-size: 0.75rem;">{{ $subtext }}</div>
+                @endif
+            </div>
         </div>
     </div>
 </div>

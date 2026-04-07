@@ -23,6 +23,7 @@ class SettingController extends Controller
             'shipping' => $this->settings->group('shipping'),
             'checkout' => $this->settings->group('checkout'),
             'policies' => $this->settings->group('policies'),
+            'conversion_copy' => $this->settings->group('conversion_copy'),
         ];
 
         return view('admin.settings.edit', compact('groups'));

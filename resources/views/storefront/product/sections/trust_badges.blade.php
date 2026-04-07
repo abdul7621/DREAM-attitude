@@ -1,9 +1,15 @@
+@php
+    $copy = app(\App\Services\SettingsService::class)->get('conversion_copy.product', config('commerce.conversion_copy.product'));
+    $trustTitle = $product->meta['trust_badges_title'] ?? $copy['trust_badges_title'] ?? 'Secure Checkout';
+    $trustText = $product->meta['trust_badges_text'] ?? $copy['trust_badges_text'] ?? '100% safe & protected payments';
+    $deliveryPromise = $product->meta['delivery_promise'] ?? $copy['delivery_promise'] ?? 'Estimated: 2-5 Business Days';
+@endphp
 <div class="sf-trust-badges border rounded p-3 mb-4" style="background-color: var(--sf-bg-light, #f8f9fa);">
     <div class="d-flex align-items-center mb-3">
         <i class="bi bi-shield-check text-success fs-4 me-3"></i>
         <div>
-            <div class="fw-bold text-dark" style="font-size: 0.95rem;">Secure Checkout</div>
-            <div class="small text-muted" style="font-size: 0.8rem;">100% safe & protected payments</div>
+            <div class="fw-bold text-dark" style="font-size: 0.95rem;">{{ $trustTitle }}</div>
+            <div class="small text-muted" style="font-size: 0.8rem;">{{ $trustText }}</div>
         </div>
     </div>
     @if($codEnabled ?? true)
@@ -19,7 +25,7 @@
         <i class="bi bi-truck fs-4 me-3" style="color: var(--sf-primary, #000);"></i>
         <div>
             <div class="fw-bold text-dark" style="font-size: 0.95rem;">Fast Delivery</div>
-            <div class="small text-muted" style="font-size: 0.8rem;">Estimated: {{ $deliveryEta ?? '2-5 Business Days' }}</div>
+            <div class="small text-muted" style="font-size: 0.8rem;">{{ $deliveryPromise }}</div>
         </div>
     </div>
     <div class="d-flex align-items-center">

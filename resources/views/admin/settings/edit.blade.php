@@ -14,6 +14,7 @@
         'payment'     => ['icon' => 'bi-credit-card',       'label' => 'Payments'],
         'shipping'    => ['icon' => 'bi-truck',             'label' => 'Shipping'],
         'checkout'    => ['icon' => 'bi-cart-check',        'label' => 'Checkout'],
+        'conversion'  => ['icon' => 'bi-funnel-fill',       'label' => 'Conversion Control'],
         'notify'      => ['icon' => 'bi-bell',              'label' => 'Notifications'],
         'policies'    => ['icon' => 'bi-file-earmark-text', 'label' => 'Policies'],
     ];
@@ -257,6 +258,79 @@
         <div class="col-12">
             <label class="form-label">Terms & Conditions</label>
             <textarea name="policies__terms" class="form-control" rows="5">{{ $groups['policies']['terms'] ?? '' }}</textarea>
+        </div>
+    </div>
+@endif
+
+{{-- ═══ CONVERSION CONTROL ════════════════════════════════════ --}}
+@if ($activeTab === 'conversion')
+    <h5 class="mb-3">🎯 Conversion Control System</h5>
+    <p class="small text-muted">Control the micro-copy displayed on product and checkout pages to optimize sales.</p>
+    
+    <div class="row g-4">
+        <div class="col-12">
+            <h6 class="fw-bold border-bottom pb-2">🛒 Checkout Page Copy</h6>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Prepaid Recommendation Text</label>
+            <input type="text" name="conversion_copy__checkout__prepaid_message" class="form-control" value="{{ $groups['conversion_copy']['checkout']['prepaid_message'] ?? config('commerce.conversion_copy.checkout.prepaid_message') }}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Prepaid Highlight Badge</label>
+            <input type="text" name="conversion_copy__checkout__prepaid_badge" class="form-control" value="{{ $groups['conversion_copy']['checkout']['prepaid_badge'] ?? config('commerce.conversion_copy.checkout.prepaid_badge') }}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">COD Message</label>
+            <input type="text" name="conversion_copy__checkout__cod_message" class="form-control" value="{{ $groups['conversion_copy']['checkout']['cod_message'] ?? config('commerce.conversion_copy.checkout.cod_message') }}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">COD Fee Message</label>
+            <input type="text" name="conversion_copy__checkout__cod_fee_message" class="form-control" value="{{ $groups['conversion_copy']['checkout']['cod_fee_message'] ?? config('commerce.conversion_copy.checkout.cod_fee_message') }}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Delivery ETA Message</label>
+            <input type="text" name="conversion_copy__checkout__delivery_eta" class="form-control" value="{{ $groups['conversion_copy']['checkout']['delivery_eta'] ?? config('commerce.conversion_copy.checkout.delivery_eta') }}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Secure Checkout Message</label>
+            <input type="text" name="conversion_copy__checkout__secure_message" class="form-control" value="{{ $groups['conversion_copy']['checkout']['secure_message'] ?? config('commerce.conversion_copy.checkout.secure_message') }}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Payment Error Message</label>
+            <input type="text" name="conversion_copy__checkout__payment_error" class="form-control" value="{{ $groups['conversion_copy']['checkout']['payment_error'] ?? config('commerce.conversion_copy.checkout.payment_error') }}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Place Order Button CTA</label>
+            <input type="text" name="conversion_copy__checkout__place_order_cta" class="form-control" value="{{ $groups['conversion_copy']['checkout']['place_order_cta'] ?? config('commerce.conversion_copy.checkout.place_order_cta') }}">
+        </div>
+
+        <div class="col-12 mt-4">
+            <h6 class="fw-bold border-bottom pb-2">📦 Product Page Copy</h6>
+            <div class="form-text mb-3">Note: Global settings. You can override test urgency per product via Product Meta if needed.</div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Urgency Message</label>
+            <input type="text" name="conversion_copy__product__urgency_message" class="form-control" value="{{ $groups['conversion_copy']['product']['urgency_message'] ?? config('commerce.conversion_copy.product.urgency_message') }}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Buy Now Subtext</label>
+            <input type="text" name="conversion_copy__product__buy_now_subtext" class="form-control" value="{{ $groups['conversion_copy']['product']['buy_now_subtext'] ?? config('commerce.conversion_copy.product.buy_now_subtext') }}" placeholder="e.g. Fastest checkout">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Trust Badges Title</label>
+            <input type="text" name="conversion_copy__product__trust_badges_title" class="form-control" value="{{ $groups['conversion_copy']['product']['trust_badges_title'] ?? config('commerce.conversion_copy.product.trust_badges_title') }}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Trust Badges Text</label>
+            <input type="text" name="conversion_copy__product__trust_badges_text" class="form-control" value="{{ $groups['conversion_copy']['product']['trust_badges_text'] ?? config('commerce.conversion_copy.product.trust_badges_text') }}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Delivery Promise</label>
+            <input type="text" name="conversion_copy__product__delivery_promise" class="form-control" value="{{ $groups['conversion_copy']['product']['delivery_promise'] ?? config('commerce.conversion_copy.product.delivery_promise') }}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Offer / Savings Message</label>
+            <input type="text" name="conversion_copy__product__offer_message" class="form-control" value="{{ $groups['conversion_copy']['product']['offer_message'] ?? config('commerce.conversion_copy.product.offer_message') }}">
         </div>
     </div>
 @endif

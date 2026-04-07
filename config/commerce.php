@@ -102,4 +102,30 @@ return [
         'facebook_path' => 'feed/facebook.xml',
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Conversion Copy Defaults (Fallback text if admin leaves them empty)
+    |--------------------------------------------------------------------------
+    */
+    'conversion_copy' => [
+        'checkout' => [
+            'prepaid_message' => 'Safe and secure payments powered by Razorpay.',
+            'prepaid_badge' => 'Recommended',
+            'cod_message' => 'Pay when your order is delivered to you.',
+            'cod_fee_message' => '₹0 Additional Fee',
+            'delivery_eta' => 'Estimated: 2-5 Business Days',
+            'secure_message' => '100% safe & protected payments with SSL encryption',
+            'payment_error' => 'Payment failed — please try again.',
+            'place_order_cta' => 'Place Order',
+        ],
+        'product' => [
+            'urgency_message' => 'Hurry, limited stock available!',
+            'buy_now_subtext' => '',
+            'trust_badges_title' => 'Secure Checkout',
+            'trust_badges_text' => '100% safe & protected payments',
+            'delivery_promise' => 'Estimated: 2-5 Business Days',
+            'offer_message' => 'Save an extra 10% on prepaid orders',
+        ],
+    ],
+
 ];
