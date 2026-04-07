@@ -1,6 +1,6 @@
 @php
-    $copy = app(\App\Services\SettingsService::class)->get('conversion_copy.product', config('commerce.conversion_copy.product'));
-    $subtext = $product->meta['buy_now_subtext'] ?: ($copy['buy_now_subtext'] ?: '');
+    $copy = app(\App\Services\SettingsService::class)->get('conversion_copy.product', config('commerce.conversion_copy.product') ?? []);
+    $subtext = ($product->meta['buy_now_subtext'] ?? null) ?: ($copy['buy_now_subtext'] ?? '');
 @endphp
 <div class="mb-4">
     <div class="row g-2">
