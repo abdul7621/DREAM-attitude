@@ -75,7 +75,7 @@ class ShopifyImporter
                             'title'            => $v['title'],
                             'sku'              => $v['sku'] ?: null,
                             'price_retail'     => $v['price'],
-                            'price_compare_at' => $v['compare_at'] ?: null,
+                            'compare_at_price' => $v['compare_at'] ?: null,
                             'weight_grams'     => $v['grams'],
                             'stock_qty'        => max(0, (int) $v['stock']),
                             'track_inventory'  => true,

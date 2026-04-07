@@ -217,18 +217,18 @@ dataLayer.push({
         currency: '{{ config('commerce.currency', 'INR') }}',
         value: {{ json_encode($vprice) }},
         items: [{
-            item_id: {{ json_encode($v0?->sku ?: 'p'.$product->id) }},
-            item_name: {{ json_encode($product->name) }},
-            price: {{ json_encode($vprice) }},
+            item_id: {!! json_encode($v0?->sku ?: 'p'.$product->id) !!},
+            item_name: {!! json_encode($product->name) !!},
+            price: {!! json_encode($vprice) !!},
             quantity: 1
         }]
     }
 });
 @if (config('commerce.meta.pixel_id'))
 fbq('track', 'ViewContent', {
-    content_ids: [{{ json_encode($v0?->sku ?: 'p'.$product->id) }}],
+    content_ids: [{!! json_encode($v0?->sku ?: 'p'.$product->id) !!}],
     content_type: 'product',
-    value: {{ json_encode($vprice) }},
+    value: {!! json_encode($vprice) !!},
     currency: '{{ config('commerce.currency', 'INR') }}'
 });
 @endif
