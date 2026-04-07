@@ -65,7 +65,30 @@ class ProductController extends Controller
 
         $tags = array_values(array_filter(array_map('trim', explode(',', (string) ($data['tags'] ?? '')))));
 
-        DB::transaction(function () use ($request, $data, $slug, $tags): void {
+        $meta = $request->input('meta', []);
+        $layoutConfig = null;
+        if ($request->boolean('use_custom_layout')) {
+            $rawLayout = $request->input('layout_config');
+            if (empty(trim($rawLayout))) {
+                 return back()->withErrors(['layout_config' => 'Custom layout cannot be empty'])->withInput();
+            }
+            $layout = json_decode($rawLayout, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE || !is_array($layout)) {
+                return back()->withErrors(['layout_config' => 'Invalid layout JSON format'])->withInput();
+            }
+
+            $required = ['gallery', 'title_price', 'buy_buttons'];
+            $keys = collect($layout)->pluck('key');
+            foreach ($required as $req) {
+                if (! $keys->contains($req)) {
+                    return back()->withErrors(['layout_config' => "Required section missing: $req"])->withInput();
+                }
+            }
+            $layoutConfig = $layout;
+        }
+
+        DB::transaction(function () use ($request, $data, $slug, $tags, $meta, $layoutConfig): void {
             $product = Product::query()->create([
                 'category_id' => $data['category_id'] ?? null,
                 'name' => $data['name'],
@@ -78,6 +101,8 @@ class ProductController extends Controller
                 'status' => $data['status'],
                 'is_featured' => $request->boolean('is_featured'),
                 'is_bestseller' => $request->boolean('is_bestseller'),
+                'meta' => $meta,
+                'layout_config' => $layoutConfig,
             ]);
 
             $product->variants()->create([
@@ -162,7 +187,30 @@ class ProductController extends Controller
 
         $tags = array_values(array_filter(array_map('trim', explode(',', (string) ($data['tags'] ?? '')))));
 
-        DB::transaction(function () use ($request, $data, $product, $slug, $tags): void {
+        $meta = $request->input('meta', []);
+        $layoutConfig = null;
+        if ($request->boolean('use_custom_layout')) {
+            $rawLayout = $request->input('layout_config');
+            if (empty(trim($rawLayout))) {
+                 return back()->withErrors(['layout_config' => 'Custom layout cannot be empty'])->withInput();
+            }
+            $layout = json_decode($rawLayout, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE || !is_array($layout)) {
+                return back()->withErrors(['layout_config' => 'Invalid layout JSON format'])->withInput();
+            }
+
+            $required = ['gallery', 'title_price', 'buy_buttons'];
+            $keys = collect($layout)->pluck('key');
+            foreach ($required as $req) {
+                if (! $keys->contains($req)) {
+                    return back()->withErrors(['layout_config' => "Required section missing: $req"])->withInput();
+                }
+            }
+            $layoutConfig = $layout;
+        }
+
+        DB::transaction(function () use ($request, $data, $product, $slug, $tags, $meta, $layoutConfig): void {
             $product->update([
                 'category_id' => $data['category_id'] ?? null,
                 'name' => $data['name'],
@@ -175,6 +223,8 @@ class ProductController extends Controller
                 'status' => $data['status'],
                 'is_featured' => $request->boolean('is_featured'),
                 'is_bestseller' => $request->boolean('is_bestseller'),
+                'meta' => $meta,
+                'layout_config' => $layoutConfig,
             ]);
 
             $existingVariantIds = [];

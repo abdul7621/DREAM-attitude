@@ -68,6 +68,45 @@
         </div>
 
         <hr class="my-4">
+        <h2 class="h6">Product Meta Data</h2>
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label">Ingredients</label>
+                <textarea name="meta[ingredients]" rows="2" class="form-control">{{ old('meta.ingredients', $product->meta['ingredients'] ?? '') }}</textarea>
+            </div>
+            <div class="col-12">
+                <label class="form-label">How to Use</label>
+                <textarea name="meta[how_to_use]" rows="2" class="form-control">{{ old('meta.how_to_use', $product->meta['how_to_use'] ?? '') }}</textarea>
+            </div>
+            <div class="col-12">
+                <label class="form-label">FAQ</label>
+                <textarea name="meta[faq]" rows="3" class="form-control">{{ old('meta.faq', $product->meta['faq'] ?? '') }}</textarea>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Offer Message</label>
+                <input type="text" name="meta[offer_message]" class="form-control" value="{{ old('meta.offer_message', $product->meta['offer_message'] ?? '') }}" placeholder="e.g. Extra 10% OFF via UPI">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Urgency Message</label>
+                <input type="text" name="meta[urgency_message]" class="form-control" value="{{ old('meta.urgency_message', $product->meta['urgency_message'] ?? '') }}" placeholder="e.g. Only {stock} left in stock!">
+            </div>
+        </div>
+
+        <hr class="my-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h6 mb-0">Custom Layout Engine</h2>
+            <div class="form-check form-switch shadow-sm px-4 py-2 border rounded bg-white">
+                <input class="form-check-input ms-0 me-2" type="checkbox" name="use_custom_layout" value="1" id="useCustomLayoutBtn" style="cursor:pointer; width: 2.5em;" @checked(old('use_custom_layout', !empty($product->layout_config)))>
+                <label class="form-check-label fw-bold" for="useCustomLayoutBtn" style="cursor:pointer; padding-top:2px;">Override Theme Layout</label>
+            </div>
+        </div>
+        <div class="border rounded p-3 bg-light {{ old('use_custom_layout', !empty($product->layout_config)) ? '' : 'd-none' }}" id="layoutConfigWrapper">
+            <label class="form-label fw-bold text-dark">Layout Configuration (JSON Array) *</label>
+            <textarea name="layout_config" rows="6" class="form-control font-monospace" style="font-size: 0.85rem;" placeholder='[{"key":"gallery","enabled":true},{"key":"title_price","enabled":true},{"key":"buy_buttons","enabled":true}]'>{{ old('layout_config', !empty($product->layout_config) ? (is_array($product->layout_config) ? json_encode($product->layout_config, JSON_PRETTY_PRINT) : $product->layout_config) : '') }}</textarea>
+            <small class="text-secondary mt-2 d-block"><i class="bi bi-info-circle me-1"></i> Requires: <code>gallery</code>, <code>title_price</code>, <code>buy_buttons</code></small>
+        </div>
+
+        <hr class="my-4">
         <div class="d-flex justify-content-between align-items-center mb-2">
             <h2 class="h6 mb-0">Variants</h2>
             <button type="button" class="btn btn-sm btn-outline-primary" id="addVariant">Add variant</button>
@@ -149,6 +188,15 @@
         const html = tpl.replace(/__I__/g, idx++);
         tbody.insertAdjacentHTML('beforeend', html);
     });
+
+    const toggleBtn = document.getElementById('useCustomLayoutBtn');
+    const wrap = document.getElementById('layoutConfigWrapper');
+    if (toggleBtn && wrap) {
+        toggleBtn.addEventListener('change', function() {
+            if (this.checked) wrap.classList.remove('d-none');
+            else wrap.classList.add('d-none');
+        });
+    }
 })();
 </script>
 @endpush
