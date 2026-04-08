@@ -40,7 +40,7 @@ class OrderController extends Controller
 
     public function show(Order $order): View
     {
-        $order->load(['orderItems', 'shipments', 'coupon', 'user', 'returnRequests']);
+        $order->load(['orderItems', 'shipments', 'coupon', 'user', 'returnRequests', 'statusLogs']);
 
         return view('admin.orders.show', compact('order'));
     }
@@ -59,6 +59,7 @@ class OrderController extends Controller
         ]);
 
         $newStatus = $data['order_status'];
+        $oldStatus = $order->order_status;
 
         // Validate the requested transition
         if (! $order->canTransitionTo($newStatus)) {
@@ -86,7 +87,7 @@ class OrderController extends Controller
             $order->update(['payment_status' => Order::PAYMENT_STATUS_REFUNDED]);
         }
 
-        event(new \App\Events\OrderStatusChanged($order, $newStatus, $data['admin_notes'] ?? null));
+        event(new \App\Events\OrderStatusChanged($order, $oldStatus, $newStatus, $data['admin_notes'] ?? null));
 
         return redirect()->route('admin.orders.show', $order)->with('success', "Order status updated to \"{$newStatus}\".");
     }
@@ -119,8 +120,9 @@ class OrderController extends Controller
         $count = 0;
         foreach ($orders as $order) {
             if ($order->canTransitionTo($data['action'])) {
+                $oldStatus = $order->order_status;
                 $order->update(['order_status' => $data['action']]);
-                event(new \App\Events\OrderStatusChanged($order, $data['action'], 'Bulk action'));
+                event(new \App\Events\OrderStatusChanged($order, $oldStatus, $data['action'], 'Bulk action'));
                 $count++;
             }
         }
@@ -167,7 +169,7 @@ class OrderController extends Controller
 
     public function resendNotification(Order $order): RedirectResponse
     {
-        event(new \App\Events\OrderStatusChanged($order, $order->order_status, 'Notification resent by admin'));
+        event(new \App\Events\OrderStatusChanged($order, $order->order_status, $order->order_status, 'Notification resent by admin'));
         return back()->with('success', 'Notification resent.');
     }
 }
