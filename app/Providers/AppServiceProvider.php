@@ -114,6 +114,9 @@ class AppServiceProvider extends ServiceProvider
                 'store_name' => $settingsService->get('store.name', config('app.name')),
                 'meta_description' => $settingsService->get('store.meta_description', ''),
             ]);
+
+            // Pass SettingsService to layout for announcement bar, etc.
+            $view->with('ss', $settingsService);
         });
         
         View::composer('layouts.admin', function ($view): void {

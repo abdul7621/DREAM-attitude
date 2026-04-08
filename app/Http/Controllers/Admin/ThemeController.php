@@ -142,7 +142,7 @@ class ThemeController extends Controller
                 }
                 Setting::updateOrCreate(['key' => 'theme.announcement_active'], ['value' => $request->boolean('theme_announcement_active') ? '1' : '0']);
 
-                Cache::forget('settings.all');
+                Cache::forget('commerce.settings.array');
                 return redirect()->route('admin.theme.index', ['tab' => 'homepage'])->with('success', 'Homepage configured successfully.');
 
             } catch (\Throwable $e) {
@@ -190,7 +190,7 @@ class ThemeController extends Controller
             }
         }
 
-        Cache::forget('settings.all');
+        Cache::forget('commerce.settings.array');
 
         return redirect()->route('admin.theme.index')->with('success', 'Theme settings updated securely.');
     }
