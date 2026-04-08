@@ -130,7 +130,9 @@ class ThemeController extends Controller
                 $keys = ['theme_hero_title', 'theme_hero_subtitle', 'theme_hero_cta_text', 'theme_hero_cta_link', 'theme_trust_text', 'theme_announcement_text', 'theme_offers_banner_text', 'theme_offers_banner_link'];
                 foreach ($keys as $key) {
                     if (array_key_exists($key, $data)) {
-                        Setting::updateOrCreate(['key' => str_replace('_', '.', $key)], ['value' => $data[$key]]);
+                        $val = $data[$key];
+                        $val = ($val === null) ? '' : (string) $val;
+                        Setting::updateOrCreate(['key' => str_replace('_', '.', $key)], ['value' => $val]);
                     }
                 }
                 Setting::updateOrCreate(['key' => 'theme.announcement_active'], ['value' => $request->boolean('theme_announcement_active') ? '1' : '0']);
@@ -175,9 +177,11 @@ class ThemeController extends Controller
         ];
 
         foreach ($keys as $key) {
-            if (isset($data[$key])) {
+            if (array_key_exists($key, $data)) {
+                $val = $data[$key];
+                $val = ($val === null) ? '' : (string) $val;
                 $dbKey = str_replace('_', '.', $key);
-                Setting::updateOrCreate(['key' => $dbKey], ['value' => $data[$key]]);
+                Setting::updateOrCreate(['key' => $dbKey], ['value' => $val]);
             }
         }
 
