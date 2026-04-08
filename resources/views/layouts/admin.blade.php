@@ -166,10 +166,16 @@
         <a href="{{ route('admin.orders.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
             <i class="bi bi-receipt"></i> Orders
+            @if(isset($badgeCountPendingOrders) && $badgeCountPendingOrders > 0)
+                <span class="badge bg-danger rounded-pill">{{ $badgeCountPendingOrders }}</span>
+            @endif
         </a>
         <a href="{{ route('admin.products.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
             <i class="bi bi-box-seam"></i> Products
+            @if(isset($badgeCountLowStock) && $badgeCountLowStock > 0)
+                <span class="badge bg-warning text-dark rounded-pill">{{ $badgeCountLowStock }}</span>
+            @endif
         </a>
         <a href="{{ route('admin.categories.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
@@ -189,6 +195,10 @@
         <a href="{{ route('admin.reviews.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.reviews.*') ? 'active' : '' }}">
             <i class="bi bi-star-half"></i> Reviews
+            @php $badgeCountPendingReviews = \App\Models\Review::where('is_approved', false)->count(); @endphp
+            @if(isset($badgeCountPendingReviews) && $badgeCountPendingReviews > 0)
+                <span class="badge bg-primary rounded-pill">{{ $badgeCountPendingReviews }}</span>
+            @endif
         </a>
 
         {{-- ─── REPORTS ───────────────────────────────────── --}}
@@ -242,6 +252,9 @@
         <a href="{{ route('admin.returns.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.returns.*') ? 'active' : '' }}">
             <i class="bi bi-arrow-return-left"></i> Returns
+            @if(isset($badgeCountPendingReturns) && $badgeCountPendingReturns > 0)
+                <span class="badge bg-danger rounded-pill">{{ $badgeCountPendingReturns }}</span>
+            @endif
         </a>
         <a href="{{ route('admin.audit-logs.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.audit-logs.*') ? 'active' : '' }}">

@@ -8,7 +8,7 @@
 
 {{-- ── KPI Cards ──────────────────────────────────────────── --}}
 <div class="row g-3 mb-4">
-    <div class="col-6 col-xl-2">
+    <div class="col-6 col-xl-3">
         <div class="card h-100">
             <div class="card-body">
                 <div class="text-muted small">Today's Orders</div>
@@ -16,7 +16,7 @@
             </div>
         </div>
     </div>
-    <div class="col-6 col-xl-2">
+    <div class="col-6 col-xl-3">
         <div class="card h-100">
             <div class="card-body">
                 <div class="text-muted small">Today's Revenue</div>
@@ -24,7 +24,7 @@
             </div>
         </div>
     </div>
-    <div class="col-6 col-xl-2">
+    <div class="col-6 col-xl-3">
         <div class="card h-100">
             <div class="card-body">
                 <div class="text-muted small">Total Revenue</div>
@@ -32,7 +32,7 @@
             </div>
         </div>
     </div>
-    <div class="col-6 col-xl-2">
+    <div class="col-6 col-xl-3">
         <div class="card h-100">
             <div class="card-body">
                 <div class="text-muted small">Avg Order Value</div>
@@ -40,21 +40,58 @@
             </div>
         </div>
     </div>
+</div>
+
+{{-- ── Actionable Insights (Decision Cards) ─────────────────── --}}
+<h5 class="mb-3">Actionable Insights</h5>
+<div class="row g-3 mb-4">
     <div class="col-6 col-xl-2">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="text-muted small">Pending Orders</div>
-                <div class="h3 fw-bold text-warning mb-0">{{ $pendingOrders }}</div>
+        <a href="{{ route('admin.orders.index', ['status' => 'placed']) }}" class="text-decoration-none">
+            <div class="card h-100 border-primary bg-primary bg-opacity-10">
+                <div class="card-body text-center">
+                    <div class="h3 fw-bold text-primary mb-1">{{ $pendingOrders }}</div>
+                    <div class="text-primary small fw-semibold">Pending Orders</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-xl-2">
+        <div class="card h-100 {{ count($lowStockVariants) > 0 ? 'border-warning bg-warning bg-opacity-10' : '' }}">
+            <div class="card-body text-center">
+                <div class="h3 fw-bold {{ count($lowStockVariants) > 0 ? 'text-warning text-dark' : 'text-muted' }} mb-1">{{ count($lowStockVariants) }}</div>
+                <div class="{{ count($lowStockVariants) > 0 ? 'text-warning text-dark' : 'text-muted' }} small fw-semibold">Low Stock Items</div>
             </div>
         </div>
     </div>
-    <div class="col-6 col-xl-2">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="text-muted small">Pending Returns</div>
-                <div class="h3 fw-bold text-danger mb-0">{{ $pendingReturns }}</div>
+    <div class="col-6 col-xl-3">
+        <a href="{{ route('admin.orders.index', ['payment' => 'cod']) }}" class="text-decoration-none">
+            <div class="card h-100 {{ $highRiskCod > 0 ? 'border-danger bg-danger bg-opacity-10' : '' }}">
+                <div class="card-body text-center">
+                    <div class="h3 fw-bold {{ $highRiskCod > 0 ? 'text-danger' : 'text-muted' }} mb-1">{{ $highRiskCod }}</div>
+                    <div class="{{ $highRiskCod > 0 ? 'text-danger' : 'text-muted' }} small fw-semibold">High Risk COD (>₹5k)</div>
+                </div>
             </div>
-        </div>
+        </a>
+    </div>
+    <div class="col-6 col-xl-2">
+        <a href="{{ route('admin.reviews.index') }}" class="text-decoration-none">
+            <div class="card h-100 {{ $pendingReviewsCount > 0 ? 'border-info bg-info bg-opacity-10' : '' }}">
+                <div class="card-body text-center">
+                    <div class="h3 fw-bold {{ $pendingReviewsCount > 0 ? 'text-info text-dark' : 'text-muted' }} mb-1">{{ $pendingReviewsCount }}</div>
+                    <div class="{{ $pendingReviewsCount > 0 ? 'text-info text-dark' : 'text-muted' }} small fw-semibold">Pending Reviews</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-xl-3">
+        <a href="{{ route('admin.returns.index') }}" class="text-decoration-none">
+            <div class="card h-100 {{ $pendingReturns > 0 ? 'border-danger bg-danger bg-opacity-10' : '' }}">
+                <div class="card-body text-center">
+                    <div class="h3 fw-bold {{ $pendingReturns > 0 ? 'text-danger' : 'text-muted' }} mb-1">{{ $pendingReturns }}</div>
+                    <div class="{{ $pendingReturns > 0 ? 'text-danger' : 'text-muted' }} small fw-semibold">Pending Returns</div>
+                </div>
+            </div>
+        </a>
     </div>
 </div>
 

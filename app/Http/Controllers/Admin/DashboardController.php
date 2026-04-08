@@ -92,11 +92,21 @@ class DashboardController extends Controller
         // ── Pending Returns ──────────────────────────────────
         $pendingReturns = ReturnRequest::where('status', 'requested')->count();
 
+        // ── Actionable Tasks ─────────────────────────────────
+        $highRiskCod = Order::query()
+            ->where('payment_method', Order::PAYMENT_COD)
+            ->where('order_status', Order::ORDER_STATUS_PLACED)
+            ->where('grand_total', '>=', 5000)
+            ->count();
+
+        $pendingReviewsCount = Review::where('is_approved', false)->count();
+
         return view('admin.dashboard', compact(
             'todayOrders', 'todayRevenue', 'totalRevenue', 'pendingOrders',
             'aov', 'codOrders', 'prepaidOrders',
             'revenueChart', 'topProducts',
-            'lowStockVariants', 'recentOrders', 'recentReviews', 'pendingReturns'
+            'lowStockVariants', 'recentOrders', 'recentReviews', 'pendingReturns',
+            'highRiskCod', 'pendingReviewsCount'
         ));
     }
 }
