@@ -7,6 +7,7 @@ use App\Models\Setting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class ThemeController extends Controller
@@ -36,7 +37,18 @@ class ThemeController extends Controller
         ];
 
         $theme = array_merge($defaults, $settings);
-        $theme['theme.home_sections'] = json_decode($theme['theme.home_sections'], true) ?? [];
+        
+        // Extract only the string keys for the view so isset($available[$key]) doesn't crash.
+        $sections = json_decode($theme['theme.home_sections'], true) ?? [];
+        $activeKeys = [];
+        foreach ($sections as $sec) {
+            if (is_string($sec)) {
+                $activeKeys[] = $sec;
+            } elseif (is_array($sec) && isset($sec['key'])) {
+                $activeKeys[] = $sec['key'];
+            }
+        }
+        $theme['theme.home_sections'] = $activeKeys;
 
         return view('admin.theme.index', compact('theme', 'tab'));
     }
@@ -46,45 +58,90 @@ class ThemeController extends Controller
         $tab = $request->input('_tab', 'theme');
 
         if ($tab === 'homepage') {
-            $data = $request->validate([
-                'home_sections' => ['nullable', 'array'],
-                'theme_hero_title' => ['nullable', 'string', 'max:255'],
-                'theme_hero_subtitle' => ['nullable', 'string', 'max:255'],
-                'theme_hero_cta_text' => ['nullable', 'string', 'max:100'],
-                'theme_hero_cta_link' => ['nullable', 'string', 'max:255'],
-                'theme_hero_image' => ['nullable', 'image', 'max:4096'],
-                'theme_trust_text' => ['nullable', 'string', 'max:255'],
-                'theme_announcement_active' => ['nullable', 'boolean'],
-                'theme_announcement_text' => ['nullable', 'string', 'max:255'],
-                'theme_offers_banner_text' => ['nullable', 'string', 'max:255'],
-                'theme_offers_banner_link' => ['nullable', 'string', 'max:255'],
-                'theme_offers_banner_image' => ['nullable', 'image', 'max:4096'],
-            ]);
+            try {
+                \Illuminate\Support\Facades\Log::info('Theme Save Request Data', $request->all());
 
-            // Save ordered sections
-            $sections = $data['home_sections'] ?? [];
-            // Remove duplicates and maintain order (user submitted the array in order using basic array logic from blade if possible, or hidden fields. Wait, basic list ordering can be handled by just submitting the array of enabled section keys).
-            Setting::updateOrCreate(['key' => 'theme.home_sections'], ['value' => json_encode(array_values($sections))]);
+                $data = $request->validate([
+                    'home_sections' => ['nullable', 'array'],
+                    'theme_hero_title' => ['nullable', 'string', 'max:255'],
+                    'theme_hero_subtitle' => ['nullable', 'string', 'max:255'],
+                    'theme_hero_cta_text' => ['nullable', 'string', 'max:100'],
+                    'theme_hero_cta_link' => ['nullable', 'string', 'max:255'],
+                    'theme_hero_image' => ['nullable', 'image', 'max:4096'],
+                    'theme_trust_text' => ['nullable', 'string', 'max:255'],
+                    'theme_announcement_active' => ['nullable', 'boolean'],
+                    'theme_announcement_text' => ['nullable', 'string', 'max:255'],
+                    'theme_offers_banner_text' => ['nullable', 'string', 'max:255'],
+                    'theme_offers_banner_link' => ['nullable', 'string', 'max:255'],
+                    'theme_offers_banner_image' => ['nullable', 'image', 'max:4096'],
+                ]);
 
-            if ($request->hasFile('theme_hero_image')) {
-                $path = $request->file('theme_hero_image')->store('theme', 'public');
-                Setting::updateOrCreate(['key' => 'theme.hero_image'], ['value' => $path]);
-            }
-            if ($request->hasFile('theme_offers_banner_image')) {
-                $path = $request->file('theme_offers_banner_image')->store('theme', 'public');
-                Setting::updateOrCreate(['key' => 'theme.offers_banner_image'], ['value' => $path]);
-            }
-
-            $keys = ['theme_hero_title', 'theme_hero_subtitle', 'theme_hero_cta_text', 'theme_hero_cta_link', 'theme_trust_text', 'theme_announcement_text', 'theme_offers_banner_text', 'theme_offers_banner_link'];
-            foreach ($keys as $key) {
-                if (array_key_exists($key, $data)) {
-                    Setting::updateOrCreate(['key' => str_replace('_', '.', $key)], ['value' => $data[$key]]);
+                // Normalize sections
+                $sections = $request->input('home_sections');
+                
+                if (is_string($sections)) {
+                    $sections = json_decode($sections, true);
                 }
-            }
-            Setting::updateOrCreate(['key' => 'theme.announcement_active'], ['value' => $request->boolean('theme_announcement_active') ? '1' : '0']);
 
-            Cache::forget('settings.all');
-            return redirect()->route('admin.theme.index', ['tab' => 'homepage'])->with('success', 'Homepage configured successfully.');
+                if (!is_array($sections)) {
+                    $sections = [];
+                }
+
+                $normalized = [];
+                foreach ($sections as $section) {
+                    // OLD FORMAT (Or form checkbox slice)
+                    if (is_string($section)) {
+                        $normalized[] = [
+                            'key' => $section,
+                            'enabled' => true
+                        ];
+                    }
+                    // NEW FORMAT
+                    elseif (is_array($section) && isset($section['key'])) {
+                        $normalized[] = [
+                            'key' => $section['key'],
+                            'enabled' => $section['enabled'] ?? true
+                        ];
+                    }
+                }
+
+                // FINAL SAFETY
+                if (empty($normalized)) {
+                    $normalized = [
+                        ['key' => 'hero', 'enabled' => true],
+                        ['key' => 'categories', 'enabled' => true],
+                    ];
+                }
+
+                Setting::updateOrCreate(
+                    ['key' => 'theme.home_sections'], 
+                    ['value' => json_encode($normalized)]
+                );
+
+                if ($request->hasFile('theme_hero_image')) {
+                    $path = $request->file('theme_hero_image')->store('theme', 'public');
+                    Setting::updateOrCreate(['key' => 'theme.hero_image'], ['value' => $path]);
+                }
+                if ($request->hasFile('theme_offers_banner_image')) {
+                    $path = $request->file('theme_offers_banner_image')->store('theme', 'public');
+                    Setting::updateOrCreate(['key' => 'theme.offers_banner_image'], ['value' => $path]);
+                }
+
+                $keys = ['theme_hero_title', 'theme_hero_subtitle', 'theme_hero_cta_text', 'theme_hero_cta_link', 'theme_trust_text', 'theme_announcement_text', 'theme_offers_banner_text', 'theme_offers_banner_link'];
+                foreach ($keys as $key) {
+                    if (array_key_exists($key, $data)) {
+                        Setting::updateOrCreate(['key' => str_replace('_', '.', $key)], ['value' => $data[$key]]);
+                    }
+                }
+                Setting::updateOrCreate(['key' => 'theme.announcement_active'], ['value' => $request->boolean('theme_announcement_active') ? '1' : '0']);
+
+                Cache::forget('settings.all');
+                return redirect()->route('admin.theme.index', ['tab' => 'homepage'])->with('success', 'Homepage configured successfully.');
+
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Theme save error: ' . $e->getMessage());
+                return back()->with('error', 'Save failed: ' . $e->getMessage());
+            }
         }
 
         // Theme Tab validation
