@@ -180,7 +180,7 @@ class ThemeController extends Controller
             if (array_key_exists($key, $data)) {
                 $val = $data[$key];
                 $val = ($val === null) ? '' : (string) $val;
-                $dbKey = str_replace('_', '.', $key);
+                $dbKey = str_replace('theme_', 'theme.', $key);
                 Setting::updateOrCreate(['key' => $dbKey], ['value' => $val]);
             }
         }
