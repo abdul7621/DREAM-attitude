@@ -13,6 +13,7 @@ class AccountController extends Controller
     {
         $orders = Order::query()
             ->where('user_id', Auth::id())
+            ->withCount('orderItems')
             ->orderByDesc('id')
             ->paginate(15);
 

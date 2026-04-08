@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Review;
 use App\Models\ReturnRequest;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
@@ -16,37 +17,38 @@ class DashboardController extends Controller
 {
     public function index(): View
     {
-        // ── Core KPIs ────────────────────────────────────────
-        $todayOrders = Order::query()
-            ->whereDate('placed_at', today())
-            ->count();
+        // ── Cached KPIs (5 min TTL) ─────────────────────────────
+        $kpi = Cache::remember('dashboard_kpi', 300, function () {
+            $totalRevenue = (float) Order::query()
+                ->where('payment_status', Order::PAYMENT_STATUS_PAID)
+                ->sum('grand_total');
 
-        $todayRevenue = (float) Order::query()
-            ->whereDate('placed_at', today())
-            ->where('payment_status', Order::PAYMENT_STATUS_PAID)
-            ->sum('grand_total');
+            $totalPaidOrders = Order::where('payment_status', Order::PAYMENT_STATUS_PAID)->count();
 
-        $totalRevenue = (float) Order::query()
-            ->where('payment_status', Order::PAYMENT_STATUS_PAID)
-            ->sum('grand_total');
+            return [
+                'todayOrders' => Order::query()->whereDate('placed_at', today())->count(),
+                'todayRevenue' => (float) Order::query()
+                    ->whereDate('placed_at', today())
+                    ->where('payment_status', Order::PAYMENT_STATUS_PAID)
+                    ->sum('grand_total'),
+                'totalRevenue' => $totalRevenue,
+                'pendingOrders' => Order::query()->where('order_status', Order::ORDER_STATUS_PLACED)->count(),
+                'aov' => $totalPaidOrders > 0 ? round($totalRevenue / $totalPaidOrders, 2) : 0,
+                'codOrders' => Order::where('payment_method', Order::PAYMENT_COD)
+                    ->whereNotIn('order_status', ['cancelled', 'refunded'])->count(),
+                'prepaidOrders' => Order::where('payment_method', '!=', Order::PAYMENT_COD)
+                    ->whereNotIn('order_status', ['cancelled', 'refunded'])->count(),
+                'highRiskCod' => Order::query()
+                    ->where('payment_method', Order::PAYMENT_COD)
+                    ->where('order_status', Order::ORDER_STATUS_PLACED)
+                    ->where('grand_total', '>=', 5000)->count(),
+                'pendingReviewsCount' => Review::where('is_approved', false)->count(),
+            ];
+        });
 
-        $pendingOrders = Order::query()
-            ->where('order_status', Order::ORDER_STATUS_PLACED)
-            ->count();
+        extract($kpi);
 
-        // ── AOV (Average Order Value) ────────────────────────
-        $totalPaidOrders = Order::where('payment_status', Order::PAYMENT_STATUS_PAID)->count();
-        $aov = $totalPaidOrders > 0 ? round($totalRevenue / $totalPaidOrders, 2) : 0;
-
-        // ── COD vs Prepaid ───────────────────────────────────
-        $codOrders = Order::where('payment_method', Order::PAYMENT_COD)
-            ->whereNotIn('order_status', ['cancelled', 'refunded'])
-            ->count();
-        $prepaidOrders = Order::where('payment_method', '!=', Order::PAYMENT_COD)
-            ->whereNotIn('order_status', ['cancelled', 'refunded'])
-            ->count();
-
-        // ── Revenue last 7 days (for chart) ──────────────────
+        // ── Revenue last 7 days (always real-time for chart) ─────
         $revenueChart = [];
         for ($i = 6; $i >= 0; $i--) {
             $date = now()->subDays($i);
@@ -68,7 +70,7 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        // ── Low Stock ────────────────────────────────────────
+        // ── Low Stock (real-time) ────────────────────────────
         $lowStockVariants = ProductVariant::query()
             ->where('track_inventory', true)
             ->where('stock_qty', '<=', 5)
@@ -76,30 +78,21 @@ class DashboardController extends Controller
             ->with('product')
             ->get();
 
-        // ── Recent Orders ────────────────────────────────────
+        // ── Recent Orders (real-time) ────────────────────────
         $recentOrders = Order::query()
             ->orderByDesc('id')
             ->limit(10)
             ->get();
 
-        // ── Recent Reviews ───────────────────────────────────
+        // ── Recent Reviews (real-time) ───────────────────────
         $recentReviews = Review::query()
             ->with('product')
             ->latest()
             ->limit(5)
             ->get();
 
-        // ── Pending Returns ──────────────────────────────────
+        // ── Pending Returns (real-time) ──────────────────────
         $pendingReturns = ReturnRequest::where('status', 'requested')->count();
-
-        // ── Actionable Tasks ─────────────────────────────────
-        $highRiskCod = Order::query()
-            ->where('payment_method', Order::PAYMENT_COD)
-            ->where('order_status', Order::ORDER_STATUS_PLACED)
-            ->where('grand_total', '>=', 5000)
-            ->count();
-
-        $pendingReviewsCount = Review::where('is_approved', false)->count();
 
         return view('admin.dashboard', compact(
             'todayOrders', 'todayRevenue', 'totalRevenue', 'pendingOrders',
@@ -110,3 +103,4 @@ class DashboardController extends Controller
         ));
     }
 }
+

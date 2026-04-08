@@ -4,6 +4,7 @@ namespace App\Listeners;
 
 use App\Events\OrderPlaced;
 use App\Services\NotificationService;
+use Illuminate\Support\Facades\Cache;
 
 class SendOrderPlacedNotification
 {
@@ -20,5 +21,10 @@ class SendOrderPlacedNotification
             'phone'         => $order->phone,
             'email'         => $order->email,
         ]);
+
+        // Invalidate dashboard + homepage cache on new order
+        Cache::forget('dashboard_kpi');
+        Cache::forget('home_bestsellers');
     }
 }
+

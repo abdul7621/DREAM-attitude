@@ -7,6 +7,7 @@ use App\Models\Review;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class ReviewController extends Controller
@@ -29,12 +30,16 @@ class ReviewController extends Controller
 
         $review->update(['is_approved' => $data['is_approved']]);
 
+        Cache::forget('dashboard_kpi');
+
         return redirect()->route('admin.reviews.index')->with('success', 'Review updated.');
     }
 
     public function destroy(Review $review): RedirectResponse
     {
         $review->delete();
+
+        Cache::forget('dashboard_kpi');
 
         return redirect()->route('admin.reviews.index')->with('success', 'Review deleted.');
     }

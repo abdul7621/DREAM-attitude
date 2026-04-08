@@ -4,8 +4,7 @@ namespace App\Listeners;
 
 use App\Events\OrderStatusChanged;
 use App\Models\AuditLog;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Cache;
 
 class LogOrderAudit
 {
@@ -21,5 +20,9 @@ class LogOrderAudit
                 'notes' => $event->notes
             ]
         );
+
+        // Invalidate dashboard cache on any status change
+        Cache::forget('dashboard_kpi');
     }
 }
+

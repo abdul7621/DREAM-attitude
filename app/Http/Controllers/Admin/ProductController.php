@@ -10,6 +10,7 @@ use App\Models\ProductVariant;
 use App\Services\SlugService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -131,6 +132,11 @@ class ProductController extends Controller
                 ]);
             }
         });
+
+        Cache::forget('home_featured');
+        Cache::forget('home_bestsellers');
+        Cache::forget('home_latest');
+        Cache::forget('dashboard_kpi');
 
         return redirect()->route('admin.products.index')->with('status', __('Product created.'));
     }
@@ -286,6 +292,11 @@ class ProductController extends Controller
             }
         });
 
+        Cache::forget('home_featured');
+        Cache::forget('home_bestsellers');
+        Cache::forget('home_latest');
+        Cache::forget('dashboard_kpi');
+
         return redirect()->route('admin.products.index')->with('status', __('Product updated.'));
     }
 
@@ -298,6 +309,11 @@ class ProductController extends Controller
             }
             $product->delete();
         });
+
+        Cache::forget('home_featured');
+        Cache::forget('home_bestsellers');
+        Cache::forget('home_latest');
+        Cache::forget('dashboard_kpi');
 
         return redirect()->route('admin.products.index')->with('status', __('Product deleted.'));
     }

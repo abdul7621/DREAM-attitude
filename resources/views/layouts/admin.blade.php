@@ -195,7 +195,6 @@
         <a href="{{ route('admin.reviews.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.reviews.*') ? 'active' : '' }}">
             <i class="bi bi-star-half"></i> Reviews
-            @php $badgeCountPendingReviews = \App\Models\Review::where('is_approved', false)->count(); @endphp
             @if(isset($badgeCountPendingReviews) && $badgeCountPendingReviews > 0)
                 <span class="badge bg-primary rounded-pill">{{ $badgeCountPendingReviews }}</span>
             @endif

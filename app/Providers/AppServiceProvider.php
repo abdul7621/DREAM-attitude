@@ -123,6 +123,7 @@ class AppServiceProvider extends ServiceProvider
             $view->with('badgeCountPendingOrders', \App\Models\Order::where('order_status', \App\Models\Order::ORDER_STATUS_PLACED)->count());
             $view->with('badgeCountLowStock', \App\Models\ProductVariant::where('track_inventory', true)->where('stock_qty', '<=', 5)->where('is_active', true)->count());
             $view->with('badgeCountPendingReturns', \App\Models\ReturnRequest::where('status', 'requested')->count());
+            $view->with('badgeCountPendingReviews', \App\Models\Review::where('is_approved', false)->count());
         });
     }
 }
