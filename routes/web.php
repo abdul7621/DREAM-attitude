@@ -91,9 +91,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
 
     // Orders
+    Route::post('orders/bulk', [AdminOrderController::class, 'bulkUpdate'])->name('orders.bulk');
+    Route::post('orders/export-csv', [AdminOrderController::class, 'exportCsv'])->name('orders.export-csv');
     Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
     Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
     Route::patch('orders/{order}', [AdminOrderController::class, 'update'])->name('orders.update');
+    Route::post('orders/{order}/resend', [AdminOrderController::class, 'resendNotification'])->name('orders.resend');
     Route::get('orders/{order}/invoice', [AdminOrderController::class, 'invoicePdf'])->name('orders.invoice');
     Route::get('orders/{order}/packing', [AdminOrderController::class, 'packingPdf'])->name('orders.packing');
 

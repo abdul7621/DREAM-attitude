@@ -86,6 +86,8 @@ class OrderController extends Controller
             $order->update(['payment_status' => Order::PAYMENT_STATUS_REFUNDED]);
         }
 
+        event(new \App\Events\OrderStatusChanged($order, $newStatus, $data['admin_notes'] ?? null));
+
         return redirect()->route('admin.orders.show', $order)->with('success', "Order status updated to \"{$newStatus}\".");
     }
 
@@ -103,5 +105,69 @@ class OrderController extends Controller
 
         return Pdf::loadView('pdf.packing-slip', ['order' => $order])
             ->download('packing-'.$order->order_number.'.pdf');
+    }
+
+    public function bulkUpdate(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'order_ids' => 'required|array',
+            'order_ids.*' => 'exists:orders,id',
+            'action' => 'required|in:confirmed,packed',
+        ]);
+        
+        $orders = Order::whereIn('id', $data['order_ids'])->get();
+        $count = 0;
+        foreach ($orders as $order) {
+            if ($order->canTransitionTo($data['action'])) {
+                $order->update(['order_status' => $data['action']]);
+                event(new \App\Events\OrderStatusChanged($order, $data['action'], 'Bulk action'));
+                $count++;
+            }
+        }
+        return back()->with('success', "{$count} orders updated.");
+    }
+
+    public function exportCsv(Request $request): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $orders = Order::query()->orderByDesc('id')->get();
+
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=orders-" . date('Y-m-d') . ".csv",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $columns = ['Order Number', 'Date', 'Customer Name', 'Email', 'Phone', 'Status', 'Payment Method', 'Payment Status', 'Total'];
+
+        $callback = function() use($orders, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            foreach ($orders as $order) {
+                $row['Order Number']  = $order->order_number;
+                $row['Date']          = $order->placed_at ? $order->placed_at->format('Y-m-d H:i') : '';
+                $row['Customer Name'] = $order->customer_name;
+                $row['Email']         = $order->email;
+                $row['Phone']         = $order->phone;
+                $row['Status']        = $order->order_status;
+                $row['Payment Method']= $order->payment_method;
+                $row['Payment Status']= $order->payment_status;
+                $row['Total']         = $order->grand_total;
+
+                fputcsv($file, array($row['Order Number'], $row['Date'], $row['Customer Name'], $row['Email'], $row['Phone'], $row['Status'], $row['Payment Method'], $row['Payment Status'], $row['Total']));
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function resendNotification(Order $order): RedirectResponse
+    {
+        event(new \App\Events\OrderStatusChanged($order, $order->order_status, 'Notification resent by admin'));
+        return back()->with('success', 'Notification resent.');
     }
 }

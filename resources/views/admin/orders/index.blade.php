@@ -4,6 +4,12 @@
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="h4 mb-0">Orders</h1>
+        <div>
+            <form action="{{ route('admin.orders.export-csv') }}" method="POST" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-outline-secondary btn-sm"><i class="bi bi-file-earmark-spreadsheet text-success"></i> Export CSV</button>
+            </form>
+        </div>
     </div>
 
     {{-- ── Filters ──────────────────────────────────────────── --}}
@@ -37,11 +43,23 @@
     </div>
 
     {{-- ── Table ─────────────────────────────────────────────── --}}
+    <form action="{{ route('admin.orders.bulk') }}" method="POST">
+    @csrf
+    <div class="d-flex mb-3 align-items-center gap-2 bg-light p-2 rounded border">
+        <select name="action" class="form-select form-select-sm w-auto" required>
+            <option value="">-- Apply Bulk Action --</option>
+            <option value="confirmed">Mark as Confirmed</option>
+            <option value="packed">Mark as Packed</option>
+        </select>
+        <button type="submit" class="btn btn-sm btn-secondary" onclick="return confirm('Are you sure you want to apply this bulk action?')">Apply</button>
+    </div>
+
     <div class="card">
         <div class="table-responsive">
             <table class="table table-sm table-hover mb-0 align-middle">
                 <thead class="table-light">
                     <tr>
+                        <th style="width: 40px;"><input class="form-check-input" type="checkbox" id="selectAll"></th>
                         <th>Order</th>
                         <th>Customer</th>
                         <th class="text-end">Total</th>
@@ -54,6 +72,7 @@
                 <tbody>
                     @forelse ($orders as $o)
                         <tr>
+                            <td><input class="form-check-input order-checkbox" type="checkbox" name="order_ids[]" value="{{ $o->id }}"></td>
                             <td class="fw-semibold">{{ $o->order_number }}</td>
                             <td>
                                 {{ $o->customer_name }}
@@ -69,11 +88,18 @@
                             <td><a href="{{ route('admin.orders.show', $o) }}" class="btn btn-sm btn-outline-primary py-0 px-2"><i class="bi bi-eye"></i></a></td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" class="text-center text-muted py-4">No orders found.</td></tr>
+                        <tr><td colspan="8" class="text-center text-muted py-4">No orders found.</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
     </div>
+    </form>
     <div class="mt-3">{{ $orders->links() }}</div>
+
+    <script>
+        document.getElementById('selectAll')?.addEventListener('change', function() {
+            document.querySelectorAll('.order-checkbox').forEach(cb => cb.checked = this.checked);
+        });
+    </script>
 @endsection

@@ -16,6 +16,12 @@
         <div class="d-flex gap-2">
             <a href="{{ route('admin.orders.invoice', $order) }}" class="btn btn-sm btn-outline-dark"><i class="bi bi-file-earmark-pdf"></i> Invoice</a>
             <a href="{{ route('admin.orders.packing', $order) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-box"></i> Packing Slip</a>
+            <form action="{{ route('admin.orders.resend', $order) }}" method="POST" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-sm btn-outline-primary" title="Resend Notification">
+                    <i class="bi bi-envelope"></i> Resend
+                </button>
+            </form>
             <a href="{{ route('admin.orders.index') }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-arrow-left"></i> Back</a>
         </div>
     </div>
@@ -238,6 +244,27 @@
                     </div>
                 </div>
             @endif
+
+            {{-- ═══ TIMELINE ═════════════════════════════════════ --}}
+            <div class="card mt-3">
+                <div class="card-header"><i class="bi bi-clock-history"></i> Order Timeline</div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush small">
+                        @forelse ($order->statusLogs as $log)
+                            <li class="list-group-item d-flex justify-content-between align-items-start border-bottom-0">
+                                <div>
+                                    <div class="fw-bold mb-0">{{ str_replace('_', ' ', Str::title($log->status)) }}</div>
+                                    @if($log->notes)<div class="text-muted" style="font-size: 0.8rem;">{{ $log->notes }}</div>@endif
+                                </div>
+                                <span class="text-muted" style="font-size: 0.75rem;">{{ $log->created_at->format('M d, h:i A') }}</span>
+                            </li>
+                        @empty
+                            <li class="list-group-item border-bottom-0 text-muted text-center pt-3">No timeline events yet.</li>
+                        @endforelse
+                    </ul>
+                </div>
+            </div>
+
         </div>
     </div>
 @endsection

@@ -187,4 +187,9 @@ class Order extends Model
     {
         return $this->hasMany(ReturnRequest::class);
     }
+
+    public function statusLogs(): HasMany
+    {
+        return $this->hasMany(OrderStatusLog::class)->orderBy('created_at');
+    }
 }
