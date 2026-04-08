@@ -39,7 +39,7 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->withErrors(['cart' => __('Your cart is empty.')]);
         }
 
-        $data = $request->validate([
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'customer_name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['required', 'string', 'max:32'],
@@ -52,6 +52,12 @@ class CheckoutController extends Controller
             'notes' => ['nullable', 'string', 'max:2000'],
             'payment_method' => ['required', 'in:cod,razorpay'],
         ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        $data = $validator->validated();
 
         $cart = $this->cart->getCart();
 

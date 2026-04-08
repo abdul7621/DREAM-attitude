@@ -271,7 +271,7 @@
 
     // Pincode API
     if (pinInput && cityInput && stateInput) {
-        pinInput.addEventListener('input', function() {
+        pinInput.addEventListener('blur', function() {
             this.value = this.value.replace(/[^0-9]/g, '');
             if (this.value.length === 6) {
                 // Fetch
@@ -430,6 +430,7 @@
         if(btn) {
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Processing...';
             btn.classList.add('disabled');
+            btn.disabled = true;
         }
 
         window.dataLayer = window.dataLayer || [];
