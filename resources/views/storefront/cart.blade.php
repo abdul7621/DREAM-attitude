@@ -34,7 +34,7 @@
                         </td>
                         <td class="text-end">₹{{ number_format((float) $row['line_total'], 2) }}</td>
                         <td class="text-end">
-                            <form action="{{ route('cart.items.destroy', $item) }}" method="post" onsubmit="return confirm('Remove this item?');">
+                            <form method="POST" action="{{ route('cart.items.destroy', $item->id) }}">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>

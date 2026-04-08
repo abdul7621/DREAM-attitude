@@ -43,7 +43,7 @@ class CartController extends Controller
 
         $redirectUrl = (isset($data['redirect']) && $data['redirect'] === 'checkout') 
             ? route('checkout.create') 
-            : route('cart.index');
+            : url()->previous();
 
         return redirect($redirectUrl)
             ->with('status', __('Added to cart.'))
