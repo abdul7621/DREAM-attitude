@@ -276,7 +276,7 @@
             if (this.value.length === 6) {
                 // Fetch
                 spinner.classList.remove('d-none');
-                pinInput.setAttribute('disabled', 'true');
+                pinInput.setAttribute('readonly', 'true');
                 
                 fetch(`https://api.postalpincode.in/pincode/${this.value}`)
                     .then(res => res.json())
@@ -290,7 +290,7 @@
                                 Store.emit('toast', {type:'success', message: `Delivering to ${info.District}, ${info.State}`});
                             }
                             
-                            // Remove readonly
+                            // Remove readonly from city and state (they should be readonly by default though, so keep them readonly)
                             cityInput.setAttribute('readonly', 'true');
                             stateInput.setAttribute('readonly', 'true');
                             document.getElementById('pin_err')?.classList.add('d-none');
@@ -298,21 +298,17 @@
                         } else {
                             cityInput.value = '';
                             stateInput.value = '';
-                            cityInput.removeAttribute('readonly');
-                            stateInput.removeAttribute('readonly');
+                            // Don't remove readonly from city/state as they should only be populated by API
                             if (window.Store) Store.emit('toast', {type:'error', message: 'Invalid PIN code.'});
                             document.getElementById('pin_err')?.classList.remove('d-none');
                             pinInput.classList.add('is-invalid');
                         }
                     })
-                    .catch(err => {
-                        cityInput.removeAttribute('readonly');
-                        stateInput.removeAttribute('readonly');
-                    })
+                    .catch(err => {})
                     .finally(() => {
                         spinner.classList.add('d-none');
-                        pinInput.removeAttribute('disabled');
-                        pinInput.focus();
+                        pinInput.removeAttribute('readonly');
+                        // removed pinInput.focus() to avoid infinite loop / UX trap
                     });
             } else {
                 document.getElementById('pin_err')?.classList.add('d-none');
