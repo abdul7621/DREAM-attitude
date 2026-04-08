@@ -34,6 +34,11 @@ class ThemeController extends Controller
             'theme.hero_cta_link' => '/search',
             'theme.hero_image' => '',
             'theme.trust_text' => 'Authentic | Secure Checkout | Easy Returns',
+            'theme.announcement_active' => '0',
+            'theme.announcement_text' => '',
+            'theme.offers_banner_text' => '',
+            'theme.offers_banner_link' => '',
+            'theme.offers_banner_image' => '',
         ];
 
         $theme = array_merge($defaults, $settings);
@@ -132,7 +137,7 @@ class ThemeController extends Controller
                     if (array_key_exists($key, $data)) {
                         $val = $data[$key];
                         $val = ($val === null) ? '' : (string) $val;
-                        Setting::updateOrCreate(['key' => str_replace('_', '.', $key)], ['value' => $val]);
+                        Setting::updateOrCreate(['key' => str_replace('theme_', 'theme.', $key)], ['value' => $val]);
                     }
                 }
                 Setting::updateOrCreate(['key' => 'theme.announcement_active'], ['value' => $request->boolean('theme_announcement_active') ? '1' : '0']);
