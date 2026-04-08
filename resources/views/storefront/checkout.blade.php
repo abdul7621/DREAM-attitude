@@ -271,7 +271,7 @@
 
     // Pincode API
     if (pinInput && cityInput && stateInput) {
-        pinInput.addEventListener('blur', function() {
+        pinInput.addEventListener('input', function() {
             this.value = this.value.replace(/[^0-9]/g, '');
             if (this.value.length === 6) {
                 // Fetch
