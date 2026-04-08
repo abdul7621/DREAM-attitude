@@ -54,6 +54,11 @@ class ThemeController extends Controller
                 'theme_hero_cta_link' => ['nullable', 'string', 'max:255'],
                 'theme_hero_image' => ['nullable', 'image', 'max:4096'],
                 'theme_trust_text' => ['nullable', 'string', 'max:255'],
+                'theme_announcement_active' => ['nullable', 'boolean'],
+                'theme_announcement_text' => ['nullable', 'string', 'max:255'],
+                'theme_offers_banner_text' => ['nullable', 'string', 'max:255'],
+                'theme_offers_banner_link' => ['nullable', 'string', 'max:255'],
+                'theme_offers_banner_image' => ['nullable', 'image', 'max:4096'],
             ]);
 
             // Save ordered sections
@@ -65,13 +70,18 @@ class ThemeController extends Controller
                 $path = $request->file('theme_hero_image')->store('theme', 'public');
                 Setting::updateOrCreate(['key' => 'theme.hero_image'], ['value' => $path]);
             }
+            if ($request->hasFile('theme_offers_banner_image')) {
+                $path = $request->file('theme_offers_banner_image')->store('theme', 'public');
+                Setting::updateOrCreate(['key' => 'theme.offers_banner_image'], ['value' => $path]);
+            }
 
-            $keys = ['theme_hero_title', 'theme_hero_subtitle', 'theme_hero_cta_text', 'theme_hero_cta_link', 'theme_trust_text'];
+            $keys = ['theme_hero_title', 'theme_hero_subtitle', 'theme_hero_cta_text', 'theme_hero_cta_link', 'theme_trust_text', 'theme_announcement_text', 'theme_offers_banner_text', 'theme_offers_banner_link'];
             foreach ($keys as $key) {
                 if (array_key_exists($key, $data)) {
                     Setting::updateOrCreate(['key' => str_replace('_', '.', $key)], ['value' => $data[$key]]);
                 }
             }
+            Setting::updateOrCreate(['key' => 'theme.announcement_active'], ['value' => $request->boolean('theme_announcement_active') ? '1' : '0']);
 
             Cache::forget('settings.all');
             return redirect()->route('admin.theme.index', ['tab' => 'homepage'])->with('success', 'Homepage configured successfully.');

@@ -149,7 +149,7 @@
                 <p class="text-muted small mb-3">Check the sections you want to display and drag them or input order to arrange. Currently implemented as a simple Ordered List.</p>
                 <div class="list-group mb-3">
                     @php
-                        $available = ['hero' => 'Hero Banner', 'categories' => 'Category Grid', 'featured' => 'Featured Products', 'bestsellers' => 'Bestsellers', 'trust' => 'Trust Bar', 'reviews' => 'Testimonials'];
+                        $available = ['hero' => 'Hero Banner', 'categories' => 'Category Grid', 'featured' => 'Featured Products', 'bestsellers' => 'Bestsellers', 'latest' => 'New Arrivals', 'offers_banner' => 'Offers Banner', 'trust' => 'Trust Bar', 'reviews' => 'Testimonials'];
                         $active = $theme['theme.home_sections'] ?? [];
                     @endphp
                     @foreach($active as $key)
@@ -203,12 +203,42 @@
             </div>
         </div>
         
-        <div class="card">
+        <div class="card mb-4">
             <div class="card-header bg-white"><i class="bi bi-shield-check me-2"></i> Trust Bar setup</div>
             <div class="card-body">
                 <label class="form-label">Trust Bar Text</label>
                 <input type="text" name="theme_trust_text" class="form-control" value="{{ $theme['theme.trust_text'] ?? '' }}">
                 <div class="form-text">Example: COD Available | Free Shipping | Easy Returns</div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header bg-white"><i class="bi bi-megaphone me-2"></i> Announcement Bar</div>
+            <div class="card-body">
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="theme_announcement_active" name="theme_announcement_active" value="1" {{ !empty($theme['theme.announcement_active']) ? 'checked' : '' }}>
+                    <label class="form-check-label" for="theme_announcement_active">Enable Announcement Bar</label>
+                </div>
+                <label class="form-label">Announcement Text</label>
+                <input type="text" name="theme_announcement_text" class="form-control" value="{{ $theme['theme.announcement_text'] ?? '' }}">
+                <div class="form-text">Example: Use code SAVE10 for 10% off! | Free Shipping above ₹499</div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-white"><i class="bi bi-tag me-2"></i> Offers Banner Layout</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label">Offers Banner Text</label>
+                        <input type="text" name="theme_offers_banner_text" class="form-control" value="{{ $theme['theme.offers_banner_text'] ?? '' }}">
+                        <div class="form-text">Used if no image is uploaded.</div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Offers Banner Link</label>
+                        <input type="text" name="theme_offers_banner_link" class="form-control" value="{{ $theme['theme.offers_banner_link'] ?? '' }}">
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -223,6 +253,17 @@
                     </div>
                 @endif
                 <input type="file" name="theme_hero_image" class="form-control" accept="image/*">
+            </div>
+        </div>
+        <div class="card mb-4">
+            <div class="card-header bg-white">Offers Banner Image</div>
+            <div class="card-body">
+                @if(!empty($theme['theme.offers_banner_image']))
+                    <div class="mb-3 text-center">
+                        <img src="{{ asset('storage/' . $theme['theme.offers_banner_image']) }}" alt="Offers Banner" class="img-fluid rounded border">
+                    </div>
+                @endif
+                <input type="file" name="theme_offers_banner_image" class="form-control" accept="image/*">
             </div>
         </div>
         

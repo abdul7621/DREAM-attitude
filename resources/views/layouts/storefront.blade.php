@@ -85,6 +85,17 @@
 <body>
 @include('partials.tracking-body')
 
+{{-- ── Announcement Bar ────────────────────────────────── --}}
+@php $announcementActive = $ss->get('theme.announcement_active', false); @endphp
+@if($announcementActive && $ss->get('theme.announcement_text'))
+<div class="sf-announcement-bar text-center py-2 small fw-medium position-relative" 
+     style="background: var(--brand-primary); color: #fff; z-index: 1040;" id="announcementBar">
+    {{ $ss->get('theme.announcement_text') }}
+    <button type="button" class="btn-close btn-close-white position-absolute end-0 top-50 translate-middle-y me-3" style="font-size:.6rem; padding: 0.5rem;" 
+            onclick="document.getElementById('announcementBar').remove();"></button>
+</div>
+@endif
+
 {{-- ── Header ──────────────────────────────────────────── --}}
 <nav class="navbar navbar-expand-lg sf-header">
     <div class="container">

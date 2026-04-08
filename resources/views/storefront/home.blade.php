@@ -8,7 +8,12 @@
     $sections = json_decode($ss->get('theme.home_sections', '[]'), true) ?: ['hero', 'categories', 'featured', 'bestsellers', 'trust', 'reviews'];
 @endphp
 
-@foreach($sections as $sectionKey)
+@foreach($sections as $section)
+    @php
+        $sectionKey = is_array($section) ? ($section['key'] ?? '') : $section;
+        $isEnabled = is_array($section) ? ($section['enabled'] ?? true) : true;
+    @endphp
+    @if (!$isEnabled) @continue @endif
 
     @if ($sectionKey === 'hero')
         {{-- ── Hero Banner ───────────────────────────────────────── --}}
@@ -107,6 +112,41 @@
                 </div>
             </div>
         </section>
+    @endif
+
+    @if ($sectionKey === 'latest' && isset($latest) && $latest->isNotEmpty())
+        {{-- ── New Arrivals ───────────────────────────────────────── --}}
+        <section class="sf-section py-5 bg-white">
+            <div class="container">
+                <h2 class="sf-section-title fw-bold">🆕 New Arrivals</h2>
+                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3 mt-2">
+                    @foreach ($latest as $product)
+                        <div class="col">
+                            <x-product-card :product="$product" />
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
+
+    @if ($sectionKey === 'offers_banner')
+        {{-- ── Offers Banner ─────────────────────────────────────────── --}}
+        @if($ss->get('theme.offers_banner_text') || $ss->get('theme.offers_banner_image'))
+        <section class="sf-offers-banner my-4">
+            <div class="container">
+                <a href="{{ $ss->get('theme.offers_banner_link', '#') }}" class="d-block rounded overflow-hidden shadow-sm text-center" style="background-color: var(--brand-primary); color: #fff; text-decoration: none;">
+                    @if($ss->get('theme.offers_banner_image'))
+                        <img src="{{ asset('storage/' . $ss->get('theme.offers_banner_image')) }}" alt="Offers" class="w-100 object-fit-cover" style="max-height: 250px;">
+                    @else
+                        <div class="p-4 p-md-5">
+                            <h3 class="fw-bold mb-0">{{ $ss->get('theme.offers_banner_text') }}</h3>
+                        </div>
+                    @endif
+                </a>
+            </div>
+        </section>
+        @endif
     @endif
 
     @if ($sectionKey === 'reviews' && isset($topReviews) && $topReviews->isNotEmpty())
