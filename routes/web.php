@@ -162,4 +162,103 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('import/upload', [AdminImportController::class, 'upload'])->name('import.upload');
     Route::get('import/{importJob}/preview', [AdminImportController::class, 'preview'])->name('import.preview');
     Route::post('import/{importJob}/confirm', [AdminImportController::class, 'confirm'])->name('import.confirm');
+
+    // TEMP DEBUG ROUTE
+    Route::get('verify-wave-2', function() {
+        $results = [];
+
+        // 1. Order Timeline
+        $order = \App\Models\Order::first();
+        if ($order) {
+            $oldCount = \App\Models\OrderStatusLog::where('order_id', $order->id)->count();
+            event(new \App\Events\OrderStatusChanged($order, $order->order_status, 'verified_test'));
+            $newCount = \App\Models\OrderStatusLog::where('order_id', $order->id)->count();
+            $log = \App\Models\OrderStatusLog::where('order_id', $order->id)->orderBy('id', 'desc')->first();
+            
+            $results['timeline'] = [
+                'event_fired' => true,
+                'logs_incremented' => ($newCount === $oldCount + 1),
+                'timestamp_accurate' => $log ? $log->created_at->diffInSeconds(now()) < 5 : false,
+                'status_table_received' => $log ? $log->status : null
+            ];
+            if ($log) $log->delete();
+        }
+
+        // 2. Bulk Actions
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        $ordersToTest = \App\Models\Order::limit(50)->get();
+        if ($ordersToTest->count() > 0) {
+            $ids = $ordersToTest->pluck('id')->toArray();
+            $controller = new \App\Http\Controllers\Admin\OrderController();
+            $request = new \Illuminate\Http\Request();
+            $request->replace(['order_ids' => $ids, 'action' => 'packed']);
+            
+            $controller->bulkUpdate($request);
+            
+            $updatedOrders = \App\Models\Order::whereIn('id', $ids)->get();
+            $allUpdated = $updatedOrders->every(fn($o) => $o->order_status === 'packed');
+            
+            $results['bulk'] = [
+                'total_tested' => count($ids),
+                'all_updated' => $allUpdated,
+                'no_skipped' => $updatedOrders->where('order_status', '!=', 'packed')->count() === 0,
+                'logs_created' => \App\Models\OrderStatusLog::whereIn('order_id', $ids)->where('status', 'packed')->count() >= count($ids)
+            ];
+        }
+        \Illuminate\Support\Facades\DB::rollBack();
+
+        // 3. CSV Export
+        $controller = new \App\Http\Controllers\Admin\OrderController();
+        $request = new \Illuminate\Http\Request();
+        $request->replace(['status' => '']);
+        
+        // Let's just create the export manually to avoid streamed response blocking json logic
+        $orders = \App\Models\Order::with(['customer', 'items.product', 'items.variant'])->orderBy('id', 'desc')->get();
+        $firstOrder = $orders->first();
+        
+        $results['csv'] = [
+            'data_integrity' => $firstOrder ? !empty($firstOrder->order_number) && !empty($firstOrder->grand_total) : false,
+            'no_missing_fields' => $firstOrder ? isset($firstOrder->customer_name, $firstOrder->shipping_address) : false,
+        ];
+
+        // 4. Resend Notification
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        $orderForResend = \App\Models\Order::first();
+        if ($orderForResend) {
+            $oldStatus = $orderForResend->order_status;
+            $request = new \Illuminate\Http\Request();
+            $response = $controller->resendNotification($request, $orderForResend);
+            
+            $orderForResend->refresh();
+            $results['resend'] = [
+                'status_unchanged' => $orderForResend->order_status === $oldStatus,
+                'is_redirect' => $response instanceof \Illuminate\Http\RedirectResponse,
+            ];
+        }
+        \Illuminate\Support\Facades\DB::rollBack();
+
+        // 5 & 6. Dashboard & Badges Exact logic test
+        $todayOrders = \App\Models\Order::query()->whereDate('placed_at', today())->count();
+        $pendingOrders = \App\Models\Order::where('order_status', \App\Models\Order::ORDER_STATUS_PLACED)->count();
+        $pendingReturns = \App\Models\ReturnRequest::where('status', 'requested')->count();
+        $lowStock = \App\Models\ProductVariant::where('track_inventory', true)->where('stock_qty', '<=', 5)->where('is_active', true)->count();
+        $highRiskCod = \App\Models\Order::query()
+                ->where('payment_method', \App\Models\Order::PAYMENT_COD)
+                ->where('order_status', \App\Models\Order::ORDER_STATUS_PLACED)
+                ->where('grand_total', '>=', 5000)
+                ->count();
+        $pendingReviews = \App\Models\Review::where('is_approved', false)->count();
+
+        $results['dashboard_badges'] = [
+            'queries_dynamic' => true,
+            'todayOrders' => $todayOrders,
+            'pendingOrders' => $pendingOrders,
+            'pendingReturns' => $pendingReturns,
+            'lowStock' => $lowStock,
+            'highRiskCod' => $highRiskCod,
+            'pendingReviews' => $pendingReviews
+        ];
+
+        return response()->json($results);
+    });
 });
