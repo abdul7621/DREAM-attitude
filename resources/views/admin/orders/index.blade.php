@@ -50,6 +50,8 @@
             <option value="">-- Apply Bulk Action --</option>
             <option value="confirmed">Mark as Confirmed</option>
             <option value="packed">Mark as Packed</option>
+            <option value="shipped">Mark as Shipped</option>
+            <option value="delivered">Mark as Delivered</option>
         </select>
         <button type="submit" class="btn btn-sm btn-secondary" onclick="return confirm('Are you sure you want to apply this bulk action?')">Apply</button>
     </div>

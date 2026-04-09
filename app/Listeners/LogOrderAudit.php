@@ -12,10 +12,9 @@ class LogOrderAudit
     {
         AuditLog::log(
             'order_status_changed',
-            auth()->user(),
             $event->order,
+            ['old_status' => $event->oldStatus],
             [
-                'old_status' => $event->oldStatus,
                 'new_status' => $event->newStatus,
                 'notes' => $event->notes
             ]

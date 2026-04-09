@@ -30,9 +30,9 @@ class Order extends Model
 
     // ── Allowed forward transitions ──────────────────────────
     public const STATUS_TRANSITIONS = [
-        'placed'    => ['confirmed', 'cancelled'],
-        'confirmed' => ['packed', 'cancelled'],
-        'packed'    => ['shipped', 'cancelled'],
+        'placed'    => ['confirmed', 'delivered', 'cancelled'],
+        'confirmed' => ['packed', 'delivered', 'cancelled'],
+        'packed'    => ['shipped', 'delivered', 'cancelled'],
         'shipped'   => ['delivered'],
         'delivered' => ['refunded'],
     ];
