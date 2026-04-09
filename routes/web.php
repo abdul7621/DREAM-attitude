@@ -80,10 +80,30 @@ Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->
 
 // ── Customer Account (auth required) ──────────────────────────────────────
 Route::middleware('auth')->prefix('account')->name('account.')->group(function (): void {
+    Route::get('/', [AccountController::class, 'dashboard'])->name('dashboard');
     Route::get('orders', [AccountController::class, 'orders'])->name('orders');
     Route::get('orders/{order}', [AccountController::class, 'orderShow'])->name('orders.show');
     Route::post('orders/{order}/return', [ReturnRequestController::class, 'store'])->name('orders.return.store');
+    Route::post('orders/{order}/reorder', [AccountController::class, 'reorder'])->name('orders.reorder');
     Route::get('returns', [ReturnRequestController::class, 'index'])->name('returns');
+
+    // Profile
+    Route::get('profile', [AccountController::class, 'profile'])->name('profile');
+    Route::put('profile', [AccountController::class, 'profileUpdate'])->name('profile.update');
+    Route::put('password', [AccountController::class, 'passwordUpdate'])->name('password.update');
+
+    // Addresses
+    Route::resource('addresses', \App\Http\Controllers\Storefront\AddressController::class)->except(['show']);
+    Route::post('addresses/{address}/default', [\App\Http\Controllers\Storefront\AddressController::class, 'setDefault'])->name('addresses.default');
+
+    // Wishlist
+    Route::get('wishlist', [\App\Http\Controllers\Storefront\WishlistController::class, 'index'])->name('wishlist');
+    Route::post('wishlist/toggle', [\App\Http\Controllers\Storefront\WishlistController::class, 'toggle'])->name('wishlist.toggle');
+    Route::delete('wishlist/{wishlist}', [\App\Http\Controllers\Storefront\WishlistController::class, 'destroy'])->name('wishlist.destroy');
+
+    // API endpoints (JSON)
+    Route::get('api/wishlist-ids', [\App\Http\Controllers\Storefront\WishlistController::class, 'apiIds'])->name('api.wishlist-ids');
+    Route::get('api/addresses', [\App\Http\Controllers\Storefront\AddressController::class, 'apiList'])->name('api.addresses');
 });
 
 // ── Admin Panel ────────────────────────────────────────────────────────────

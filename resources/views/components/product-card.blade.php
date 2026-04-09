@@ -21,6 +21,13 @@
             @endif
         </div>
     </a>
+    <button type="button"
+        class="btn btn-sm wishlist-heart position-absolute"
+        style="top:8px;right:8px;z-index:2;background:rgba(255,255,255,0.85);border-radius:50%;width:34px;height:34px;padding:0;border:none;"
+        data-product-id="{{ $product->id }}"
+        title="Wishlist">
+        <i class="bi bi-heart" style="font-size:1rem;"></i>
+    </button>
     <div class="card-body d-flex flex-column">
         <a href="{{ route('product.show', $product) }}" class="product-title">{{ $product->name }}</a>
         @if ($variant)
@@ -34,3 +41,4 @@
         @endif
     </div>
 </div>
+

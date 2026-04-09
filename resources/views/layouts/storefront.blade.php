@@ -142,7 +142,7 @@
                 </a>
                 {{-- Account --}}
                 @auth
-                    <a href="{{ route('account.orders') }}" class="nav-link d-none d-lg-inline"><i class="bi bi-person-circle"></i></a>
+                    <a href="{{ route('account.dashboard') }}" class="nav-link d-none d-lg-inline"><i class="bi bi-person-circle"></i></a>
                     @if (auth()->user()->isAdmin())
                         <a href="{{ route('admin.dashboard') }}" class="nav-link d-none d-lg-inline" style="font-size:.78rem;">Admin</a>
                     @endif
@@ -258,6 +258,68 @@
 
 <x-toast />
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+{{-- Wishlist Heart System --}}
+<script>
+(function() {
+    const isLoggedIn = {{ Auth::check() ? 'true' : 'false' }};
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+    // Hydrate hearts from server
+    if (isLoggedIn) {
+        fetch('{{ route("account.api.wishlist-ids") }}')
+            .then(r => r.json())
+            .then(ids => {
+                document.querySelectorAll('.wishlist-heart').forEach(btn => {
+                    const pid = parseInt(btn.dataset.productId);
+                    if (ids.includes(pid)) {
+                        btn.querySelector('i').className = 'bi bi-heart-fill text-danger';
+                        btn.dataset.wishlisted = '1';
+                    }
+                });
+            }).catch(() => {});
+    }
+
+    // Toggle click handler
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.wishlist-heart');
+        if (!btn) return;
+        e.preventDefault();
+
+        if (!isLoggedIn) {
+            window.location.href = '{{ route("login") }}?redirect=' + encodeURIComponent(window.location.href);
+            return;
+        }
+
+        const productId = btn.dataset.productId;
+        const icon = btn.querySelector('i');
+
+        fetch('{{ route("account.wishlist.toggle") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ product_id: productId })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.wishlisted) {
+                icon.className = 'bi bi-heart-fill text-danger';
+                btn.dataset.wishlisted = '1';
+            } else {
+                icon.className = 'bi bi-heart';
+                btn.dataset.wishlisted = '0';
+            }
+            if (window.Store) Store.emit('toast', { type: 'success', message: data.message });
+        })
+        .catch(() => {
+            if (window.Store) Store.emit('toast', { type: 'error', message: 'Could not update wishlist.' });
+        });
+    });
+})();
+</script>
 @stack('scripts')
 </body>
 </html>
+

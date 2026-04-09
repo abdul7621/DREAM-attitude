@@ -110,6 +110,14 @@
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-header bg-white py-3 fw-bold fs-5 border-bottom"><i class="bi bi-truck me-2"></i> Shipping Address</div>
                         <div class="card-body">
+                            @auth
+                            <div class="mb-3" id="saved-addr-wrap">
+                                <label class="form-label fw-semibold">Saved Addresses</label>
+                                <select class="form-select" id="saved_address_select">
+                                    <option value="">Enter new address</option>
+                                </select>
+                            </div>
+                            @endauth
                             <div class="row g-3">
                                 <div class="col-md-4">
                                     <div class="position-relative">
@@ -234,6 +242,43 @@
 </style>
 <script>
 (function () {
+    // ── Saved Address Loader ─────────────────────
+    const addrSelect = document.getElementById('saved_address_select');
+    if (addrSelect) {
+        fetch('{{ Auth::check() ? route("account.api.addresses") : "" }}')
+            .then(r => r.json())
+            .then(addrs => {
+                addrs.forEach(a => {
+                    const opt = document.createElement('option');
+                    opt.value = a.id;
+                    opt.textContent = `${a.label} — ${a.name}, ${a.address_line1}, ${a.city}`;
+                    if (a.is_default) opt.selected = true;
+                    addrSelect.appendChild(opt);
+                });
+                // Pre-fill if default exists
+                if (addrSelect.value) addrSelect.dispatchEvent(new Event('change'));
+            }).catch(() => {});
+
+        addrSelect.addEventListener('change', function() {
+            if (!this.value) return;
+            const opt = this.options[this.selectedIndex];
+            // Fetch full data from loaded options
+            fetch('{{ Auth::check() ? route("account.api.addresses") : "" }}')
+                .then(r => r.json())
+                .then(addrs => {
+                    const a = addrs.find(x => x.id == addrSelect.value);
+                    if (!a) return;
+                    const set = (id, val) => { const el = document.getElementById(id) || document.querySelector('input[name="'+id+'"]'); if(el) el.value = val || ''; };
+                    set('customer_name', a.name);
+                    set('phone', a.phone);
+                    set('address_line1', a.address_line1);
+                    set('address_line2', a.address_line2);
+                    set('postal_code', a.postal_code);
+                    set('city', a.city);
+                    set('state', a.state);
+                }).catch(() => {});
+        });
+    }
     const pinInput = document.getElementById('postal_code') || document.querySelector('input[name="postal_code"]');
     const cityInput = document.getElementById('city') || document.querySelector('input[name="city"]');
     const stateInput = document.getElementById('state') || document.querySelector('input[name="state"]');

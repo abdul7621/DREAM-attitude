@@ -1,12 +1,18 @@
-@extends('layouts.storefront')
+@extends('layouts.account')
 @section('title', 'My Returns')
-@section('content')
-<h1 class="h4 mb-3">My Return Requests</h1>
+@section('account-content')
+<h1 class="h4 fw-bold mb-4"><i class="bi bi-arrow-return-left me-2"></i>My Return Requests</h1>
 @if ($returns->isEmpty())
-    <div class="alert alert-info">No return requests yet.</div>
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center text-muted py-5">
+            <i class="bi bi-arrow-return-left fs-1 d-block mb-2"></i>
+            No return requests yet.
+        </div>
+    </div>
 @else
+<div class="card border-0 shadow-sm">
 <div class="table-responsive">
-<table class="table table-hover">
+<table class="table table-hover mb-0">
     <thead class="table-light"><tr>
         <th>Return #</th><th>Order</th><th>Status</th><th>Resolution</th><th>Requested</th>
     </tr></thead>
@@ -23,7 +29,7 @@
     </tbody>
 </table>
 </div>
-<div class="mt-2">{{ $returns->links() }}</div>
+</div>
+<div class="mt-3">{{ $returns->links() }}</div>
 @endif
-<a href="{{ route('account.orders') }}" class="btn btn-outline-secondary btn-sm mt-2">← My Orders</a>
 @endsection

@@ -3,7 +3,14 @@
         <x-sf-badge variant="warning" class="text-dark mb-2"><i class="bi bi-fire"></i> Bestseller</x-sf-badge>
     @endif
 
-    <h1 class="product-name fs-2 fw-bold mb-1">{{ $product->name }}</h1>
+    <div class="d-flex justify-content-between align-items-start gap-3">
+        <h1 class="product-name fs-2 fw-bold mb-1">{{ $product->name }}</h1>
+        @auth
+            <button type="button" class="btn btn-light rounded-circle shadow-sm p-2 wishlist-heart border" data-product-id="{{ $product->id }}" style="line-height:1; min-width: 42px; min-height: 42px;" aria-label="Add to Wishlist">
+                <i class="bi bi-heart fs-5 text-muted"></i>
+            </button>
+        @endauth
+    </div>
 
     {{-- Rating summary & Sales Count --}}
     <div class="d-flex align-items-center flex-wrap gap-3 mt-2">
