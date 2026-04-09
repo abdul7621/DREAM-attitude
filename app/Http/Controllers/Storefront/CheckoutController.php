@@ -59,6 +59,37 @@ class CheckoutController extends Controller
 
         $data = $validator->validated();
 
+        $currentUser = \Illuminate\Support\Facades\Auth::user();
+
+        // ── Customer Identity Layer ─────────────────────────────────────
+        if (!$currentUser || $currentUser->phone !== $data['phone']) {
+            $existingUser = null;
+            \Illuminate\Support\Facades\DB::transaction(function () use ($data, &$existingUser) {
+                $existingUser = \App\Models\User::where('phone', $data['phone'])
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$existingUser && !empty($data['email'])) {
+                    $existingUser = \App\Models\User::where('email', $data['email'])
+                        ->lockForUpdate()
+                        ->first();
+                }
+
+                if (!$existingUser) {
+                    $existingUser = \App\Models\User::create([
+                        'name' => $data['customer_name'],
+                        'phone' => $data['phone'],
+                        'email' => !empty($data['email']) ? $data['email'] : null,
+                        'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(12)),
+                    ]);
+                }
+            });
+
+            \Illuminate\Support\Facades\Auth::login($existingUser);
+            $this->cart->mergeOnLogin($existingUser);
+        }
+        // ────────────────────────────────────────────────────────────────
+
         $cart = $this->cart->getCart();
 
         try {
