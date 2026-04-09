@@ -50,6 +50,28 @@ class NotificationService
         $this->dispatchNotification('abandoned_cart_reminder', $phone, $email, $vars);
     }
 
+    public function reviewRequest(array $order, string $reviewUrl): void
+    {
+        $vars = [
+            'order_number' => $order['order_number'],
+            'customer_name' => $order['customer_name'] ?? 'Customer',
+            'review_url'   => $reviewUrl,
+        ];
+
+        $this->dispatchNotification('review_request', $order['phone'] ?? '', $order['email'] ?? '', $vars);
+    }
+
+    public function replenishmentReminder(array $order, string $reorderUrl): void
+    {
+        $vars = [
+            'order_number' => $order['order_number'],
+            'customer_name' => $order['customer_name'] ?? 'Customer',
+            'reorder_url'  => $reorderUrl,
+        ];
+
+        $this->dispatchNotification('replenishment_reminder', $order['phone'] ?? '', $order['email'] ?? '', $vars);
+    }
+
     // ─── Core Dispatcher ──────────────────────────────────────────────────
 
     private function dispatchNotification(string $eventName, string $phone, string $email, array $vars): void

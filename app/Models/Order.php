@@ -103,6 +103,8 @@ class Order extends Model
             'tax_total' => 'decimal:2',
             'grand_total' => 'decimal:2',
             'placed_at' => 'datetime',
+            'review_request_sent_at' => 'datetime',
+            'replenishment_reminder_sent_at' => 'datetime',
         ];
     }
 
