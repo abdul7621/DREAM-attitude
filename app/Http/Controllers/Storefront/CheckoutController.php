@@ -14,7 +14,6 @@ use RuntimeException;
 class CheckoutController extends Controller
 {
     public function __construct(
-    public function __construct(
         private readonly CartService $cart,
         private readonly OrderService $orders,
         private readonly PaymentManager $paymentManager
