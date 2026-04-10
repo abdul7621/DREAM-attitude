@@ -24,6 +24,11 @@ interface PaymentGatewayInterface
     public function verifyPayment(array $requestData, Order $order): bool;
 
     /**
+     * Extract the gateway order identifier from the HTTP callback request.
+     */
+    public function extractOrderId(array $requestData): ?string;
+
+    /**
      * Refund a payment for an order
      */
     public function refund(Order $order, float $amount): array;

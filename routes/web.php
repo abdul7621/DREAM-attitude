@@ -70,8 +70,7 @@ Route::delete('/cart/coupon', [CartController::class, 'removeCoupon'])->name('ca
 Route::get('/checkout', [CheckoutController::class, 'create'])->name('checkout.create');
 Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
 
-Route::post('/payments/verify', [PaymentController::class, 'verify'])->name('payments.verify');
-Route::post('/payments/razorpay/verify', [PaymentController::class, 'verify'])->name('payments.razorpay.verify');
+Route::match(['get', 'post'], '/payments/verify/{gateway}', [PaymentController::class, 'verify'])->name('payments.verify');
 
 Route::get('/order/{orderNumber}/success', [OrderSuccessController::class, 'show'])->name('order.success');
 

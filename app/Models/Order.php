@@ -25,6 +25,7 @@ class Order extends Model
     public const ORDER_STATUS_DELIVERED = 'delivered';
     public const ORDER_STATUS_CANCELLED = 'cancelled';
     public const ORDER_STATUS_REFUNDED = 'refunded';
+    public const ORDER_STATUS_ABANDONED = 'abandoned_checkout';
 
     // ── Allowed forward transitions ──────────────────────────
     public const STATUS_TRANSITIONS = [

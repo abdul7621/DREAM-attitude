@@ -16,29 +16,44 @@ class PaymentController extends Controller
         private readonly PaymentManager $paymentManager
     ) {}
 
-    public function verify(Request $request): RedirectResponse
+    public function verify(Request $request, string $gateway): RedirectResponse
     {
-        $pendingId = session('pending_payment_order_id');
-        if (! $pendingId) {
-            return redirect()->route('cart.index')->withErrors(['payment' => __('Session expired. Please try again.')]);
+        $gatewayDriver = $this->paymentManager->driver($gateway);
+        $incomingId = $gatewayDriver->extractOrderId($request->all());
+
+        if (!$incomingId) {
+            \Illuminate\Support\Facades\Log::error('Payment callback missing reference ID', ['gateway' => $gateway, 'payload' => $request->all()]);
+            return redirect()->route('checkout.create')->withErrors(['payment' => __('Payment reference missing.')]);
         }
 
-        $order = Order::query()->whereKey($pendingId)->firstOrFail();
+        $order = Order::query()->where('gateway_order_id', $incomingId)->firstOrFail();
 
-        if ($order->payment_status !== Order::PAYMENT_STATUS_PENDING || $order->order_status !== Order::ORDER_STATUS_AWAITING_PAYMENT) {
+        // Idempotency / Double payment protection
+        if ($order->payment_status === Order::PAYMENT_STATUS_PAID) {
             return redirect()->route('order.success', ['orderNumber' => $order->order_number]);
         }
 
-        $gateway = $this->paymentManager->driver($order->payment_method);
-
         try {
-            $verified = $gateway->verifyPayment($request->all(), $order);
+            $verified = $gatewayDriver->verifyPayment($request->all(), $order);
             if (!$verified) {
-                throw new \Exception('Payment verification failed');
+                throw new \Exception('Payment verification returned false');
             }
 
+            // Amount validation is cryptographically assured by driver signature verification
             $this->orders->finalizeOnlinePayment($order, $request->all());
         } catch (\Exception $e) {
+            $order->update([
+                'payment_status' => Order::PAYMENT_STATUS_FAILED,
+                'order_status' => Order::ORDER_STATUS_ABANDONED
+            ]);
+            
+            \Illuminate\Support\Facades\Log::info('order_abandoned', [
+                'order_id' => $order->id,
+                'user_id' => $order->user_id,
+                'amount' => $order->grand_total,
+                'reason' => $e->getMessage(),
+            ]);
+
             \App\Models\AuditLog::log('payment_failed', $order, [], [
                 'reason' => 'verification_failed_or_other_error',
                 'gateway' => $order->payment_method,

@@ -48,7 +48,7 @@ class PayUDriver implements PaymentGatewayInterface
         $hashSequence = "{$this->merchantKey}|{$transactionId}|{$amount}|{$productInfo}|{$firstName}|{$email}|||||||||||{$this->merchantSalt}";
         $hash = hash("sha512", $hashSequence);
 
-        $order->update(['metadata' => array_merge((array)$order->metadata, ['gateway_order_id' => $transactionId])]);
+        $order->update(['gateway_order_id' => $transactionId]);
 
         return [
             'provider_order_id' => $transactionId,
@@ -59,10 +59,15 @@ class PayUDriver implements PaymentGatewayInterface
             'firstname' => $firstName,
             'email' => $email,
             'phone' => $order->phone,
-            'surl' => route('payments.verify'),
-            'furl' => route('payments.verify'),
+            'surl' => route('payments.verify', ['gateway' => 'payu']),
+            'furl' => route('payments.verify', ['gateway' => 'payu']),
             'hash' => $hash,
         ];
+    }
+
+    public function extractOrderId(array $requestData): ?string
+    {
+        return $requestData['txnid'] ?? null;
     }
 
     public function verifyPayment(array $requestData, Order $order): bool
@@ -89,7 +94,7 @@ class PayUDriver implements PaymentGatewayInterface
 
     public function refund(Order $order, float $amount): array
     {
-        $payuTxnId = $order->metadata['gateway_payment_id'] ?? null; // usually mihpayid
+        $payuTxnId = $order->gateway_payment_id ?? null; // usually mihpayid
 
         if (!$payuTxnId) {
             throw new Exception("Original payment ID missing for refund");

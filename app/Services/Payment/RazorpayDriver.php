@@ -51,8 +51,8 @@ class RazorpayDriver implements PaymentGatewayInterface
 
             $rzpOrder = $response->json();
             
-            // Save gateway reference ID on order if supported by schema, or use order_id logic
-            $order->update(['metadata' => array_merge((array)$order->metadata, ['gateway_order_id' => $rzpOrder['id']])]);
+            // Save gateway reference ID on order
+            $order->update(['gateway_order_id' => $rzpOrder['id']]);
             
             return [
                 'provider_order_id' => $rzpOrder['id'],
@@ -66,6 +66,11 @@ class RazorpayDriver implements PaymentGatewayInterface
             Log::error("Razorpay order creation failed", ['error' => $e->getMessage(), 'order' => $order->id]);
             throw $e;
         }
+    }
+
+    public function extractOrderId(array $requestData): ?string
+    {
+        return $requestData['razorpay_order_id'] ?? null;
     }
 
     public function verifyPayment(array $requestData, Order $order): bool

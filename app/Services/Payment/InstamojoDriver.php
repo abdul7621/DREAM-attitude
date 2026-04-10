@@ -46,7 +46,7 @@ class InstamojoDriver implements PaymentGatewayInterface
             'buyer_name' => $order->customer_name,
             'phone' => $order->phone,
             'email' => $order->email ?? 'guest@example.com',
-            'redirect_url' => route('payments.verify'),
+            'redirect_url' => route('payments.verify', ['gateway' => 'instamojo']),
             'allow_repeated_payments' => false,
         ];
 
@@ -65,7 +65,7 @@ class InstamojoDriver implements PaymentGatewayInterface
             $requestId = $responseData['payment_request']['id'];
 
             // Save TXN ID
-            $order->update(['metadata' => array_merge((array)$order->metadata, ['gateway_order_id' => $requestId])]);
+            $order->update(['gateway_order_id' => $requestId]);
 
             return [
                 'provider_order_id' => $requestId,
@@ -78,10 +78,15 @@ class InstamojoDriver implements PaymentGatewayInterface
         }
     }
 
+    public function extractOrderId(array $requestData): ?string
+    {
+        return $requestData['payment_request_id'] ?? null;
+    }
+
     public function verifyPayment(array $requestData, Order $order): bool
     {
         $paymentId = $requestData['payment_id'] ?? '';
-        $paymentRequestId = $requestData['payment_request_id'] ?? $order->metadata['gateway_order_id'] ?? '';
+        $paymentRequestId = $requestData['payment_request_id'] ?? $order->gateway_order_id ?? '';
         
         if (empty($paymentId) || empty($paymentRequestId)) {
             return false;
@@ -104,7 +109,7 @@ class InstamojoDriver implements PaymentGatewayInterface
 
     public function refund(Order $order, float $amount): array
     {
-        $paymentId = $order->metadata['gateway_payment_id'] ?? null;
+        $paymentId = $order->gateway_payment_id ?? null;
 
         if (!$paymentId) {
             throw new Exception("Original payment ID missing for refund");

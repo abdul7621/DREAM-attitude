@@ -81,7 +81,7 @@ class PhonePeDriver implements PaymentGatewayInterface
             $paymentUrl = $responseData['data']['instrumentResponse']['redirectInfo']['url'];
 
             // Save TXN ID
-            $order->update(['metadata' => array_merge((array)$order->metadata, ['gateway_order_id' => $transactionId])]);
+            $order->update(['gateway_order_id' => $transactionId]);
 
             return [
                 'provider_order_id' => $transactionId,
@@ -91,12 +91,16 @@ class PhonePeDriver implements PaymentGatewayInterface
         } catch (Exception $e) {
             Log::error("PhonePe order creation failed", ['error' => $e->getMessage(), 'order' => $order->id]);
             throw $e;
-        }
+    }
+
+    public function extractOrderId(array $requestData): ?string
+    {
+        return $requestData['transactionId'] ?? null;
     }
 
     public function verifyPayment(array $requestData, Order $order): bool
     {
-        $transactionId = $requestData['transactionId'] ?? $order->metadata['gateway_order_id'] ?? '';
+        $transactionId = $requestData['transactionId'] ?? $order->gateway_order_id ?? '';
         
         if (empty($transactionId)) {
             return false;
@@ -124,7 +128,7 @@ class PhonePeDriver implements PaymentGatewayInterface
     public function refund(Order $order, float $amount): array
     {
         $amountPaise = (int) round($amount * 100);
-        $originalTxnId = $order->metadata['gateway_order_id'] ?? null;
+        $originalTxnId = $order->gateway_order_id ?? null;
 
         if (!$originalTxnId) {
             throw new Exception("Original transaction ID missing for refund");

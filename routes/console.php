@@ -10,3 +10,6 @@ Artisan::command('inspire', function () {
 
 // Abandoned cart reminders — runs every hour on shared hosting
 Schedule::command('cart:send-reminders --hours=2')->hourly();
+
+// Release reserved stock for abandoned online payment checkouts
+Schedule::command('orders:release-expired')->everyFiveMinutes();

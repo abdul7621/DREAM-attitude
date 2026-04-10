@@ -51,7 +51,7 @@ class CashfreeDriver implements PaymentGatewayInterface
                 'customer_name' => $order->customer_name
             ],
             'order_meta' => [
-                'return_url' => route('payments.verify') . '?order_id={order_id}&order_token={order_token}',
+                'return_url' => route('payments.verify', ['gateway' => 'cashfree']) . '?order_id={order_id}&order_token={order_token}',
             ]
         ];
 
@@ -71,7 +71,7 @@ class CashfreeDriver implements PaymentGatewayInterface
             $responseData = $response->json();
 
             // Save TXN ID
-            $order->update(['metadata' => array_merge((array)$order->metadata, ['gateway_order_id' => $transactionId])]);
+            $order->update(['gateway_order_id' => $transactionId]);
 
             return [
                 'provider_order_id' => $transactionId,
@@ -87,9 +87,14 @@ class CashfreeDriver implements PaymentGatewayInterface
         }
     }
 
+    public function extractOrderId(array $requestData): ?string
+    {
+        return $requestData['order_id'] ?? null;
+    }
+
     public function verifyPayment(array $requestData, Order $order): bool
     {
-        $transactionId = $requestData['order_id'] ?? $order->metadata['gateway_order_id'] ?? '';
+        $transactionId = $requestData['order_id'] ?? $order->gateway_order_id ?? '';
         
         if (empty($transactionId)) {
             return false;
@@ -114,7 +119,7 @@ class CashfreeDriver implements PaymentGatewayInterface
 
     public function refund(Order $order, float $amount): array
     {
-        $originalTxnId = $order->metadata['gateway_order_id'] ?? null;
+        $originalTxnId = $order->gateway_order_id ?? null;
 
         if (!$originalTxnId) {
             throw new Exception("Original transaction ID missing for refund");

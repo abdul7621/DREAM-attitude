@@ -10,7 +10,7 @@
         <p class="mb-4">You will be redirected to Razorpay secure checkout.</p>
         <button type="button" class="btn btn-primary btn-lg" id="payBtn">Pay ₹{{ number_format((float) $order->grand_total, 2) }}</button>
 
-        <form id="payForm" action="{{ route('payments.verify') }}" method="post" class="d-none">
+        <form id="payForm" action="{{ route('payments.verify', ['gateway' => 'razorpay']) }}" method="post" class="d-none">
             @csrf
             <input type="hidden" name="razorpay_order_id" id="ro">
             <input type="hidden" name="razorpay_payment_id" id="rp">

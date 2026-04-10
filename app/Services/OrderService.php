@@ -152,11 +152,11 @@ class OrderService
                     'unit_price' => $row['unit_price'],
                     'line_total' => $row['line_total'],
                 ]);
+                // Reserve stock upfront for online payment!
+                $this->decrementStock($variant, $row['item']->qty);
             }
 
             $this->createPendingShipment($order);
-
-            session(['pending_payment_order_id' => $order->id]);
 
             return $order;
         });
@@ -168,19 +168,7 @@ class OrderService
             return;
         }
 
-        if ((int) session('pending_payment_order_id') !== (int) $order->id) {
-            abort(403);
-        }
-
         DB::transaction(function () use ($order, $requestData): void {
-            $order->load('orderItems.variant');
-            foreach ($order->orderItems as $oi) {
-                $v = $oi->variant ?? ProductVariant::query()->find($oi->product_variant_id);
-                if ($v) {
-                    $this->decrementStock($v, $oi->qty);
-                }
-            }
-
             $order->update([
                 'payment_status' => Order::PAYMENT_STATUS_PAID,
                 'order_status' => Order::ORDER_STATUS_PLACED,
@@ -196,7 +184,6 @@ class OrderService
 
             $cart = $this->cartService->getCart();
             $this->cartService->clear($cart);
-            session()->forget('pending_payment_order_id');
         });
 
         // Fire after transaction commits
