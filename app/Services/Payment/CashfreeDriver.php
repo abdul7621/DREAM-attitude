@@ -18,9 +18,9 @@ class CashfreeDriver implements PaymentGatewayInterface
 
     public function __construct(protected PaymentMethod $method)
     {
-        $this->appId = $this->method->getConfigValue('app_id', '');
-        $this->secretKey = $this->method->getConfigValue('secret_key', '');
-        $this->env = $this->method->getConfigValue('env', 'TEST');
+        $this->appId = (string) ($this->method->getConfigValue('app_id') ?? '');
+        $this->secretKey = (string) ($this->method->getConfigValue('secret_key') ?? '');
+        $this->env = (string) ($this->method->getConfigValue('env') ?? 'TEST');
         
         $this->baseUrl = $this->env === 'PROD' 
             ? 'https://api.cashfree.com/pg' 

@@ -18,9 +18,9 @@ class PayUDriver implements PaymentGatewayInterface
 
     public function __construct(protected PaymentMethod $method)
     {
-        $this->merchantKey = $this->method->getConfigValue('merchant_key', '');
-        $this->merchantSalt = $this->method->getConfigValue('merchant_salt', '');
-        $this->env = $this->method->getConfigValue('env', 'TEST');
+        $this->merchantKey = (string) ($this->method->getConfigValue('merchant_key') ?? '');
+        $this->merchantSalt = (string) ($this->method->getConfigValue('merchant_salt') ?? '');
+        $this->env = (string) ($this->method->getConfigValue('env') ?? 'TEST');
         
         $this->baseUrl = $this->env === 'PROD' 
             ? 'https://secure.payu.in/_payment' 

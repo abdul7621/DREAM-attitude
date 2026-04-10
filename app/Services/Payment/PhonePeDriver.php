@@ -19,10 +19,10 @@ class PhonePeDriver implements PaymentGatewayInterface
 
     public function __construct(protected PaymentMethod $method)
     {
-        $this->merchantId = $this->method->getConfigValue('merchant_id', '');
-        $this->saltKey = $this->method->getConfigValue('salt_key', '');
-        $this->saltIndex = (string) $this->method->getConfigValue('salt_index', '1');
-        $this->env = $this->method->getConfigValue('env', 'UAT');
+        $this->merchantId = (string) ($this->method->getConfigValue('merchant_id') ?? '');
+        $this->saltKey = (string) ($this->method->getConfigValue('salt_key') ?? '');
+        $this->saltIndex = (string) ($this->method->getConfigValue('salt_index') ?? '1');
+        $this->env = (string) ($this->method->getConfigValue('env') ?? 'UAT');
         
         $this->baseUrl = $this->env === 'PROD' 
             ? 'https://api.phonepe.com/apis/hermes' 

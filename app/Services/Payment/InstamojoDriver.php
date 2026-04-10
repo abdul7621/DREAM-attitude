@@ -18,9 +18,9 @@ class InstamojoDriver implements PaymentGatewayInterface
 
     public function __construct(protected PaymentMethod $method)
     {
-        $this->apiKey = $this->method->getConfigValue('api_key', '');
-        $this->authToken = $this->method->getConfigValue('auth_token', '');
-        $this->env = $this->method->getConfigValue('env', 'TEST');
+        $this->apiKey = (string) ($this->method->getConfigValue('api_key') ?? '');
+        $this->authToken = (string) ($this->method->getConfigValue('auth_token') ?? '');
+        $this->env = (string) ($this->method->getConfigValue('env') ?? 'TEST');
         
         $this->baseUrl = $this->env === 'PROD' 
             ? 'https://www.instamojo.com/api/1.1' 

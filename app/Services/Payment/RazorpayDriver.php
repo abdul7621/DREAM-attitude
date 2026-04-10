@@ -16,8 +16,8 @@ class RazorpayDriver implements PaymentGatewayInterface
 
     public function __construct(protected PaymentMethod $method)
     {
-        $this->keyId = $this->method->getConfigValue('key_id', config('commerce.razorpay.key', ''));
-        $this->keySecret = $this->method->getConfigValue('key_secret', config('commerce.razorpay.secret', ''));
+        $this->keyId = (string) ($this->method->getConfigValue('key_id') ?? config('commerce.razorpay.key', ''));
+        $this->keySecret = (string) ($this->method->getConfigValue('key_secret') ?? config('commerce.razorpay.secret', ''));
     }
 
     public function getDriverName(): string
