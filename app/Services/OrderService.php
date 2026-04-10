@@ -98,7 +98,7 @@ class OrderService
     /**
      * @param  array{customer_name: string, email: ?string, phone: string, address_line1: string, address_line2: ?string, city: string, state: string, postal_code: string, country?: string, notes?: ?string}  $data
      */
-    public function createRazorpayPendingOrder(Cart $cart, array $data): Order
+    public function createPendingOnlineOrder(Cart $cart, array $data): Order
     {
         $lines = $this->cartService->linesWithPricing();
         if ($lines->isEmpty()) {
@@ -128,7 +128,7 @@ class OrderService
                 'tax_total' => $totals['tax'],
                 'grand_total' => $totals['grand'],
                 'currency' => config('commerce.currency', 'INR'),
-                'payment_method' => Order::PAYMENT_RAZORPAY,
+                'payment_method' => $data['payment_method'],
                 'payment_status' => Order::PAYMENT_STATUS_PENDING,
                 'order_status' => Order::ORDER_STATUS_AWAITING_PAYMENT,
                 'notes' => $data['notes'] ?? null,
@@ -156,31 +156,23 @@ class OrderService
 
             $this->createPendingShipment($order);
 
-            session(['pending_razorpay_order_id' => $order->id]);
+            session(['pending_payment_order_id' => $order->id]);
 
             return $order;
         });
     }
 
-    public function finalizeRazorpayPayment(Order $order, string $razorpayOrderId, string $razorpayPaymentId, string $razorpaySignature, RazorpayService $razorpay): void
+    public function finalizeOnlinePayment(Order $order, array $requestData): void
     {
         if ($order->payment_status === Order::PAYMENT_STATUS_PAID) {
             return;
         }
 
-        if ((int) session('pending_razorpay_order_id') !== (int) $order->id) {
+        if ((int) session('pending_payment_order_id') !== (int) $order->id) {
             abort(403);
         }
 
-        if (! $razorpay->verifyPaymentSignature($razorpayOrderId, $razorpayPaymentId, $razorpaySignature)) {
-            abort(422, __('Invalid payment signature.'));
-        }
-
-        if ($order->razorpay_order_id && $order->razorpay_order_id !== $razorpayOrderId) {
-            abort(422);
-        }
-
-        DB::transaction(function () use ($order, $razorpayOrderId, $razorpayPaymentId): void {
+        DB::transaction(function () use ($order, $requestData): void {
             $order->load('orderItems.variant');
             foreach ($order->orderItems as $oi) {
                 $v = $oi->variant ?? ProductVariant::query()->find($oi->product_variant_id);
@@ -190,8 +182,6 @@ class OrderService
             }
 
             $order->update([
-                'razorpay_order_id' => $razorpayOrderId,
-                'razorpay_payment_id' => $razorpayPaymentId,
                 'payment_status' => Order::PAYMENT_STATUS_PAID,
                 'order_status' => Order::ORDER_STATUS_PLACED,
                 'placed_at' => now(),
@@ -204,9 +194,9 @@ class OrderService
                 }
             }
 
-        $cart = $this->cartService->getCart();
+            $cart = $this->cartService->getCart();
             $this->cartService->clear($cart);
-            session()->forget('pending_razorpay_order_id');
+            session()->forget('pending_payment_order_id');
         });
 
         // Fire after transaction commits

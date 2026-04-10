@@ -22,4 +22,9 @@ interface PaymentGatewayInterface
      * Throws an exception or returns false if invalid
      */
     public function verifyPayment(array $requestData, Order $order): bool;
+
+    /**
+     * Refund a payment for an order
+     */
+    public function refund(Order $order, float $amount): array;
 }

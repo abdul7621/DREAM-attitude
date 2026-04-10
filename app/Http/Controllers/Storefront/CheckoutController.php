@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Storefront;
 use App\Http\Controllers\Controller;
 use App\Services\CartService;
 use App\Services\OrderService;
-use App\Services\RazorpayService;
+use App\Services\PaymentManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -14,9 +14,10 @@ use RuntimeException;
 class CheckoutController extends Controller
 {
     public function __construct(
+    public function __construct(
         private readonly CartService $cart,
         private readonly OrderService $orders,
-        private readonly RazorpayService $razorpay
+        private readonly PaymentManager $paymentManager
     ) {}
 
     public function create(): View|RedirectResponse
@@ -28,8 +29,9 @@ class CheckoutController extends Controller
 
         $postal = old('postal_code', '');
         $totals = $this->cart->computeTotals($postal);
+        $activeGateways = $this->paymentManager->activeGateways();
 
-        return view('storefront.checkout', compact('lines', 'totals'));
+        return view('storefront.checkout', compact('lines', 'totals', 'activeGateways'));
     }
 
     public function store(Request $request): View|RedirectResponse
@@ -50,7 +52,7 @@ class CheckoutController extends Controller
             'postal_code' => ['required', 'string', 'max:16'],
             'country' => ['nullable', 'string', 'max:8'],
             'notes' => ['nullable', 'string', 'max:2000'],
-            'payment_method' => ['required', 'in:cod,razorpay'],
+            'payment_method' => ['required', \Illuminate\Validation\Rule::in(\App\Models\PaymentMethod::active()->pluck('name')->toArray())],
         ]);
 
         if ($validator->fails()) {
@@ -95,32 +97,21 @@ class CheckoutController extends Controller
         try {
             if ($data['payment_method'] === 'cod') {
                 $order = $this->orders->createCodOrder($cart, $data);
-
                 return redirect()->route('order.success', ['orderNumber' => $order->order_number]);
             }
 
-            if (! $this->razorpay->isConfigured()) {
-                return back()->withErrors(['payment_method' => __('Online payment is not configured.')])->withInput();
-            }
+            $gateway = $this->paymentManager->driver($data['payment_method']);
+            $order = $this->orders->createPendingOnlineOrder($cart, $data);
+            
+            $paymentData = $gateway->createOrder($order);
 
-            $order = $this->orders->createRazorpayPendingOrder($cart, $data);
-
-            $amountPaise = (int) round(((float) $order->grand_total) * 100);
-            $rz = $this->razorpay->createOrder($amountPaise, $order->order_number);
-
-            $order->update(['razorpay_order_id' => $rz['id']]);
-
-            $key = config('commerce.razorpay.key');
-
-            return view('storefront.checkout-razorpay', [
+            return view('storefront.checkout-pay', [
                 'order' => $order,
-                'razorpayKey' => $key,
-                'amountPaise' => $amountPaise,
-                'customerName' => $order->customer_name,
-                'customerEmail' => $order->email,
-                'customerPhone' => $order->phone,
+                'gateway' => $data['payment_method'],
+                'paymentData' => $paymentData,
             ]);
-        } catch (RuntimeException $e) {
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Checkout failed:", ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return back()->withErrors(['checkout' => $e->getMessage()])->withInput();
         }
     }

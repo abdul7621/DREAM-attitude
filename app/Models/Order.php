@@ -8,10 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
-    // ── Payment methods ──────────────────────────────────────
-    public const PAYMENT_COD = 'cod';
-    public const PAYMENT_RAZORPAY = 'razorpay';
-
+    // Payment constants were removed to support dynamic gateways.
+    
     // ── Payment statuses ─────────────────────────────────────
     public const PAYMENT_STATUS_PENDING = 'pending';
     public const PAYMENT_STATUS_PAID = 'paid';
@@ -79,8 +77,8 @@ class Order extends Model
         'payment_method',
         'payment_status',
         'order_status',
-        'razorpay_order_id',
-        'razorpay_payment_id',
+        'gateway_order_id',
+        'gateway_payment_id',
         'notes',
         'placed_at',
         'coupon_id',

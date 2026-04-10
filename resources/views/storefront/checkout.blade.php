@@ -186,36 +186,44 @@
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-header bg-white py-3 fw-bold fs-5 border-bottom"><i class="bi bi-credit-card me-2"></i> Payment Method</div>
                         <div class="card-body p-3">
-                            <x-sf-card class="mb-3 payment-card" style="cursor: pointer;" id="card_prepaid">
-                                <label class="d-flex gap-3 align-items-start m-0 w-100" style="cursor: pointer;">
-                                    <input class="form-check-input mt-1 shadow-sm" type="radio" name="payment_method" value="razorpay" @checked(old('payment_method', 'razorpay') === 'razorpay') style="width: 1.5em; height: 1.5em;">
-                                    <div class="w-100">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span class="fw-bold fs-6">Pay Online (UPI, Cards, NetBanking)</span>
-                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-2"><i class="bi bi-lightning-fill"></i> {{ $copy['prepaid_badge'] ?: 'Recommended' }}</span>
-                                        </div>
-                                        <p class="text-secondary small mt-1 mb-2">{{ $copy['prepaid_message'] ?: 'Most customers choose prepaid for faster delivery' }}</p>
-                                        <div class="d-flex gap-2">
-                                            <span class="badge bg-light text-dark border"><i class="bi bi-phone"></i> UPI</span>
-                                            <span class="badge bg-light text-dark border"><i class="bi bi-credit-card"></i> Cards</span>
-                                            <span class="badge bg-light text-dark border"><i class="bi bi-bank"></i> NetBanking</span>
-                                        </div>
-                                    </div>
-                                </label>
-                            </x-sf-card>
+                            @php
+                                $onlineGateways = collect($activeGateways ?? [])->where('name', '!=', 'cod');
+                                $codGateway = collect($activeGateways ?? [])->firstWhere('name', 'cod');
+                            @endphp
+
+                            @if($onlineGateways->isNotEmpty())
+                                @foreach($onlineGateways as $gw)
+                                    <x-sf-card class="mb-3 payment-card" style="cursor: pointer;" id="card_{{ $gw->name }}">
+                                        <label class="d-flex gap-3 align-items-start m-0 w-100" style="cursor: pointer;">
+                                            <input class="form-check-input mt-1 shadow-sm" type="radio" name="payment_method" value="{{ $gw->name }}" @checked(old('payment_method', ($gw->is_default ? $gw->name : '')) === $gw->name) style="width: 1.5em; height: 1.5em;">
+                                            <div class="w-100">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span class="fw-bold fs-6">{{ $gw->label }}</span>
+                                                    @if($gw->is_default)
+                                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-2"><i class="bi bi-lightning-fill"></i> Recommended</span>
+                                                    @endif
+                                                </div>
+                                                <p class="text-secondary small mt-1 mb-2">{{ $gw->name === 'razorpay' ? 'UPI, Cards, NetBanking' : 'Pay via ' . $gw->label }}</p>
+                                            </div>
+                                        </label>
+                                    </x-sf-card>
+                                @endforeach
+                            @endif
                             
-                            <x-sf-card class="payment-card" style="cursor: pointer;" id="card_cod">
-                                <label class="d-flex gap-3 align-items-start m-0 w-100" style="cursor: pointer;">
-                                    <input class="form-check-input mt-1 shadow-sm" type="radio" name="payment_method" value="cod" @checked(old('payment_method') === 'cod') style="width: 1.5em; height: 1.5em;">
-                                    <div class="w-100">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span class="fw-bold fs-6">Cash on Delivery (COD)</span>
-                                            <span class="fw-semibold text-secondary small">{{ $copy['cod_fee_message'] ?: '₹0 Additional Fee' }}</span>
+                            @if($codGateway)
+                                <x-sf-card class="payment-card" style="cursor: pointer;" id="card_cod">
+                                    <label class="d-flex gap-3 align-items-start m-0 w-100" style="cursor: pointer;">
+                                        <input class="form-check-input mt-1 shadow-sm" type="radio" name="payment_method" value="cod" @checked(old('payment_method', ($codGateway->is_default ? 'cod' : '')) === 'cod') style="width: 1.5em; height: 1.5em;">
+                                        <div class="w-100">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="fw-bold fs-6">{{ $codGateway->label ?: 'Cash on Delivery (COD)' }}</span>
+                                                <span class="fw-semibold text-secondary small">{{ $copy['cod_fee_message'] ?: '₹0 Additional Fee' }}</span>
+                                            </div>
+                                            <p class="text-secondary small mt-1 mb-0">{{ $copy['cod_message'] ?: 'Pay when your order is delivered to you.' }}</p>
                                         </div>
-                                        <p class="text-secondary small mt-1 mb-0">{{ $copy['cod_message'] ?: 'Pay when your order is delivered to you.' }}</p>
-                                    </div>
-                                </label>
-                            </x-sf-card>
+                                    </label>
+                                </x-sf-card>
+                            @endif
                         </div>
                     </div>
 

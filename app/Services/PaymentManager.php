@@ -3,27 +3,55 @@
 namespace App\Services;
 
 use App\Contracts\PaymentGatewayInterface;
+use App\Models\PaymentMethod;
+use App\Services\Payment\RazorpayDriver;
+use App\Services\Payment\PhonePeDriver;
+use App\Services\Payment\CashfreeDriver;
+use App\Services\Payment\InstamojoDriver;
+use App\Services\Payment\PayUDriver;
+use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
 class PaymentManager
 {
-    /**
-     * @var array<string, PaymentGatewayInterface>
-     */
-    protected array $drivers = [];
-
-    public function extend(string $driverName, PaymentGatewayInterface $driver): self
+    public function driver(string $name): PaymentGatewayInterface
     {
-        $this->drivers[$driverName] = $driver;
-        return $this;
+        $method = PaymentMethod::where('name', $name)
+            ->where('is_active', true)
+            ->firstOrFail();
+
+        $driverName = $method->driver ?? $method->name;
+
+        return match ($driverName) {
+            'razorpay'  => new RazorpayDriver($method),
+            'phonepe'   => new PhonePeDriver($method),
+            'cashfree'  => new CashfreeDriver($method),
+            'instamojo' => new InstamojoDriver($method),
+            'payu'      => new PayUDriver($method),
+            default     => throw new InvalidArgumentException("Unsupported gateway driver: {$driverName}"),
+        };
     }
 
-    public function driver(string $driverName): PaymentGatewayInterface
+    public function defaultDriver(): ?PaymentGatewayInterface
     {
-        if (!isset($this->drivers[$driverName])) {
-            throw new InvalidArgumentException("Payment driver [{$driverName}] not supported.");
+        $method = PaymentMethod::where('is_default', true)
+            ->where('is_active', true)
+            ->first();
+
+        if (!$method) {
+            return null;
         }
 
-        return $this->drivers[$driverName];
+        return $this->driver($method->name);
+    }
+
+    public function activeGateways(): Collection
+    {
+        return PaymentMethod::active()->orderBy('sort_order')->get();
+    }
+
+    public function activeOnlineGateways(): Collection
+    {
+        return PaymentMethod::online()->orderBy('sort_order')->get();
     }
 }

@@ -46,11 +46,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(ShopifyImporter::class);
         $this->app->singleton(WooImporter::class);
         
-        $this->app->singleton(\App\Services\PaymentManager::class, function ($app) {
-            $manager = new \App\Services\PaymentManager();
-            $manager->extend('razorpay', $app->make(\App\Services\Payment\RazorpayDriver::class));
-            return $manager;
-        });
+        $this->app->singleton(\App\Services\PaymentManager::class);
     }
 
     /**

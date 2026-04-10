@@ -70,7 +70,8 @@ Route::delete('/cart/coupon', [CartController::class, 'removeCoupon'])->name('ca
 Route::get('/checkout', [CheckoutController::class, 'create'])->name('checkout.create');
 Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
 
-Route::post('/payments/razorpay/verify', [PaymentController::class, 'razorpayVerify'])->name('payments.razorpay.verify');
+Route::post('/payments/verify', [PaymentController::class, 'verify'])->name('payments.verify');
+Route::post('/payments/razorpay/verify', [PaymentController::class, 'verify'])->name('payments.razorpay.verify');
 
 Route::get('/order/{orderNumber}/success', [OrderSuccessController::class, 'show'])->name('order.success');
 
@@ -163,6 +164,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Settings
     Route::get('settings', [AdminSettingController::class, 'edit'])->name('settings.edit');
     Route::put('settings', [AdminSettingController::class, 'update'])->name('settings.update');
+    Route::get('settings/payments', [\App\Http\Controllers\Admin\PaymentSettingsController::class, 'index'])->name('settings.payments');
+    Route::post('settings/payments', [\App\Http\Controllers\Admin\PaymentSettingsController::class, 'update'])->name('settings.payments.update');
 
     // Theme Engine Operations
     Route::get('theme', [\App\Http\Controllers\Admin\ThemeController::class, 'index'])->name('theme.index');
