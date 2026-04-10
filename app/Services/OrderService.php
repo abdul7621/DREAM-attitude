@@ -53,7 +53,7 @@ class OrderService
                 'tax_total' => $totals['tax'],
                 'grand_total' => $totals['grand'],
                 'currency' => config('commerce.currency', 'INR'),
-                'payment_method' => Order::PAYMENT_COD,
+                'payment_method' => $data['payment_method'] ?? 'cod',
                 'payment_status' => Order::PAYMENT_STATUS_PENDING,
                 'order_status' => Order::ORDER_STATUS_PLACED,
                 'notes' => $data['notes'] ?? null,
