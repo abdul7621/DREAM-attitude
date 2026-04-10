@@ -48,9 +48,9 @@ class PhonePeDriver implements PaymentGatewayInterface
             'merchantTransactionId' => $transactionId,
             'merchantUserId' => 'MUID_' . ($order->user_id ?? $order->email ?? uniqid()),
             'amount' => $amountPaise,
-            'redirectUrl' => route('payments.verify'),
+            'redirectUrl' => route('payments.verify', ['gateway' => 'phonepe']),
             'redirectMode' => 'POST',
-            'callbackUrl' => route('payments.verify'),
+            'callbackUrl' => route('payments.verify', ['gateway' => 'phonepe']),
             'mobileNumber' => $order->phone,
             'paymentInstrument' => [
                 'type' => 'PAY_PAGE'
@@ -91,6 +91,7 @@ class PhonePeDriver implements PaymentGatewayInterface
         } catch (Exception $e) {
             Log::error("PhonePe order creation failed", ['error' => $e->getMessage(), 'order' => $order->id]);
             throw $e;
+        }
     }
 
     public function extractOrderId(array $requestData): ?string
