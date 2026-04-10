@@ -199,6 +199,10 @@
                 <span class="badge bg-primary rounded-pill">{{ $badgeCountPendingReviews }}</span>
             @endif
         </a>
+        <a href="{{ route('admin.notifications.index') }}"
+           class="sidebar-link {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}">
+            <i class="bi bi-bell"></i> Notifications
+        </a>
 
         {{-- ─── REPORTS ───────────────────────────────────── --}}
         <div class="sidebar-section-label">Reports</div>

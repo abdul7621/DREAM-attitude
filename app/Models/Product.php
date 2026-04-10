@@ -44,6 +44,18 @@ class Product extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        $flush = function () {
+            \Illuminate\Support\Facades\Cache::forget('home_featured');
+            \Illuminate\Support\Facades\Cache::forget('home_bestsellers');
+            \Illuminate\Support\Facades\Cache::forget('home_latest');
+        };
+
+        static::saved($flush);
+        static::deleted($flush);
+    }
+
     public function getMetaTitleAttribute()
     {
         return $this->seo_title ?? ($this->meta['meta_title'] ?? null);

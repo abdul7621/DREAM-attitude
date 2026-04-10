@@ -92,6 +92,8 @@ class Order extends Model
         'utm_term',
         'gclid',
         'fbclid',
+        'review_request_sent_at',
+        'replenishment_reminder_sent_at',
     ];
 
     protected function casts(): array

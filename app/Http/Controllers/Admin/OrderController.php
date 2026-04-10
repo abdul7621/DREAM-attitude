@@ -42,7 +42,14 @@ class OrderController extends Controller
     {
         $order->load(['orderItems', 'shipments', 'coupon', 'user', 'returnRequests', 'statusLogs']);
 
-        return view('admin.orders.show', compact('order'));
+        $previousOrders = collect();
+        if ($order->user_id) {
+            $previousOrders = Order::where('user_id', $order->user_id)->where('id', '!=', $order->id)->latest()->get();
+        } elseif ($order->phone) {
+            $previousOrders = Order::where('phone', $order->phone)->where('id', '!=', $order->id)->latest()->get();
+        }
+
+        return view('admin.orders.show', compact('order', 'previousOrders'));
     }
 
     /**

@@ -3,10 +3,19 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
-        <h1 class="h4 mb-1">{{ $user->name }}</h1>
+        <h1 class="h4 mb-1">
+            {{ $user->name }}
+            <span class="badge bg-{{ $segmentBadge['color'] }} ms-2" style="font-size:.7rem;">{{ $segmentBadge['label'] }}</span>
+        </h1>
         <span class="small text-muted">Customer since {{ $user->created_at?->format('d M Y') ?? '—' }}</span>
     </div>
-    <a href="{{ route('admin.customers.index') }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-arrow-left"></i> Back</a>
+    <div class="d-flex gap-2 align-items-center">
+        @if($user->phone)
+            <a href="tel:{{ $user->phone }}" class="btn btn-sm btn-outline-primary" title="Call"><i class="bi bi-telephone-outbound"></i> Call</a>
+            <a href="https://wa.me/91{{ preg_replace('/^(\+?91)/', '', (string)$user->phone) }}" target="_blank" class="btn btn-sm btn-outline-success" title="WhatsApp"><i class="bi bi-whatsapp"></i> WhatsApp</a>
+        @endif
+        <a href="{{ route('admin.customers.index') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+    </div>
 </div>
 
 <div class="row g-3 mb-4">

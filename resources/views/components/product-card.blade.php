@@ -38,6 +38,14 @@
                     <span class="discount-tag">{{ $discount }}% OFF</span>
                 @endif
             </div>
+            <form action="{{ route('cart.items.store') }}" method="POST" class="mt-2">
+                @csrf
+                <input type="hidden" name="variant_id" value="{{ $variant->id }}">
+                <input type="hidden" name="qty" value="1">
+                <button type="submit" class="btn btn-sm btn-primary w-100 py-1">
+                    <i class="bi bi-cart-plus me-1"></i> Add to Cart
+                </button>
+            </form>
         @endif
     </div>
 </div>

@@ -151,7 +151,11 @@
                 <div class="card-header"><i class="bi bi-person"></i> Customer</div>
                 <div class="card-body">
                     <p class="fw-semibold mb-1">{{ $order->customer_name }}</p>
-                    <p class="small text-muted mb-1"><i class="bi bi-telephone"></i> {{ $order->phone }}</p>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="small text-muted"><i class="bi bi-telephone"></i> {{ $order->phone }}</span>
+                        <a href="tel:{{ $order->phone }}" class="btn btn-sm btn-outline-primary py-0 px-2" title="Call Customer"><i class="bi bi-telephone-outbound"></i></a>
+                        <a href="https://wa.me/91{{ preg_replace('/^(\+?91)/', '', (string)$order->phone) }}?text=Hi%20{{ urlencode($order->customer_name) }},%20regarding%20your%20order%20%23{{ $order->order_number }}" target="_blank" class="btn btn-sm btn-outline-success py-0 px-2" title="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+                    </div>
                     <p class="small text-muted mb-0"><i class="bi bi-envelope"></i> {{ $order->email }}</p>
                 </div>
             </div>
@@ -164,6 +168,38 @@
                     @if ($order->address_line2){{ $order->address_line2 }}<br>@endif
                     {{ $order->city }}, {{ $order->state }} {{ $order->postal_code }}<br>
                     {{ $order->country ?? 'India' }}
+                </div>
+            </div>
+
+            {{-- History Panel --}}
+            <div class="card mb-3">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-clock-history"></i> Customer History</span>
+                    <span class="badge bg-secondary rounded-pill">{{ $previousOrders->count() }} Past Orders</span>
+                </div>
+                <div class="card-body p-0">
+                    @if($previousOrders->isEmpty())
+                        <div class="p-3 text-center text-muted small">No previous orders found. This seems to be a new customer.</div>
+                    @else
+                        <div class="list-group list-group-flush small">
+                            @foreach($previousOrders->take(5) as $prevOrder)
+                                <a href="{{ route('admin.orders.show', $prevOrder) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>#{{ $prevOrder->order_number }}</strong>
+                                        <br><span class="text-muted">{{ $prevOrder->placed_at ? $prevOrder->placed_at->format('M d, Y') : $prevOrder->created_at->format('M d, Y') }}</span>
+                                    </div>
+                                    <span class="badge bg-{{ \App\Models\Order::STATUS_LABELS[$prevOrder->order_status]['color'] ?? 'secondary' }}">
+                                        {{ \App\Models\Order::STATUS_LABELS[$prevOrder->order_status]['label'] ?? ucfirst($prevOrder->order_status) }}
+                                    </span>
+                                </a>
+                            @endforeach
+                            @if($previousOrders->count() > 5)
+                                <div class="list-group-item text-center text-muted fst-italic">
+                                    + {{ $previousOrders->count() - 5 }} more orders
+                                </div>
+                            @endif
+                        </div>
+                    @endif
                 </div>
             </div>
 

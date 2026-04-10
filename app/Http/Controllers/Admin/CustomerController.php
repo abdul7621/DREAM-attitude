@@ -39,9 +39,11 @@ class CustomerController extends Controller
         $orderCount = $user->orders->count();
         $avgOrder = $orderCount > 0 ? round($totalSpent / $orderCount, 2) : 0;
 
+        $segmentBadge = app(\App\Services\CustomerSegmentService::class)->segmentBadge($user);
+
         $reviews = \App\Models\Review::where('user_id', $user->id)->with('product')->latest()->get();
         $returns = \App\Models\ReturnRequest::whereIn('order_id', $user->orders->pluck('id'))->with('order')->latest()->get();
 
-        return view('admin.customers.show', compact('user', 'totalSpent', 'orderCount', 'avgOrder', 'reviews', 'returns'));
+        return view('admin.customers.show', compact('user', 'totalSpent', 'orderCount', 'avgOrder', 'segmentBadge', 'reviews', 'returns'));
     }
 }

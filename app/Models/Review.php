@@ -21,6 +21,13 @@ class Review extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        $flush = fn () => \Illuminate\Support\Facades\Cache::forget('home_reviews');
+        static::saved($flush);
+        static::deleted($flush);
+    }
+
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);

@@ -27,6 +27,13 @@ class Category extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        $flush = fn () => \Illuminate\Support\Facades\Cache::forget('home_categories');
+        static::saved($flush);
+        static::deleted($flush);
+    }
+
     public function getMetaTitleAttribute()
     {
         return $this->seo_title;
