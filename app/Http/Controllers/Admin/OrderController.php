@@ -96,6 +96,10 @@ class OrderController extends Controller
 
         event(new \App\Events\OrderStatusChanged($order, $oldStatus, $newStatus, $data['admin_notes'] ?? null));
 
+        if ($newStatus === 'shipped' && $oldStatus !== 'shipped') {
+            event(new \App\Events\OrderShipped($order));
+        }
+
         return redirect()->route('admin.orders.show', $order)->with('success', "Order status updated to \"{$newStatus}\".");
     }
 
