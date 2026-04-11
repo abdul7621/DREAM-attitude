@@ -34,12 +34,12 @@ class DashboardController extends Controller
                 'totalRevenue' => $totalRevenue,
                 'pendingOrders' => Order::query()->where('order_status', Order::ORDER_STATUS_PLACED)->count(),
                 'aov' => $totalPaidOrders > 0 ? round($totalRevenue / $totalPaidOrders, 2) : 0,
-                'codOrders' => Order::where('payment_method', Order::PAYMENT_COD)
+                'codOrders' => Order::where('payment_method', 'cod')
                     ->whereNotIn('order_status', ['cancelled', 'refunded'])->count(),
-                'prepaidOrders' => Order::where('payment_method', '!=', Order::PAYMENT_COD)
+                'prepaidOrders' => Order::where('payment_method', '!=', 'cod')
                     ->whereNotIn('order_status', ['cancelled', 'refunded'])->count(),
                 'highRiskCod' => Order::query()
-                    ->where('payment_method', Order::PAYMENT_COD)
+                    ->where('payment_method', 'cod')
                     ->where('order_status', Order::ORDER_STATUS_PLACED)
                     ->where('grand_total', '>=', 5000)->count(),
                 'pendingReviewsCount' => Review::where('is_approved', false)->count(),

@@ -77,4 +77,9 @@ class Coupon extends Model
             }
         });
     }
+
+    public function orders(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Order::class, 'coupon_id');
+    }
 }

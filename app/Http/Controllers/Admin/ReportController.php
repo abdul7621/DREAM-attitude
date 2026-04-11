@@ -62,7 +62,7 @@ class ReportController extends Controller
         $refundValuePercent = $grossRevenue > 0 ? round(($refundAmount / $grossRevenue) * 100, 2) : 0;
 
         // ── COD vs Prepaid split ──
-        $codOrders = (clone $validOrdersQuery)->where('payment_method', Order::PAYMENT_COD)->count();
+        $codOrders = (clone $validOrdersQuery)->where('payment_method', 'cod')->count();
         $prepaidOrders = $totalOrders - $codOrders;
 
         // ── Conversion Proxy (Orders / Carts) ──
@@ -207,7 +207,7 @@ class ReportController extends Controller
         $codHeavyCustomers = User::where('is_admin', false)
             ->withCount(['orders as total_orders'])
             ->withCount(['orders as cod_orders' => function($q) {
-                $q->where('payment_method', Order::PAYMENT_COD);
+                $q->where('payment_method', 'cod');
             }])
             ->withCount(['orders as failed_orders' => function($q) {
                 $q->whereIn('order_status', [Order::ORDER_STATUS_CANCELLED, Order::ORDER_STATUS_REFUNDED]);
