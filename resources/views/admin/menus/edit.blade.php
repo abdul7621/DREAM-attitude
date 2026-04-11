@@ -14,7 +14,7 @@
         <div class="card mb-4">
             <div class="card-header bg-white fw-bold"><i class="bi bi-plus-circle me-1"></i> Add Menu Item</div>
             <div class="card-body">
-                <form action="{{ route('admin.menus.items.store') }}" method="POST">
+                <form action="{{ route('admin.menus.items.store', $menu) }}" method="POST">
                     @csrf
                     <input type="hidden" name="menu_id" value="{{ $menu->id }}">
                     
@@ -96,7 +96,7 @@
                                     <div class="small text-muted mt-1"><i class="bi bi-sort-numeric-down"></i> Sort: {{ $item->sort_order }}</div>
                                 </div>
                                 <div class="d-flex gap-2">
-                                    <form action="{{ route('admin.menus.items.destroy', $item) }}" method="POST" onsubmit="return confirm('Delete this link?');">
+                                    <form action="{{ route('admin.menus.items.destroy', [$menu, $item]) }}" method="POST" onsubmit="return confirm('Delete this link?');">
                                         @csrf @method('DELETE')
                                         <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                                     </form>
@@ -113,7 +113,7 @@
                                                 {{ $child->label }} <span class="text-muted small ms-2">{{ $child->link }}</span>
                                                 <span class="small text-muted ms-2">[Sort: {{ $child->sort_order }}]</span>
                                             </div>
-                                            <form action="{{ route('admin.menus.items.destroy', $child) }}" method="POST" onsubmit="return confirm('Delete this child link?');">
+                                            <form action="{{ route('admin.menus.items.destroy', [$menu, $child]) }}" method="POST" onsubmit="return confirm('Delete this child link?');">
                                                 @csrf @method('DELETE')
                                                 <button class="btn btn-sm btn-outline-danger border-0"><i class="bi bi-x-lg"></i></button>
                                             </form>
