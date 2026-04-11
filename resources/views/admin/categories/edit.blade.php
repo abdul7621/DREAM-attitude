@@ -4,7 +4,7 @@
 
 @section('content')
     <h1 class="h4 mb-3">Edit category</h1>
-    <form action="{{ route('admin.categories.update', $category) }}" method="post" class="bg-white p-3 rounded shadow-sm col-lg-8">
+    <form action="{{ route('admin.categories.update', $category) }}" method="post" enctype="multipart/form-data" class="bg-white p-3 rounded shadow-sm col-lg-8">
         @csrf
         @method('PUT')
         <div class="mb-3">
@@ -27,6 +27,16 @@
         <div class="mb-3">
             <label class="form-label">Description</label>
             <textarea name="description" rows="3" class="form-control">{{ old('description', $category->description) }}</textarea>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Category Image</label>
+            @if($category->image_path)
+                <div class="mb-2 p-2 bg-light rounded text-center">
+                    <img src="{{ asset('storage/' . $category->image_path) }}" alt="{{ $category->name }}" class="img-fluid rounded" style="max-height: 150px;">
+                </div>
+            @endif
+            <input type="file" name="image" class="form-control" accept="image/*">
+            <div class="form-text">Recommended: 800×600px, Max 2MB. Leave empty to keep current image.</div>
         </div>
         <div class="mb-3">
             <label class="form-label">Sort order</label>

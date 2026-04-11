@@ -11,6 +11,8 @@
     @include('partials.tracking-head')
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="{{ asset('css/storefront.css') }}" rel="stylesheet">
     
@@ -88,10 +90,14 @@
 {{-- ── Announcement Bar ────────────────────────────────── --}}
 @php $announcementActive = $ss->get('theme.announcement_active', false); @endphp
 @if($announcementActive && $ss->get('theme.announcement_text'))
-<div class="sf-announcement-bar text-center py-2 small fw-medium position-relative" 
+<div class="sf-announcement-bar py-2 small fw-medium position-relative overflow-hidden" 
      style="background: var(--brand-primary); color: #fff; z-index: 1040;" id="announcementBar">
-    {{ $ss->get('theme.announcement_text') }}
-    <button type="button" class="btn-close btn-close-white position-absolute end-0 top-50 translate-middle-y me-3" style="font-size:.6rem; padding: 0.5rem;" 
+    <div class="marquee-container d-flex align-items-center w-100" style="white-space: nowrap;">
+        <marquee behavior="scroll" direction="left" scrollamount="6">
+            {{ $ss->get('theme.announcement_text') }}
+        </marquee>
+    </div>
+    <button type="button" class="btn-close btn-close-white position-absolute end-0 top-50 translate-middle-y me-3" style="font-size:.6rem; padding: 0.5rem; z-index: 2;" 
             onclick="document.getElementById('announcementBar').remove();"></button>
 </div>
 @endif
@@ -99,7 +105,13 @@
 {{-- ── Header ──────────────────────────────────────────── --}}
 <nav class="navbar navbar-expand-lg sf-header">
     <div class="container">
-        <a class="navbar-brand" href="{{ route('home') }}">{{ config('app.name') }}</a>
+        @if($ss->get('theme.logo'))
+            <a class="navbar-brand" href="{{ route('home') }}">
+                <img src="{{ asset('storage/' . $ss->get('theme.logo')) }}" alt="{{ config('app.name') }}" style="max-height: 40px;">
+            </a>
+        @else
+            <a class="navbar-brand" href="{{ route('home') }}">{{ config('app.name') }}</a>
+        @endif
         <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-controls="navMain" aria-expanded="false" aria-label="Toggle navigation">
             <i class="bi bi-list text-white" style="font-size:1.5rem;"></i>
         </button>
@@ -205,11 +217,17 @@
         <div class="row g-4">
             <div class="col-lg-4">
                 <h6>{{ config('app.name') }}</h6>
-                <p class="small" style="max-width:280px;">Premium quality products delivered to your doorstep. 100% authentic, fast delivery across India.</p>
+                <p class="small" style="max-width:280px;">{{ $ss->get('store.footer_text', 'Premium quality products delivered to your doorstep. 100% authentic, fast delivery across India.') }}</p>
                 <div class="mt-3">
-                    <a href="#" class="social-icon"><i class="bi bi-instagram"></i></a>
-                    <a href="#" class="social-icon"><i class="bi bi-facebook"></i></a>
-                    <a href="#" class="social-icon"><i class="bi bi-whatsapp"></i></a>
+                    @if($ss->get('store.instagram'))
+                        <a href="{{ $ss->get('store.instagram') }}" class="social-icon" target="_blank" rel="noopener"><i class="bi bi-instagram"></i></a>
+                    @endif
+                    @if($ss->get('store.facebook'))
+                        <a href="{{ $ss->get('store.facebook') }}" class="social-icon" target="_blank" rel="noopener"><i class="bi bi-facebook"></i></a>
+                    @endif
+                    @if($ss->get('store.whatsapp'))
+                        <a href="https://wa.me/{{ $ss->get('store.whatsapp') }}" class="social-icon" target="_blank" rel="noopener"><i class="bi bi-whatsapp"></i></a>
+                    @endif
                 </div>
             </div>
             <div class="col-6 col-lg-2">
@@ -250,7 +268,16 @@
                 </ul>
             </div>
         </div>
-        <div class="footer-bottom text-center">
+        
+        <div class="row mt-5 pt-4 border-top border-secondary border-opacity-25">
+            <div class="col-12 text-center text-md-start">
+                @if($ss->get('theme.footer_seo_text'))
+                <div class="small text-muted mb-3" style="font-size: 0.75rem;">
+                    {!! nl2br(e($ss->get('theme.footer_seo_text'))) !!}
+                </div>
+        @endif
+
+        <div class="footer-bottom text-center mt-4">
             © {{ date('Y') }} {{ config('app.name') }}. All rights reserved.
         </div>
     </div>

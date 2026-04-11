@@ -107,15 +107,34 @@
                 <img src="{{ asset('storage/'.$product->primaryImage()->path) }}" style="width: 40px; height: 40px; object-fit: cover;" class="rounded d-none d-sm-block">
             @endif
             <div>
-                <div class="fw-bold fs-5" id="stickyPrice">₹0</div>
-                <div class="small text-muted text-truncate" style="max-width: 150px;">{{ $product->name }}</div>
+                <div class="d-flex align-items-baseline gap-2">
+                    <span class="fw-bold fs-5" id="stickyPrice">₹0</span>
+                    <span class="small text-muted text-decoration-line-through" id="stickyCompare" style="display:none;"></span>
+                </div>
+                <div class="small text-muted text-truncate" style="max-width: 150px;">{{ $product->name }} <span id="stickyVariant"></span></div>
             </div>
         </div>
-        <button onclick="document.getElementById('addToCartBtn').click();" class="btn btn-dark fw-bold px-4 py-2 flex-grow-1" style="max-width: 200px;">
-            <i class="bi bi-bag-plus me-1"></i> Add to Cart
+        <button onclick="document.getElementById('redirectInput').value='checkout'; document.getElementById('productForm').submit();" class="btn btn-dark fw-bold px-4 py-2 flex-grow-1" style="max-width: 160px; border-radius: 50px;">
+            Buy Now
         </button>
     </div>
 </div>
+
+{{-- ── Social Proof Toast ──────────────────────────────── --}}
+@php
+    $copy = app(\App\Services\SettingsService::class)->get('conversion_copy', []);
+    $spEnabled = $product->meta['show_social_proof'] ?? ($copy['social_proof_enabled'] ?? true);
+    $spInterval = $product->meta['social_proof_interval'] ?? ($copy['social_proof_interval'] ?? 8000);
+@endphp
+@if($spEnabled)
+<div id="sfSocialProof" class="sf-social-proof">
+    <i class="bi bi-check-circle-fill sp-icon"></i>
+    <div>
+        <div class="fw-bold" id="spText">Someone just bought this!</div>
+        <div class="sp-time"><span id="spTime">2</span> minutes ago</div>
+    </div>
+</div>
+@endif
 @endsection
 
 @push('scripts')
@@ -144,18 +163,35 @@
         const c = parseFloat(btn.dataset.compare) || 0;
         const stock = parseInt(btn.dataset.stock);
         const track = btn.dataset.track === '1';
+        const vname = btn.dataset.name || '';
 
         priceLabel.textContent = fmt(p);
         if (stickyPrice) stickyPrice.textContent = fmt(p);
+        
+        const stickyVariant = document.getElementById('stickyVariant');
+        if (stickyVariant && vname) stickyVariant.textContent = '- ' + vname;
+
+        const urgencyLabel = document.getElementById('urgencyLabel');
+        if(urgencyLabel) {
+            let msg = urgencyLabel.innerHTML;
+            urgencyLabel.innerHTML = msg.replace(/\d+/, Math.min(stock, {{ $product->meta['stock_display_cap'] ?? 80 }}));
+        }
+
+        const stickyCompare = document.getElementById('stickyCompare');
 
         if (c > p) {
             compareLabel.style.display = 'inline';
             compareLabel.textContent = fmt(c);
             savingsBadge.style.display = 'inline';
             savingsAmount.textContent = fmt(c - p);
+            if(stickyCompare) {
+                stickyCompare.style.display = 'inline';
+                stickyCompare.textContent = fmt(c);
+            }
         } else {
             compareLabel.style.display = 'none';
             savingsBadge.style.display = 'none';
+            if(stickyCompare) stickyCompare.style.display = 'none';
         }
 
         if (track && stock <= 0) {
@@ -231,6 +267,36 @@ fbq('track', 'ViewContent', {
     value: {!! json_encode($vprice) !!},
     currency: '{{ config('commerce.currency', 'INR') }}'
 });
+@endif
+
+@if($spEnabled)
+(function() {
+    const names = ['Rahul', 'Priya', 'Amit', 'Sneha', 'Arjun', 'Meera', 'Rohit', 'Ananya', 'Kavita', 'Sanjay', 'Pooja', 'Vikram'];
+    const cities = ['Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Surat', 'Pune', 'Jaipur', 'Ahmedabad', 'Chennai', 'Kolkata'];
+    const spToast = document.getElementById('sfSocialProof');
+    const spText = document.getElementById('spText');
+    const spTime = document.getElementById('spTime');
+    
+    function showSocialProof() {
+        if (!spToast) return;
+        const name = names[Math.floor(Math.random() * names.length)];
+        const city = cities[Math.floor(Math.random() * cities.length)];
+        const mins = Math.floor(Math.random() * 40) + 2;
+        
+        spText.textContent = `${name} from ${city} just bought this!`;
+        spTime.textContent = mins;
+        
+        spToast.classList.add('show');
+        setTimeout(() => {
+            spToast.classList.remove('show');
+        }, 4000);
+    }
+    
+    setTimeout(() => {
+        showSocialProof();
+        setInterval(showSocialProof, {{ (int) $spInterval }});
+    }, 2000);
+})();
 @endif
 </script>
 @endpush

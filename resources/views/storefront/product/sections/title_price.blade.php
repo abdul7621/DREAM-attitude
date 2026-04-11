@@ -53,17 +53,24 @@
     @endif
 
     {{-- Urgency --}}
-    @php $firstVariant = $product->variants->first(); @endphp
-    @if ($firstVariant && $firstVariant->track_inventory && $firstVariant->stock_qty <= config('commerce.pricing.low_stock_threshold', 5) && $firstVariant->stock_qty > 0)
-        <div class="mt-2">
-            <span class="text-danger fw-bold small">
-                <i class="bi bi-lightning-charge-fill"></i> 
-                {{ str_replace('{stock}', $firstVariant->stock_qty, $urgencyMsg ?: 'Only {stock} left in stock!') }}
-            </span>
+    @php 
+        $firstVariant = $product->variants->first(); 
+        $stockCap = $product->meta['stock_display_cap'] ?? app(\App\Services\SettingsService::class)->get('theme.default_stock_display_cap', 80);
+        $showStock = $product->meta['show_stock_count'] ?? true;
+    @endphp
+    @if ($firstVariant && $firstVariant->track_inventory && $firstVariant->stock_qty > 0 && $showStock)
+        @php
+            $displayQty = min($firstVariant->stock_qty, $stockCap);
+            $msg = $urgencyMsg ?: '🔥 Selling Fast! Only {stock} Left – Order Now!';
+        @endphp
+        <div class="mt-2 sf-urgency">
+            <span class="sf-pulse-dot"></span>
+            <span id="urgencyLabel">{{ str_replace('{stock}', $displayQty, $msg) }}</span>
         </div>
     @elseif($urgencyMsg)
-        <div class="mt-2">
-            <span class="text-danger fw-bold small"><i class="bi bi-fire text-danger"></i> {{ str_replace('{stock}', '', $urgencyMsg) }}</span>
+        <div class="mt-2 sf-urgency">
+            <span class="sf-pulse-dot"></span>
+            <span>{{ str_replace('{stock}', '', $urgencyMsg) }}</span>
         </div>
     @endif
 </div>

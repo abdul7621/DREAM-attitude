@@ -8,6 +8,7 @@
                     data-id="{{ $v->id }}" 
                     data-price="{{ $p['display'] }}" 
                     data-compare="{{ $p['compare'] ?? '' }}"
+                    data-name="{{ $v->title }}"
                     data-stock="{{ $v->track_inventory ? $v->stock_qty : 999 }}" 
                     data-track="{{ $v->track_inventory ? '1' : '0' }}"
                     @if($v->track_inventory && $v->stock_qty <= 0) disabled @endif>

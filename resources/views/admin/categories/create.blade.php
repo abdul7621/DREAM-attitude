@@ -4,7 +4,7 @@
 
 @section('content')
     <h1 class="h4 mb-3">Add category</h1>
-    <form action="{{ route('admin.categories.store') }}" method="post" class="bg-white p-3 rounded shadow-sm col-lg-8">
+    <form action="{{ route('admin.categories.store') }}" method="post" enctype="multipart/form-data" class="bg-white p-3 rounded shadow-sm col-lg-8">
         @csrf
         <div class="mb-3">
             <label class="form-label">Parent</label>
@@ -26,6 +26,11 @@
         <div class="mb-3">
             <label class="form-label">Description</label>
             <textarea name="description" rows="3" class="form-control">{{ old('description') }}</textarea>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Category Image</label>
+            <input type="file" name="image" class="form-control" accept="image/*">
+            <div class="form-text">Recommended: 800×600px, Max 2MB. Used on homepage category cards.</div>
         </div>
         <div class="mb-3">
             <label class="form-label">Sort order</label>

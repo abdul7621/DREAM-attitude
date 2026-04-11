@@ -36,6 +36,7 @@ class CategoryController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:190'],
             'description' => ['nullable', 'string'],
+            'image' => ['nullable', 'image', 'max:2048'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'seo_title' => ['nullable', 'string', 'max:255'],
             'seo_description' => ['nullable', 'string', 'max:512'],
@@ -44,11 +45,17 @@ class CategoryController extends Controller
         $base = $request->filled('slug') ? (string) $data['slug'] : (string) $data['name'];
         $slug = $this->slugs->forCategory($base);
 
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('categories', 'public');
+        }
+
         Category::query()->create([
             'parent_id' => $data['parent_id'] ?? null,
             'name' => $data['name'],
             'slug' => $slug,
             'description' => $data['description'] ?? null,
+            'image_path' => $imagePath,
             'sort_order' => $data['sort_order'] ?? 0,
             'is_active' => $request->boolean('is_active'),
             'seo_title' => $data['seo_title'] ?? null,
@@ -72,6 +79,7 @@ class CategoryController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:190'],
             'description' => ['nullable', 'string'],
+            'image' => ['nullable', 'image', 'max:2048'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'seo_title' => ['nullable', 'string', 'max:255'],
             'seo_description' => ['nullable', 'string', 'max:512'],
@@ -80,7 +88,7 @@ class CategoryController extends Controller
         $base = $request->filled('slug') ? (string) $data['slug'] : (string) $data['name'];
         $slug = $this->slugs->forCategory($base, $category->id);
 
-        $category->update([
+        $updateData = [
             'parent_id' => $data['parent_id'] ?? null,
             'name' => $data['name'],
             'slug' => $slug,
@@ -89,7 +97,13 @@ class CategoryController extends Controller
             'is_active' => $request->boolean('is_active'),
             'seo_title' => $data['seo_title'] ?? null,
             'seo_description' => $data['seo_description'] ?? null,
-        ]);
+        ];
+
+        if ($request->hasFile('image')) {
+            $updateData['image_path'] = $request->file('image')->store('categories', 'public');
+        }
+
+        $category->update($updateData);
 
         return redirect()->route('admin.categories.index')->with('status', __('Category updated.'));
     }

@@ -20,6 +20,23 @@
                 @endif
             </div>
         </div>
+        </div>
+    </div>
+
+    {{-- Payment Icons --}}
+    <div class="sf-payment-icons mt-3">
+        <span class="pay-icon fw-semibold text-dark me-2">Secure Checkout</span>
+        <div class="pay-divider"></div>
+        <span class="pay-icon"><i class="bi bi-google"></i> Pay</span>
+        <span class="pay-icon"><i class="bi bi-phone"></i> PhonePe</span>
+        <span class="pay-icon"><i class="bi bi-qr-code-scan"></i> UPI</span>
+        <span class="pay-icon"><i class="bi bi-credit-card"></i> Cards</span>
+        @php
+            $enabledGateways = \App\Models\PaymentMethod::where('is_active', true)->pluck('driver')->toArray();
+            $codEnabled = in_array('cod', $enabledGateways);
+        @endphp
+        @if($codEnabled)
+            <span class="pay-icon"><i class="bi bi-cash"></i> COD</span>
+        @endif
     </div>
 </div>
-
