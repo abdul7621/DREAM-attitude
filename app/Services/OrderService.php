@@ -34,7 +34,7 @@ class OrderService
 
         $totals = $this->cartService->computeTotals($data['postal_code']);
 
-        return DB::transaction(function () use ($cart, $data, $lines, $totals): Order {
+        $order = DB::transaction(function () use ($cart, $data, $lines, $totals): Order {
             $order = Order::query()->create(array_merge([
                 'order_number' => $this->newOrderNumber(),
                 'user_id' => Auth::id(),
@@ -93,6 +93,10 @@ class OrderService
 
             return $order;
         });
+
+        OrderPlaced::dispatch($order);
+
+        return $order;
     }
 
     /**
