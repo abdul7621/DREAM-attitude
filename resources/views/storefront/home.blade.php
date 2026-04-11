@@ -24,7 +24,7 @@
                 <img src="{{ asset('storage/' . $ss->get('theme.hero_image')) }}" alt="{{ $ss->get('theme.hero_title', config('app.name')) }}" class="sf-hero-bg">
             @endif
             <div class="sf-hero-overlay"></div>
-            <div class="container position-relative" style="z-index:2;">
+            <div class="sf-container position-relative" style="z-index:2;">
                 <div class="row align-items-center min-vh-50">
                     <div class="col-lg-7 col-xl-6">
                         <h1 class="sf-hero-title">{{ $ss->get('theme.hero_title', 'Discover Premium Quality Products') }}</h1>
@@ -43,7 +43,7 @@
     @if ($sectionKey === 'trust')
         {{-- ── Trust Strip ─────────────────────────────────────────── --}}
         <section class="sf-trust-bar">
-            <div class="container">
+            <div class="sf-container">
                 <div class="row g-2 text-center">
                     @php
                         $trustItems = [
@@ -132,7 +132,7 @@
         @endphp
         @if($bannerImage || $bannerText)
         <section class="sf-section py-4">
-            <div class="container">
+            <div class="sf-container">
                 <a href="{{ $bannerLink }}" class="sf-promo-banner d-block">
                     @if($bannerImage)
                         <img src="{{ asset('storage/' . $bannerImage) }}" alt="{{ $bannerText ?? 'Promotion' }}" class="w-100" loading="lazy">
@@ -190,7 +190,7 @@
         @endphp
         @if($storyTitle || $storyText)
         <section class="sf-section sf-brand-story">
-            <div class="container">
+            <div class="sf-container">
                 <div class="row align-items-center g-4">
                     @if($storyImage)
                     <div class="col-md-5">
@@ -214,7 +214,7 @@
     @if ($sectionKey === 'reviews' && isset($topReviews) && $topReviews->isNotEmpty())
         {{-- ── Customer Reviews ───────────────────── --}}
         <section class="sf-section" style="background:var(--sf-bg-alt);">
-            <div class="container">
+            <div class="sf-container">
                 <div class="text-center mb-4">
                     <h2 class="sf-section-title">{{ $sTitle ?? '💬 What Our Customers Say' }}</h2>
                     <p class="sf-section-subtitle">{{ $sSubtitle ?? 'Real reviews from verified buyers' }}</p>
