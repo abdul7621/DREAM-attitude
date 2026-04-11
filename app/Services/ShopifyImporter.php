@@ -134,36 +134,45 @@ class ShopifyImporter
         $rows   = $this->readCsv($filePath);
         $counts = ['customers' => 0, 'skipped' => 0, 'errors' => []];
 
-        foreach ($rows as $row) {
+        foreach ($rows as $index => $row) {
             try {
                 $email = trim($row['Email'] ?? '');
                 $phone = trim($row['Phone'] ?? '');
                 $name  = trim(($row['First Name'] ?? '') . ' ' . ($row['Last Name'] ?? ''));
 
-                if (! $email && ! $phone) {
+                if (! $email && ! $phone && ! $name) {
                     $counts['skipped']++;
                     continue;
                 }
 
-                // Find by email first, then create
-                $user = $email
-                    ? \App\Models\User::where('email', $email)->first()
-                    : null;
+                // Try to find existing user by email or phone
+                $user = null;
+                if ($email) {
+                    $user = \App\Models\User::where('email', $email)->first();
+                }
+                if (! $user && $phone) {
+                    $user = \App\Models\User::where('phone', $phone)->first();
+                }
 
                 if (! $user) {
+                    // Generate a unique placeholder email if none provided
+                    // (users.email is NOT NULL + UNIQUE in Laravel)
+                    $safeEmail = $email ?: 'imported_' . time() . '_' . $index . '_' . mt_rand(100,999) . '@placeholder.local';
+
                     $user = \App\Models\User::create([
                         'name'     => $name ?: 'Imported Customer',
-                        'email'    => $email ?: null,
+                        'email'    => $safeEmail,
                         'phone'    => $phone ?: null,
                         'password' => bcrypt(\Illuminate\Support\Str::random(16)),
                         'is_admin' => false,
                     ]);
                     $counts['customers']++;
                 } else {
-                    // Update phone if missing
-                    if ($phone && ! $user->phone) {
-                        $user->update(['phone' => $phone]);
-                    }
+                    // Update missing fields on existing user
+                    $updates = [];
+                    if ($phone && ! $user->phone) $updates['phone'] = $phone;
+                    if ($name && $user->name === 'Imported Customer') $updates['name'] = $name;
+                    if (! empty($updates)) $user->update($updates);
                     $counts['skipped']++;
                 }
 
@@ -186,7 +195,7 @@ class ShopifyImporter
                     );
                 }
             } catch (\Throwable $e) {
-                $counts['errors'][] = ($row['Email'] ?? '?') . ': ' . $e->getMessage();
+                $counts['errors'][] = ($row['Email'] ?? $row['Phone'] ?? 'Row '.($index+1)) . ': ' . $e->getMessage();
             }
         }
 
