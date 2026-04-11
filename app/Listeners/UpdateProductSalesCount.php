@@ -10,9 +10,9 @@ class UpdateProductSalesCount
 {
     public function handle(OrderPlaced $event): void
     {
-        foreach ($event->order->items as $item) {
-            if ($item->variant && $item->variant->product) {
-                $item->variant->product->increment('sales_count', $item->qty);
+        foreach ($event->order->orderItems as $item) {
+            if ($item->product) {
+                $item->product->increment('sales_count', $item->qty);
             }
         }
     }
