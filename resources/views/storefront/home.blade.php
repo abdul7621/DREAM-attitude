@@ -71,19 +71,13 @@
     @if ($sectionKey === 'categories' && isset($categories) && $categories->isNotEmpty())
         {{-- ── Category Showcase ────────────────────────────────────── --}}
         <section class="sf-section">
-            <div class="container">
+            <div class="sf-container">
                 <div class="text-center mb-4">
                     <h2 class="sf-section-title">{{ $sTitle ?? 'Shop by Category' }}</h2>
                     <p class="sf-section-subtitle">{{ $sSubtitle ?? 'Browse our curated collections' }}</p>
                 </div>
                 @php
                     $catCount = $categories->count();
-                    $colClass = match(true) {
-                        $catCount <= 2 => 'col-6',
-                        $catCount === 3 => 'col-md-4',
-                        $catCount === 4 => 'col-6 col-md-3',
-                        default => 'col-6 col-md-4 col-lg-2',
-                    };
                     $cardHeight = match(true) {
                         $catCount <= 2 => '350px',
                         $catCount === 3 => '300px',
@@ -91,20 +85,18 @@
                         default => '260px',
                     };
                 @endphp
-                <div class="row g-3 justify-content-center">
+                <div class="sf-category-grid">
                     @foreach ($categories as $cat)
-                        <div class="{{ $colClass }}">
-                            <a href="{{ route('category.show', $cat) }}" class="sf-cat-card" style="height: {{ $cardHeight }};">
-                                @if ($cat->image_path)
-                                    <img src="{{ asset('storage/'.$cat->image_path) }}" alt="{{ $cat->name }}" loading="lazy">
-                                @else
-                                    <div class="sf-cat-fallback"></div>
-                                @endif
-                                <div class="cat-overlay">
-                                    <span class="cat-name">{{ $cat->name }}</span>
-                                </div>
-                            </a>
-                        </div>
+                        <a href="{{ route('category.show', $cat) }}" class="sf-cat-card" style="height: {{ $cardHeight }};">
+                            @if ($cat->image_path)
+                                <img src="{{ asset('storage/'.$cat->image_path) }}" alt="{{ $cat->name }}" loading="lazy">
+                            @else
+                                <div class="sf-cat-fallback"></div>
+                            @endif
+                            <div class="cat-overlay">
+                                <span class="cat-name">{{ $cat->name }}</span>
+                            </div>
+                        </a>
                     @endforeach
                 </div>
             </div>
@@ -114,7 +106,7 @@
     @if ($sectionKey === 'bestsellers' && isset($bestsellers) && $bestsellers->isNotEmpty())
         {{-- ── Bestsellers ───────────────────────────────────────── --}}
         <section class="sf-section" style="background:var(--sf-bg-alt);">
-            <div class="container">
+            <div class="sf-container">
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <div>
                         <h2 class="sf-section-title mb-0">{{ $sTitle ?? '🔥 Bestsellers' }}</h2>
@@ -122,11 +114,9 @@
                     </div>
                     <a href="{{ route('search', ['sort' => 'bestseller']) }}" class="btn btn-sm btn-outline-dark rounded-pill">View All <i class="bi bi-arrow-right"></i></a>
                 </div>
-                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+                <div class="sf-product-grid">
                     @foreach ($bestsellers as $product)
-                        <div class="col">
-                            <x-product-card :product="$product" />
-                        </div>
+                        <x-product-card :product="$product" />
                     @endforeach
                 </div>
             </div>
@@ -160,7 +150,7 @@
     @if ($sectionKey === 'featured' && isset($featured) && $featured->isNotEmpty())
         {{-- ── Featured Products ─────────────────────────────────── --}}
         <section class="sf-section">
-            <div class="container">
+            <div class="sf-container">
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <div>
                         <h2 class="sf-section-title mb-0">{{ $sTitle ?? '✨ Featured Products' }}</h2>
@@ -168,11 +158,9 @@
                     </div>
                     <a href="{{ route('search') }}" class="btn btn-sm btn-outline-dark rounded-pill">View All <i class="bi bi-arrow-right"></i></a>
                 </div>
-                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+                <div class="sf-product-grid">
                     @foreach ($featured as $product)
-                        <div class="col">
-                            <x-product-card :product="$product" />
-                        </div>
+                        <x-product-card :product="$product" />
                     @endforeach
                 </div>
             </div>
@@ -182,13 +170,11 @@
     @if ($sectionKey === 'latest' && isset($latest) && $latest->isNotEmpty())
         {{-- ── New Arrivals ───────────────────────────────────────── --}}
         <section class="sf-section" style="background:var(--sf-bg-alt);">
-            <div class="container">
+            <div class="sf-container">
                 <h2 class="sf-section-title">{{ $sTitle ?? '🆕 New Arrivals' }}</h2>
-                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3 mt-2">
+                <div class="sf-product-grid mt-2">
                     @foreach ($latest as $product)
-                        <div class="col">
-                            <x-product-card :product="$product" />
-                        </div>
+                        <x-product-card :product="$product" />
                     @endforeach
                 </div>
             </div>
