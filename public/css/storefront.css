@@ -21,10 +21,63 @@
     --sf-shadow-lg: 0 10px 40px rgba(0,0,0,.1);
     --sf-transition: all .2s ease;
     --sf-font: 'Inter', system-ui, -apple-system, sans-serif;
+
+    /* ── Layout System Tokens ────────────────────────── */
+    --sf-container-max: 1200px;
+    --sf-container-pad: 16px;
+    --sf-section-pad-y: 50px;
+    --sf-section-pad-y-sm: 32px;
+    --sf-grid-gap: 1rem;
+    --sf-grid-cols-mobile: 2;
+    --sf-grid-cols-tablet: 3;
+    --sf-grid-cols-desktop: 4;
 }
 
 * { font-family: var(--sf-font); }
 body { color: var(--sf-text); background: var(--sf-bg); }
+
+/* ── Layout System ───────────────────────────────────── */
+.sf-container {
+    width: 100%;
+    max-width: var(--sf-container-max);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--sf-container-pad);
+    padding-right: var(--sf-container-pad);
+}
+.sf-product-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--sf-grid-cols-mobile), 1fr);
+    gap: var(--sf-grid-gap);
+}
+@media (min-width: 768px) {
+    .sf-product-grid {
+        grid-template-columns: repeat(var(--sf-grid-cols-tablet), 1fr);
+    }
+}
+@media (min-width: 992px) {
+    .sf-product-grid {
+        grid-template-columns: repeat(var(--sf-grid-cols-desktop), 1fr);
+    }
+}
+.sf-category-grid {
+    display: grid;
+    gap: var(--sf-grid-gap);
+}
+@media (max-width: 767.98px) {
+    .sf-category-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 768px) {
+    .sf-category-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (min-width: 992px) {
+    .sf-category-grid { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 767.98px) {
+    :root {
+        --sf-section-pad-y: var(--sf-section-pad-y-sm);
+    }
+}
 
 /* ── Header / Navbar ──────────────────────────────────── */
 .sf-header {
@@ -111,7 +164,7 @@ body { color: var(--sf-text); background: var(--sf-bg); }
 }
 
 /* ── Section Titles ───────────────────────────────────── */
-.sf-section { padding: 50px 0; }
+.sf-section { padding: var(--sf-section-pad-y) 0; }
 .sf-section-title {
     font-size: 1.5rem; font-weight: 700; margin-bottom: 8px;
     position: relative; display: inline-block;

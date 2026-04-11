@@ -84,6 +84,17 @@ class AppServiceProvider extends ServiceProvider
 
         Event::listen(OrderPlaced::class, SendOrderPlacedNotification::class);
         Event::listen(OrderPlaced::class, \App\Listeners\UpdateProductSalesCount::class);
+        Event::listen(OrderPlaced::class, function (OrderPlaced $event): void {
+            try {
+                $sentKey = 'capi_purchase_sent_'.$event->order->id;
+                if (! \Illuminate\Support\Facades\Cache::has($sentKey)) {
+                    app(\App\Services\MetaConversionsApiService::class)->sendPurchase($event->order);
+                    \Illuminate\Support\Facades\Cache::put($sentKey, true, now()->addDays(2));
+                }
+            } catch (\Throwable $e) {
+                // Failsafe
+            }
+        });
         
         Event::listen(OrderShipped::class, SendOrderShippedNotification::class);
         

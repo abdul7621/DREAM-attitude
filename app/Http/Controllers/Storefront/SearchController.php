@@ -14,25 +14,24 @@ class SearchController extends Controller
     public function index(Request $request): View
     {
         $q = trim((string) $request->query('q', ''));
-        $products = collect();
+        $query = Product::query()->where('status', Product::STATUS_ACTIVE);
 
         if ($q !== '') {
             $like = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $q).'%';
-            $products = Product::query()
-                ->where('status', Product::STATUS_ACTIVE)
-                ->where(function ($query) use ($like, $q): void {
-                    $query->where('name', 'like', $like)
-                        ->orWhere('sku', 'like', $like)
-                        ->orWhere('brand', 'like', $like);
-                    if (DB::connection()->getDriverName() === 'mysql' && strlen($q) >= 3) {
-                        $query->orWhereRaw('SOUNDEX(name) = SOUNDEX(?)', [$q]);
-                    }
-                })
-                ->with(['variants', 'images'])
-                ->orderBy('name')
-                ->limit(48)
-                ->get();
+            $query->where(function ($qBuilder) use ($like, $q): void {
+                $qBuilder->where('name', 'like', $like)
+                    ->orWhere('sku', 'like', $like)
+                    ->orWhere('brand', 'like', $like);
+                if (DB::connection()->getDriverName() === 'mysql' && strlen($q) >= 3) {
+                    $qBuilder->orWhereRaw('SOUNDEX(name) = SOUNDEX(?)', [$q]);
+                }
+            });
         }
+
+        $products = $query->with(['variants', 'images'])
+            ->orderByDesc('id')
+            ->paginate(24)
+            ->withQueryString();
 
         return view('storefront.search', compact('products', 'q'));
     }

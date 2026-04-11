@@ -16,12 +16,7 @@ class OrderSuccessController extends Controller
     public function show(string $orderNumber): View
     {
         $order = Order::query()->where('order_number', $orderNumber)->with('orderItems')->firstOrFail();
-
-        $sentKey = 'capi_purchase_sent_'.$order->id;
-        if (! session()->get($sentKey)) {
-            $this->metaCapi->sendPurchase($order);
-            session()->put($sentKey, true);
-        }
+        // Meta CAPI is now handled robustly on the backend via OrderPlaced event.
 
         return view('storefront.order-success', compact('order'));
     }

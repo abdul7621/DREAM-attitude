@@ -111,6 +111,19 @@ class CheckoutController extends Controller
             ]);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error("Checkout failed:", ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            // Revert stock immediately if gateway initialization fails
+            if (isset($order) && $order->order_status === \App\Models\Order::ORDER_STATUS_AWAITING_PAYMENT) {
+                foreach ($order->orderItems as $item) {
+                    if ($item->variant && $item->variant->track_inventory) {
+                        $item->variant->increment('stock_qty', $item->qty);
+                    }
+                }
+                $order->update([
+                    'payment_status' => \App\Models\Order::PAYMENT_STATUS_FAILED,
+                    'order_status' => \App\Models\Order::ORDER_STATUS_ABANDONED,
+                    'notes' => 'Gateway init failed: ' . mb_substr($e->getMessage(), 0, 200),
+                ]);
+            }
             return back()->withErrors(['checkout' => $e->getMessage()])->withInput();
         }
     }
