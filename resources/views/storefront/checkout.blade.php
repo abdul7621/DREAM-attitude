@@ -86,6 +86,17 @@
             <div class="col-lg-7">
                 <form id="checkout-form" action="{{ route('checkout.store') }}" method="post">
                     @csrf
+
+                    @if ($errors->any())
+                        <div class="sf-checkout-errors" role="alert">
+                            <div class="error-title"><i class="bi bi-exclamation-triangle-fill me-1"></i> Please fix the following errors:</div>
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
                     
                     {{-- Contact Info --}}
                     <div class="card border-0 shadow-sm mb-4">

@@ -47,61 +47,63 @@
 @endpush
 
 @section('content')
-<div class="container py-4">
-    {{-- Breadcrumb --}}
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb small">
-            <li class="breadcrumb-item"><a href="{{ route('home') }}" class="text-decoration-none">Home</a></li>
-            @if ($product->category)
-                <li class="breadcrumb-item"><a href="{{ route('category.show', $product->category) }}" class="text-decoration-none">{{ $product->category->name }}</a></li>
-            @endif
-            <li class="breadcrumb-item active">{{ $product->name }}</li>
-        </ol>
-    </nav>
+<section class="sf-section" style="padding-top: 1.5rem;">
+    <div class="sf-container">
+        {{-- Breadcrumb --}}
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb small">
+                <li class="breadcrumb-item"><a href="{{ route('home') }}" class="text-decoration-none">Home</a></li>
+                @if ($product->category)
+                    <li class="breadcrumb-item"><a href="{{ route('category.show', $product->category) }}" class="text-decoration-none">{{ $product->category->name }}</a></li>
+                @endif
+                <li class="breadcrumb-item active">{{ $product->name }}</li>
+            </ol>
+        </nav>
 
-    <div class="row g-5">
-        {{-- ── Left Column: Media Gallery ───────────────────── --}}
-        <div class="col-md-6 col-lg-7">
-            @include('storefront.product.sections.gallery', [
-                'product' => $product,
-                'selectedVariant' => $selectedVariant
-            ])
-        </div>
-
-        {{-- ── Right Column: Product Information ────────────── --}}
-        <div class="col-md-6 col-lg-5 sf-product-info">
-            <form method="post" action="{{ route('cart.items.store') }}" id="productForm">
-                @csrf
-                <input type="hidden" name="redirect" id="redirectInput" value="">
-                
-                @foreach($layoutSections as $section)
-                    @if($section['enabled'] && in_array($section['key'], ['title_price', 'variants', 'buy_buttons', 'trust_badges', 'description', 'specs', 'faq']))
-                        @include('storefront.product.sections.' . $section['key'], [
-                            'product' => $product,
-                            'selectedVariant' => $selectedVariant
-                        ])
-                    @endif
-                @endforeach
-            </form>
-        </div>
-    </div>
-
-    {{-- ── Full Width Bottom Sections ───────────────────────── --}}
-    <div class="mt-5">
-        @foreach($layoutSections as $section)
-            @if($section['enabled'] && in_array($section['key'], ['reviews', 'recently_viewed', 'frequently_bought', 'related']))
-                @include('storefront.product.sections.' . $section['key'], [
+        <div class="row g-4 g-lg-5">
+            {{-- ── Left Column: Media Gallery ───────────────────── --}}
+            <div class="col-md-6 col-lg-7">
+                @include('storefront.product.sections.gallery', [
                     'product' => $product,
                     'selectedVariant' => $selectedVariant
                 ])
-            @endif
-        @endforeach
+            </div>
+
+            {{-- ── Right Column: Product Information ────────────── --}}
+            <div class="col-md-6 col-lg-5 sf-product-info sf-pdp-info">
+                <form method="post" action="{{ route('cart.items.store') }}" id="productForm">
+                    @csrf
+                    <input type="hidden" name="redirect" id="redirectInput" value="">
+                    
+                    @foreach($layoutSections as $section)
+                        @if($section['enabled'] && in_array($section['key'], ['title_price', 'variants', 'buy_buttons', 'trust_badges', 'description', 'specs', 'faq']))
+                            @include('storefront.product.sections.' . $section['key'], [
+                                'product' => $product,
+                                'selectedVariant' => $selectedVariant
+                            ])
+                        @endif
+                    @endforeach
+                </form>
+            </div>
+        </div>
+
+        {{-- ── Full Width Bottom Sections ───────────────────────── --}}
+        <div class="mt-5">
+            @foreach($layoutSections as $section)
+                @if($section['enabled'] && in_array($section['key'], ['reviews', 'recently_viewed', 'frequently_bought', 'related']))
+                    @include('storefront.product.sections.' . $section['key'], [
+                        'product' => $product,
+                        'selectedVariant' => $selectedVariant
+                    ])
+                @endif
+            @endforeach
+        </div>
     </div>
-</div>
+</section>
 
 {{-- ── Sticky Mobile Cart Bar ─────────────────────────────── --}}
 <div class="sf-sticky-cart d-md-none bg-white border-top p-3 fixed-bottom shadow-lg" style="z-index: 1040;">
-    <div class="container d-flex justify-content-between align-items-center gap-3">
+    <div class="sf-container d-flex justify-content-between align-items-center gap-3">
         <div class="d-flex align-items-center gap-2">
             @if($product->primaryImage())
                 <img src="{{ asset('storage/'.$product->primaryImage()->path) }}" style="width: 40px; height: 40px; object-fit: cover;" class="rounded d-none d-sm-block">
