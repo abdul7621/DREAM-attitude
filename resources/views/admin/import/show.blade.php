@@ -5,7 +5,7 @@
     $stats = $importJob->stats ?? [];
     [$source, $type] = explode('_', $importJob->source . '_', 2);
     $type = rtrim($type, '_');
-    $errors = $stats['errors'] ?? [];
+    $importErrors = $stats['errors'] ?? [];
 @endphp
 
 <div class="d-flex align-items-center gap-3 mb-4">
@@ -27,7 +27,7 @@
     <div class="card-body">
         <div class="row g-3 text-center">
             @foreach($stats as $key => $val)
-                @if(!in_array($key, ['errors', 'dry_run', 'type', 'file_hash', 'sample_rows']))
+                @if(!in_array($key, ['errors', 'dry_run', 'type', 'file_hash', 'sample_rows']) && !is_array($val))
                     <div class="col-auto">
                         <div class="h4 fw-bold mb-0 {{ is_numeric($val) && $val > 0 ? 'text-primary' : 'text-muted' }}">{{ is_numeric($val) ? number_format($val) : $val }}</div>
                         <div class="text-muted small">{{ ucfirst(str_replace('_', ' ', $key)) }}</div>
@@ -39,10 +39,10 @@
 </div>
 
 {{-- Errors --}}
-@if(count($errors) > 0)
+@if(count($importErrors) > 0)
 <div class="card shadow-sm border-danger">
     <div class="card-header fw-semibold text-danger bg-danger bg-opacity-10">
-        <i class="bi bi-exclamation-triangle me-2"></i>{{ count($errors) }} Errors
+        <i class="bi bi-exclamation-triangle me-2"></i>{{ count($importErrors) }} Errors
     </div>
     <div class="card-body p-0">
         <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
@@ -51,10 +51,10 @@
                     <tr><th style="width:50px">#</th><th>Error Details</th></tr>
                 </thead>
                 <tbody>
-                    @foreach($errors as $i => $err)
+                    @foreach($importErrors as $i => $err)
                         <tr>
                             <td class="text-muted">{{ $i + 1 }}</td>
-                            <td class="text-danger">{{ $err }}</td>
+                            <td class="text-danger">{{ is_string($err) ? $err : json_encode($err) }}</td>
                         </tr>
                     @endforeach
                 </tbody>
