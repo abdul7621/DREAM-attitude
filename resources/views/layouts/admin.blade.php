@@ -157,19 +157,29 @@
     </div>
 
     <nav class="sidebar-nav">
-        {{-- ─── CORE ──────────────────────────────────────── --}}
-        <div class="sidebar-section-label">Core</div>
+        {{-- ─── ORDERS ─────────────────────────────────────── --}}
+        <div class="sidebar-section-label">Orders</div>
         <a href="{{ route('admin.dashboard') }}"
            class="sidebar-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
             <i class="bi bi-grid-1x2-fill"></i> Dashboard
         </a>
         <a href="{{ route('admin.orders.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
-            <i class="bi bi-receipt"></i> Orders
+            <i class="bi bi-receipt"></i> All Orders
             @if(isset($badgeCountPendingOrders) && $badgeCountPendingOrders > 0)
                 <span class="badge bg-danger rounded-pill">{{ $badgeCountPendingOrders }}</span>
             @endif
         </a>
+        <a href="{{ route('admin.returns.index') }}"
+           class="sidebar-link {{ request()->routeIs('admin.returns.*') ? 'active' : '' }}">
+            <i class="bi bi-arrow-return-left"></i> Returns
+            @if(isset($badgeCountPendingReturns) && $badgeCountPendingReturns > 0)
+                <span class="badge bg-danger rounded-pill">{{ $badgeCountPendingReturns }}</span>
+            @endif
+        </a>
+
+        {{-- ─── CATALOG ────────────────────────────────────── --}}
+        <div class="sidebar-section-label">Catalog</div>
         <a href="{{ route('admin.products.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
             <i class="bi bi-box-seam"></i> Products
@@ -181,13 +191,16 @@
            class="sidebar-link {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
             <i class="bi bi-tags"></i> Categories
         </a>
+
+        {{-- ─── CUSTOMERS ──────────────────────────────────── --}}
+        <div class="sidebar-section-label">Customers</div>
         <a href="{{ route('admin.customers.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.customers.*') ? 'active' : '' }}">
-            <i class="bi bi-people"></i> Customers
+            <i class="bi bi-people"></i> All Customers
         </a>
 
-        {{-- ─── GROWTH ────────────────────────────────────── --}}
-        <div class="sidebar-section-label">Growth</div>
+        {{-- ─── MARKETING ──────────────────────────────────── --}}
+        <div class="sidebar-section-label">Marketing</div>
         <a href="{{ route('admin.coupons.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.coupons.*') ? 'active' : '' }}">
             <i class="bi bi-ticket-perforated"></i> Coupons & Discounts
@@ -204,82 +217,68 @@
             <i class="bi bi-bell"></i> Notifications
         </a>
 
-        {{-- ─── REPORTS ───────────────────────────────────── --}}
-        <div class="sidebar-section-label">Reports</div>
+        {{-- ─── ANALYTICS ──────────────────────────────────── --}}
+        <div class="sidebar-section-label">Analytics</div>
         <a href="{{ route('admin.reports.sales') }}"
            class="sidebar-link {{ request()->routeIs('admin.reports.sales') ? 'active' : '' }}">
-            <i class="bi bi-graph-up"></i> Sales
+            <i class="bi bi-graph-up"></i> Sales Report
         </a>
         <a href="{{ route('admin.reports.products') }}"
            class="sidebar-link {{ request()->routeIs('admin.reports.products') ? 'active' : '' }}">
-            <i class="bi bi-box"></i> Products
+            <i class="bi bi-bar-chart"></i> Product Stats
         </a>
         <a href="{{ route('admin.reports.customers') }}"
            class="sidebar-link {{ request()->routeIs('admin.reports.customers') ? 'active' : '' }}">
-            <i class="bi bi-people"></i> Customers
-        </a>
-        <a href="{{ route('admin.reports.coupons') }}"
-           class="sidebar-link {{ request()->routeIs('admin.reports.coupons') ? 'active' : '' }}">
-            <i class="bi bi-tag"></i> Coupons
+            <i class="bi bi-person-lines-fill"></i> Customer Insights
         </a>
         <a href="{{ route('admin.reports.inventory') }}"
            class="sidebar-link {{ request()->routeIs('admin.reports.inventory') ? 'active' : '' }}">
             <i class="bi bi-boxes"></i> Inventory
         </a>
 
-        {{-- ─── STORE ─────────────────────────────────────── --}}
-        <div class="sidebar-section-label">Store</div>
+        {{-- ─── STOREFRONT ─────────────────────────────────── --}}
+        <div class="sidebar-section-label">Storefront</div>
         <a href="{{ route('admin.theme.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.theme.*') ? 'active' : '' }}">
-            <i class="bi bi-palette"></i> Theme Builder
+            <i class="bi bi-palette"></i> Theme & Branding
         </a>
         <a href="{{ route('admin.menus.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.menus.*') ? 'active' : '' }}">
-            <i class="bi bi-list-nested"></i> Navigation
+            <i class="bi bi-list-nested"></i> Navigation Menus
         </a>
         <a href="{{ route('admin.pages.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.pages.*') ? 'active' : '' }}">
             <i class="bi bi-file-earmark-text"></i> Pages
         </a>
-        <a href="{{ route('admin.redirects.index') }}"
-           class="sidebar-link {{ request()->routeIs('admin.redirects.*') ? 'active' : '' }}">
-            <i class="bi bi-signpost-split"></i> Redirects
-        </a>
 
-        {{-- ─── OPERATIONS ────────────────────────────────── --}}
-        <div class="sidebar-section-label">Operations</div>
+        {{-- ─── TOOLS ──────────────────────────────────────── --}}
+        <div class="sidebar-section-label">Tools</div>
+        <a href="{{ route('admin.import.index') }}"
+           class="sidebar-link {{ request()->routeIs('admin.import.*') ? 'active' : '' }}">
+            <i class="bi bi-cloud-arrow-up"></i> Import / Migration
+        </a>
         <a href="{{ route('admin.shipping-rules.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.shipping-rules.*') ? 'active' : '' }}">
             <i class="bi bi-truck"></i> Shipping Rules
         </a>
-        <a href="{{ route('admin.returns.index') }}"
-           class="sidebar-link {{ request()->routeIs('admin.returns.*') ? 'active' : '' }}">
-            <i class="bi bi-arrow-return-left"></i> Returns
-            @if(isset($badgeCountPendingReturns) && $badgeCountPendingReturns > 0)
-                <span class="badge bg-danger rounded-pill">{{ $badgeCountPendingReturns }}</span>
-            @endif
+        <a href="{{ route('admin.redirects.index') }}"
+           class="sidebar-link {{ request()->routeIs('admin.redirects.*') ? 'active' : '' }}">
+            <i class="bi bi-signpost-split"></i> URL Redirects
+        </a>
+
+        {{-- ─── SETTINGS ───────────────────────────────────── --}}
+        <div class="sidebar-section-label">Settings</div>
+        <a href="{{ route('admin.settings.edit') }}"
+           class="sidebar-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+            <i class="bi bi-gear"></i> Store Settings
+        </a>
+        <a href="{{ route('admin.notification-templates.index') }}"
+           class="sidebar-link {{ request()->routeIs('admin.notification-templates.*') ? 'active' : '' }}">
+            <i class="bi bi-envelope-paper"></i> Email Templates
         </a>
         <a href="{{ route('admin.audit-logs.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.audit-logs.*') ? 'active' : '' }}">
             <i class="bi bi-shield-lock"></i> Audit Logs
-        </a>
-
-        {{-- ─── TOOLS ─────────────────────────────────────── --}}
-        <div class="sidebar-section-label">Tools</div>
-        <a href="{{ route('admin.import.index') }}"
-           class="sidebar-link {{ request()->routeIs('admin.import.*') ? 'active' : '' }}">
-            <i class="bi bi-cloud-arrow-up"></i> Import Wizard
-        </a>
-
-        {{-- ─── SETTINGS ──────────────────────────────────── --}}
-        <div class="sidebar-section-label">Settings</div>
-        <a href="{{ route('admin.settings.edit') }}"
-           class="sidebar-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
-            <i class="bi bi-gear"></i> Settings
-        </a>
-        <a href="{{ route('admin.notification-templates.index') }}"
-           class="sidebar-link {{ request()->routeIs('admin.notification-templates.*') ? 'active' : '' }}">
-            <i class="bi bi-bell"></i> Message Templates
         </a>
     </nav>
 

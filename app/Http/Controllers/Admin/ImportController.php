@@ -56,8 +56,18 @@ class ImportController extends Controller
                 default   => null,
             };
 
-            if ($importer && $type === 'products') {
-                $preview = $importer->dryRun(Storage::disk('local')->path($importJob->filename));
+            if ($importer) {
+                $preview = match ($type) {
+                    'products'  => $importer->dryRun(Storage::disk('local')->path($importJob->filename)),
+                    'customers' => method_exists($importer, 'dryRunCustomers')
+                                   ? $importer->dryRunCustomers(Storage::disk('local')->path($importJob->filename))
+                                   : ['customers' => 0, 'dry_run' => true, 'error' => 'Not supported for this platform'],
+                    'orders'    => method_exists($importer, 'dryRunOrders')
+                                   ? $importer->dryRunOrders(Storage::disk('local')->path($importJob->filename))
+                                   : ['orders' => 0, 'dry_run' => true, 'error' => 'Not supported for this platform'],
+                    default     => [],
+                };
+
                 $importJob->update([
                     'status' => 'previewed',
                     'stats'  => array_merge((array) $importJob->stats, $preview),
@@ -83,8 +93,20 @@ class ImportController extends Controller
         };
 
         try {
-            if ($importer && $type === 'products') {
-                $stats = $importer->import(Storage::disk('local')->path($importJob->filename));
+            if ($importer) {
+                $filePath = Storage::disk('local')->path($importJob->filename);
+
+                $stats = match ($type) {
+                    'products'  => $importer->import($filePath),
+                    'customers' => method_exists($importer, 'importCustomers')
+                                   ? $importer->importCustomers($filePath)
+                                   : throw new \RuntimeException('Customer import not supported for this platform.'),
+                    'orders'    => method_exists($importer, 'importOrders')
+                                   ? $importer->importOrders($filePath)
+                                   : throw new \RuntimeException('Order import not supported for this platform.'),
+                    default     => throw new \RuntimeException('Unknown import type.'),
+                };
+
                 $importJob->update([
                     'status' => 'completed',
                     'stats'  => array_merge((array) $importJob->stats, $stats),

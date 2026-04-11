@@ -110,6 +110,245 @@ class ShopifyImporter
         return $counts;
     }
 
+    // ─── Customer Import ──────────────────────────────────────────────────────
+
+    /** Dry run for customer CSV */
+    public function dryRunCustomers(string $filePath): array
+    {
+        $rows = $this->readCsv($filePath);
+
+        return [
+            'customers' => count($rows),
+            'dry_run'   => true,
+            'sample_rows' => array_map(fn($r) => [
+                'name'  => trim(($r['First Name'] ?? '') . ' ' . ($r['Last Name'] ?? '')),
+                'email' => $r['Email'] ?? '',
+                'phone' => $r['Phone'] ?? '',
+            ], array_slice($rows, 0, 5)),
+        ];
+    }
+
+    /** Import customers from Shopify CSV */
+    public function importCustomers(string $filePath): array
+    {
+        $rows   = $this->readCsv($filePath);
+        $counts = ['customers' => 0, 'skipped' => 0, 'errors' => []];
+
+        foreach ($rows as $row) {
+            try {
+                $email = trim($row['Email'] ?? '');
+                $phone = trim($row['Phone'] ?? '');
+                $name  = trim(($row['First Name'] ?? '') . ' ' . ($row['Last Name'] ?? ''));
+
+                if (! $email && ! $phone) {
+                    $counts['skipped']++;
+                    continue;
+                }
+
+                // Find by email first, then create
+                $user = $email
+                    ? \App\Models\User::where('email', $email)->first()
+                    : null;
+
+                if (! $user) {
+                    $user = \App\Models\User::create([
+                        'name'     => $name ?: 'Imported Customer',
+                        'email'    => $email ?: null,
+                        'phone'    => $phone ?: null,
+                        'password' => bcrypt(\Illuminate\Support\Str::random(16)),
+                        'is_admin' => false,
+                    ]);
+                    $counts['customers']++;
+                } else {
+                    // Update phone if missing
+                    if ($phone && ! $user->phone) {
+                        $user->update(['phone' => $phone]);
+                    }
+                    $counts['skipped']++;
+                }
+
+                // Create address if data exists
+                $addr1 = trim($row['Address1'] ?? '');
+                if ($addr1) {
+                    \App\Models\Address::firstOrCreate(
+                        ['user_id' => $user->id, 'address_line1' => $addr1],
+                        [
+                            'name'          => $name,
+                            'phone'         => $phone,
+                            'address_line2' => trim($row['Address2'] ?? ''),
+                            'city'          => trim($row['City'] ?? ''),
+                            'state'         => trim($row['Province'] ?? ''),
+                            'postal_code'   => trim($row['Zip'] ?? ''),
+                            'country'       => trim($row['Country Code'] ?? 'IN'),
+                            'label'         => 'Imported',
+                            'is_default'    => true,
+                        ]
+                    );
+                }
+            } catch (\Throwable $e) {
+                $counts['errors'][] = ($row['Email'] ?? '?') . ': ' . $e->getMessage();
+            }
+        }
+
+        return $counts;
+    }
+
+    // ─── Order Import ────────────────────────────────────────────────────────
+
+    /** Dry run for order CSV */
+    public function dryRunOrders(string $filePath): array
+    {
+        $rows = $this->readCsv($filePath);
+
+        $orderNumbers = [];
+        foreach ($rows as $r) {
+            $num = trim($r['Name'] ?? $r['Order Number'] ?? '');
+            if ($num) {
+                $orderNumbers[$num] = true;
+            }
+        }
+
+        return [
+            'orders'   => count($orderNumbers),
+            'line_items' => count($rows),
+            'dry_run'  => true,
+        ];
+    }
+
+    /**
+     * Import orders from Shopify CSV.
+     *
+     * CRITICAL: These are historical imports.
+     * - NO OrderPlaced event
+     * - NO inventory deduction
+     * - NO Meta CAPI
+     * - NO notifications
+     */
+    public function importOrders(string $filePath): array
+    {
+        $rows   = $this->readCsv($filePath);
+        $counts = ['orders' => 0, 'line_items' => 0, 'errors' => []];
+
+        // Group rows by order number (Shopify has one row per line item)
+        $grouped = [];
+        foreach ($rows as $row) {
+            $num = trim($row['Name'] ?? $row['Order Number'] ?? '');
+            if (! $num) continue;
+            $grouped[$num][] = $row;
+        }
+
+        foreach ($grouped as $orderNum => $items) {
+            try {
+                $first = $items[0];
+
+                // Skip if order already exists
+                if (\App\Models\Order::where('order_number', $orderNum)->exists()) {
+                    continue;
+                }
+
+                // Find customer by email
+                $email  = trim($first['Email'] ?? '');
+                $user   = $email ? \App\Models\User::where('email', $email)->first() : null;
+
+                // Calculate totals from line items
+                $subtotal = 0;
+                foreach ($items as $item) {
+                    $qty   = max(1, (int) ($item['Lineitem quantity'] ?? 1));
+                    $price = (float) ($item['Lineitem price'] ?? 0);
+                    $subtotal += $qty * $price;
+                }
+
+                $shipping  = (float) ($first['Shipping'] ?? 0);
+                $discount  = abs((float) ($first['Discount Amount'] ?? 0));
+                $tax       = (float) ($first['Taxes'] ?? $first['Tax 1 Value'] ?? 0);
+                $grand     = $subtotal + $shipping + $tax - $discount;
+
+                // Map Shopify financial status to our payment status
+                $financialStatus = strtolower(trim($first['Financial Status'] ?? 'paid'));
+                $paymentStatus = match($financialStatus) {
+                    'paid', 'partially_paid' => 'paid',
+                    'refunded', 'partially_refunded' => 'refunded',
+                    default => 'paid',
+                };
+
+                // Map Shopify fulfillment status to our order status
+                $fulfillment = strtolower(trim($first['Fulfillment Status'] ?? 'fulfilled'));
+                $orderStatus = match($fulfillment) {
+                    'fulfilled' => 'delivered',
+                    'shipped'   => 'shipped',
+                    'unfulfilled', '' => 'placed',
+                    default => 'delivered',
+                };
+
+                // Parse order date
+                $placedAt = null;
+                $dateStr = $first['Created at'] ?? $first['Date'] ?? null;
+                if ($dateStr) {
+                    try { $placedAt = \Carbon\Carbon::parse($dateStr); } catch (\Throwable) {}
+                }
+
+                // Create order SILENTLY — no events, no inventory deduction
+                $order = \App\Models\Order::create([
+                    'order_number'    => $orderNum,
+                    'user_id'         => $user?->id,
+                    'customer_name'   => trim(($first['Shipping Name'] ?? $first['Billing Name'] ?? 'Imported Customer')),
+                    'email'           => $email ?: null,
+                    'phone'           => trim($first['Shipping Phone'] ?? $first['Phone'] ?? ''),
+                    'address_line1'   => trim($first['Shipping Address1'] ?? $first['Shipping Street'] ?? ''),
+                    'address_line2'   => trim($first['Shipping Address2'] ?? ''),
+                    'city'            => trim($first['Shipping City'] ?? ''),
+                    'state'           => trim($first['Shipping Province'] ?? ''),
+                    'postal_code'     => trim($first['Shipping Zip'] ?? ''),
+                    'country'         => trim($first['Shipping Country'] ?? 'IN'),
+                    'subtotal'        => round($subtotal, 2),
+                    'shipping_total'  => round($shipping, 2),
+                    'discount_total'  => round($discount, 2),
+                    'tax_total'       => round($tax, 2),
+                    'grand_total'     => round(max(0, $grand), 2),
+                    'currency'        => trim($first['Currency'] ?? 'INR'),
+                    'payment_method'  => strtolower(trim($first['Payment Method'] ?? 'imported')),
+                    'payment_status'  => $paymentStatus,
+                    'order_status'    => $orderStatus,
+                    'notes'           => 'Historical import from Shopify',
+                    'placed_at'       => $placedAt ?? now(),
+                ]);
+
+                $counts['orders']++;
+
+                // Create line items — NO inventory deduction
+                foreach ($items as $item) {
+                    $productName = trim($item['Lineitem name'] ?? '');
+                    $sku         = trim($item['Lineitem sku'] ?? '');
+                    $qty         = max(1, (int) ($item['Lineitem quantity'] ?? 1));
+                    $unitPrice   = (float) ($item['Lineitem price'] ?? 0);
+
+                    // Try to match to existing product/variant by SKU
+                    $variant = $sku
+                        ? \App\Models\ProductVariant::where('sku', $sku)->first()
+                        : null;
+
+                    \App\Models\OrderItem::create([
+                        'order_id'               => $order->id,
+                        'product_id'             => $variant?->product_id,
+                        'product_variant_id'     => $variant?->id,
+                        'product_name_snapshot'  => $productName,
+                        'variant_title_snapshot' => $variant?->title ?? 'Imported',
+                        'sku_snapshot'           => $sku,
+                        'qty'                    => $qty,
+                        'unit_price'             => $unitPrice,
+                        'line_total'             => round($qty * $unitPrice, 2),
+                    ]);
+
+                    $counts['line_items']++;
+                }
+            } catch (\Throwable $e) {
+                $counts['errors'][] = "Order {$orderNum}: " . $e->getMessage();
+            }
+        }
+
+        return $counts;
+    }
+
     // ─── Private helpers ─────────────────────────────────────────────────────
 
     private function readCsv(string $path): array
