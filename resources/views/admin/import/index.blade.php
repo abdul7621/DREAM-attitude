@@ -63,7 +63,7 @@
                 @forelse ($jobs as $j)
                     @php [$src, $typ] = explode('_', $j->source . '_', 2); @endphp
                     <tr>
-                        <td>{{ $j->id }}</td>
+                        <td><a href="{{ route('admin.import.show', $j) }}" class="text-decoration-none fw-semibold">{{ $j->id }}</a></td>
                         <td>
                             <span class="badge bg-light text-dark">{{ ucfirst($src) }}</span>
                             <span class="text-muted small">{{ rtrim(ucfirst($typ), '_') }}</span>
@@ -83,6 +83,9 @@
                                 @if(isset($j->stats['customers']))
                                     C:{{ $j->stats['customers'] }}
                                 @endif
+                                @if(isset($j->stats['skipped']))
+                                    Skip:{{ $j->stats['skipped'] }}
+                                @endif
                                 @if(isset($j->stats['orders']))
                                     O:{{ $j->stats['orders'] }}
                                 @endif
@@ -90,7 +93,7 @@
                                     Items:{{ $j->stats['line_items'] }}
                                 @endif
                                 @if(!empty($j->stats['errors']))
-                                    <span class="text-danger">{{ count($j->stats['errors']) }} err</span>
+                                    <a href="{{ route('admin.import.show', $j) }}" class="text-danger text-decoration-none fw-bold">{{ count($j->stats['errors']) }} err →</a>
                                 @endif
                             @else
                                 <span class="text-muted">—</span>

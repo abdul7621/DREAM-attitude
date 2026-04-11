@@ -188,4 +188,5 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('import/upload', [AdminImportController::class, 'upload'])->name('import.upload');
     Route::get('import/{importJob}/preview', [AdminImportController::class, 'preview'])->name('import.preview');
     Route::post('import/{importJob}/confirm', [AdminImportController::class, 'confirm'])->name('import.confirm');
+    Route::get('import/{importJob}/details', [AdminImportController::class, 'show'])->name('import.show');
 });

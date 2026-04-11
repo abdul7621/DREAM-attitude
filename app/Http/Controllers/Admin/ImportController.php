@@ -20,6 +20,11 @@ class ImportController extends Controller
         return view('admin.import.index', compact('jobs'));
     }
 
+    public function show(ImportJob $importJob): View
+    {
+        return view('admin.import.show', compact('importJob'));
+    }
+
     public function upload(Request $request): RedirectResponse
     {
         $request->validate([
