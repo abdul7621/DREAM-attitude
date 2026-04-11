@@ -113,6 +113,12 @@ class AppServiceProvider extends ServiceProvider
 
             // Pass SettingsService to layout for announcement bar, etc.
             $view->with('ss', $settingsService);
+
+            $globalMenus = \App\Models\Menu::where('is_active', true)
+                ->with(['parentItems' => fn($q) => $q->orderBy('sort_order'), 'parentItems.children' => fn($q) => $q->orderBy('sort_order')])
+                ->get()
+                ->keyBy('location');
+            $view->with('globalMenus', $globalMenus);
         });
         
         View::composer('layouts.admin', function ($view): void {
