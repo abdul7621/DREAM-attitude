@@ -14,7 +14,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="{{ asset('css/storefront.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/storefront.css') }}?v={{ filemtime(public_path('css/storefront.css')) }}" rel="stylesheet">
     
     {{-- ── Dynamic Theme Engine ──────────────────────────────────── --}}
     @php $ss = app(\App\Services\SettingsService::class); @endphp

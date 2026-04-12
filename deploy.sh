@@ -58,11 +58,16 @@ else
     MIGRATE_CMD=""
 fi
 
+PUBLIC_HTML="domains/mediumaquamarine-jay-552970.hostingersite.com/public_html"
+
 ${SSH_CMD} -t "cd ${APP_DIR} && \
     echo '📥 Pulling latest code...' && \
     git pull origin ${BRANCH} && \
     echo '🗄  Running migrations (if any)...' && \
     ${MIGRATE_CMD} \
+    echo '📂 Syncing public assets to public_html...' && \
+    rsync -av --delete --exclude='storage' --exclude='.htaccess' public/ ~/${PUBLIC_HTML}/ && \
+    cp -n public/.htaccess ~/${PUBLIC_HTML}/.htaccess 2>/dev/null; true && \
     echo '🔄 Rebuilding caches...' && \
     php artisan optimize:clear && \
     php artisan config:cache && \
