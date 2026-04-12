@@ -114,12 +114,23 @@
         <div class="table-responsive">
             <table class="table table-bordered" id="variantTable">
                 <thead><tr>
-                    <th>ID</th><th>Title *</th><th>SKU</th><th>Retail *</th><th>Reseller</th><th>Bulk</th><th>Compare</th><th>Stock *</th><th>Wt(g)</th><th>Track</th><th>Active</th>
+                    <th>ID</th><th>Image</th><th>Title *</th><th>SKU</th><th>Retail *</th><th>Reseller</th><th>Bulk</th><th>Compare</th><th>Stock *</th><th>Wt(g)</th><th>Track</th><th>Active</th>
                 </tr></thead>
                 <tbody>
                 @foreach (old('variants', $product->variants->map(fn ($v) => $v->toArray())->all()) as $i => $row)
                     <tr>
                         <td><input type="text" class="form-control form-control-sm" name="variants[{{ $i }}][id]" value="{{ $row['id'] ?? '' }}" readonly tabindex="-1"></td>
+                        <td>
+                            @php
+                                $imgId = \App\Models\ProductImage::where('variant_id', $row['id'] ?? null)->value('id');
+                            @endphp
+                            <select name="variants[{{ $i }}][image_id]" class="form-select form-select-sm" style="min-width: 80px;">
+                                <option value="">-</option>
+                                @foreach($product->images as $img)
+                                    <option value="{{ $img->id }}" @selected($imgId === $img->id)>Img #{{ $img->id }}</option>
+                                @endforeach
+                            </select>
+                        </td>
                         <td><input type="text" class="form-control form-control-sm" name="variants[{{ $i }}][title]" value="{{ $row['title'] ?? '' }}" required></td>
                         <td><input type="text" class="form-control form-control-sm" name="variants[{{ $i }}][sku]" value="{{ $row['sku'] ?? '' }}"></td>
                         <td><input type="number" step="0.01" class="form-control form-control-sm" name="variants[{{ $i }}][price_retail]" value="{{ $row['price_retail'] ?? '' }}" required></td>
@@ -164,6 +175,14 @@
     <template id="variantRowTpl">
         <tr>
             <td><input type="text" class="form-control form-control-sm" name="variants[__I__][id]" value="" readonly tabindex="-1"></td>
+            <td>
+                <select name="variants[__I__][image_id]" class="form-select form-select-sm" style="min-width: 80px;">
+                    <option value="">-</option>
+                    @foreach($product->images as $img)
+                        <option value="{{ $img->id }}">Img #{{ $img->id }}</option>
+                    @endforeach
+                </select>
+            </td>
             <td><input type="text" class="form-control form-control-sm" name="variants[__I__][title]" required></td>
             <td><input type="text" class="form-control form-control-sm" name="variants[__I__][sku]"></td>
             <td><input type="number" step="0.01" class="form-control form-control-sm" name="variants[__I__][price_retail]" required></td>

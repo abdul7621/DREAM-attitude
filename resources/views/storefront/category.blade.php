@@ -3,40 +3,44 @@
 @section('title', $category->seo_title ?: $category->name)
 
 @section('content')
+<section class="sf-hero" style="height: 300px;">
+    <div class="sf-hero-img-wrap" style="height: 100%;">
+        @if($category->image_path)
+            <img src="{{ asset('storage/' . $category->image_path) }}" alt="{{ $category->name }}" class="sf-hero-img">
+        @else
+            <div style="background:var(--color-bg-elevated);width:100%;height:100%;"></div>
+        @endif
+    </div>
+    <div class="sf-hero-overlay" style="background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 100%);"></div>
+    <div class="sf-hero-content" style="width: 100%; text-align: center; left: 0;">
+        <h1 class="sf-hero-title">{{ $category->name }}</h1>
+        @if($category->description)
+            <p class="sf-hero-sub" style="max-width: 600px; margin: 0 auto;">{{ $category->description }}</p>
+        @endif
+    </div>
+</section>
+
 <section class="sf-section">
     <div class="sf-container">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('home') }}" class="text-decoration-none">Home</a></li>
-                <li class="breadcrumb-item active">{{ $category->name }}</li>
-            </ol>
+        <nav style="margin-bottom: 32px; font-size: 13px; color: var(--color-text-muted);">
+            <a href="{{ route('home') }}" style="color: var(--color-text-secondary);">Home</a> 
+            <span style="margin: 0 8px;">/</span> 
+            <span style="color: var(--color-gold);">{{ $category->name }}</span>
         </nav>
 
-        <div class="sf-category-banner">
-            @if($category->image_path)
-                <img src="{{ asset('storage/' . $category->image_path) }}" alt="{{ $category->name }}" loading="lazy">
-            @endif
-            <div class="cat-banner-overlay">
-                <h1>{{ $category->name }}</h1>
-                @if($category->description)
-                    <p>{{ $category->description }}</p>
-                @endif
-            </div>
-        </div>
-
         @if($products->isEmpty())
-            <div class="text-center py-5">
-                <h4 class="text-muted">No products found in this category.</h4>
+            <div style="text-align: center; padding: 60px 0;">
+                <h4 style="color: var(--color-text-muted);">No products found in this category.</h4>
             </div>
         @else
-            <div class="sf-product-grid mt-4">
+            <div class="sf-product-grid">
                 @foreach ($products as $product)
                     <x-product-card :product="$product" />
                 @endforeach
             </div>
         @endif
 
-        <div class="mt-5">
+        <div style="margin-top: 40px;">
             {{ $products->links() }}
         </div>
     </div>

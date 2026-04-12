@@ -79,11 +79,17 @@ Route::get('/login', [LoginController::class, 'show'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->name('logout');
 
+Route::middleware('guest')->group(function () {
+    Route::get('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'showForm'])->name('register');
+    Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'register'])->middleware('throttle:5,1');
+});
+
 // ── Customer Account (auth required) ──────────────────────────────────────
 Route::middleware('auth')->prefix('account')->name('account.')->group(function (): void {
     Route::get('/', [AccountController::class, 'dashboard'])->name('dashboard');
     Route::get('orders', [AccountController::class, 'orders'])->name('orders');
     Route::get('orders/{order}', [AccountController::class, 'orderShow'])->name('orders.show');
+    Route::get('orders/{order}/invoice', [\App\Http\Controllers\InvoiceController::class, 'customerDownload'])->name('orders.invoice');
     Route::post('orders/{order}/return', [ReturnRequestController::class, 'store'])->name('orders.return.store');
     Route::post('orders/{order}/reorder', [AccountController::class, 'reorder'])->name('orders.reorder');
     Route::get('returns', [ReturnRequestController::class, 'index'])->name('returns');
@@ -106,6 +112,9 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
     Route::get('api/wishlist-ids', [\App\Http\Controllers\Storefront\WishlistController::class, 'apiIds'])->name('api.wishlist-ids');
     Route::get('api/addresses', [\App\Http\Controllers\Storefront\AddressController::class, 'apiList'])->name('api.addresses');
 });
+
+// ── Webhooks ───────────────────────────────────────────────────────────────
+Route::post('/api/shiprocket/webhook', [\App\Http\Controllers\Api\ShiprocketWebhookController::class, 'handle'])->name('webhook.shiprocket');
 
 // ── Admin Panel ────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function (): void {
@@ -147,6 +156,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Customers
     Route::get('customers', [AdminCustomerController::class, 'index'])->name('customers.index');
     Route::get('customers/{user}', [AdminCustomerController::class, 'show'])->name('customers.show');
+    Route::put('customers/{user}', [AdminCustomerController::class, 'update'])->name('customers.update');
 
     // Reports
     Route::prefix('reports')->name('reports.')->group(function (): void {

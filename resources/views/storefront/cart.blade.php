@@ -3,99 +3,103 @@
 @section('title', 'Cart')
 
 @section('content')
-    <h1 class="h3 mb-4">Shopping cart</h1>
-    @if ($lines->isEmpty())
-        <p class="text-muted">Your cart is empty.</p>
-        <a href="{{ route('home') }}" class="btn btn-primary">Continue shopping</a>
-    @else
-        <div class="table-responsive bg-white shadow-sm rounded">
-            <table class="table align-middle mb-0">
-                <thead><tr><th>Product</th><th class="text-end">Price</th><th class="text-center" style="width:8rem;">Qty</th><th class="text-end">Line</th><th></th></tr></thead>
-                <tbody>
-                @foreach ($lines as $row)
-                    @php
-                        $item = $row['item'];
-                        $variant = $row['variant'];
-                        $product = $row['product'];
-                    @endphp
-                    <tr>
-                        <td>
-                            <div class="fw-semibold">{{ $product->name }}</div>
-                            <div class="small text-muted">{{ $variant->title }} @if ($variant->sku) · {{ $variant->sku }} @endif</div>
-                        </td>
-                        <td class="text-end">₹{{ number_format((float) $row['unit_price'], 2) }}</td>
-                        <td>
-                            <form action="{{ route('cart.items.update', $item) }}" method="post" class="d-flex gap-1 justify-content-center align-items-center">
-                                @csrf
-                                @method('PUT')
-                                <input type="number" name="qty" value="{{ $item->qty }}" min="0" max="9999" class="form-control form-control-sm" style="width:5rem;">
-                                <button type="submit" class="btn btn-sm btn-outline-secondary">Update</button>
-                            </form>
-                        </td>
-                        <td class="text-end">₹{{ number_format((float) $row['line_total'], 2) }}</td>
-                        <td class="text-end">
-                            <form method="POST" action="{{ route('cart.items.destroy', $item->id) }}">
+<section class="sf-section">
+    <div class="sf-container">
+        <h1 class="sf-section-title" style="margin-bottom: 32px; font-size: 24px;">Shopping Cart</h1>
+        @if ($lines->isEmpty())
+            <div style="text-align: center; padding: 60px 0;">
+                <p style="color: var(--color-text-muted); margin-bottom: 24px;">Your cart is empty.</p>
+                <a href="{{ route('home') }}" class="sf-hero-cta" style="display: inline-block;">Continue shopping</a>
+            </div>
+        @else
+            <div class="sf-cart-layout">
+                <div>
+                    @foreach ($lines as $row)
+                        @php
+                            $item = $row['item'];
+                            $variant = $row['variant'];
+                            $product = $row['product'];
+                        @endphp
+                        <div class="sf-cart-row">
+                            @if($product->primaryImage())
+                                <img src="{{ asset('storage/'.$product->primaryImage()->path) }}" class="sf-cart-thumb">
+                            @else
+                                <div class="sf-cart-thumb" style="background: var(--color-bg-elevated);"></div>
+                            @endif
+                            <div style="flex: 1;">
+                                <div class="sf-cart-name">{{ $product->name }}</div>
+                                <div class="sf-cart-variant">{{ $variant->title }} @if($variant->sku) · {{ $variant->sku }} @endif</div>
+                                <div class="sf-cart-price" style="margin-top: 4px;">{{ config('commerce.currency_symbol', '₹') }}{{ number_format((float) $row['unit_price'], 0) }}</div>
+                            </div>
+                            <div class="sf-qty">
+                                <form action="{{ route('cart.items.update', $item) }}" method="post" style="display: flex;">
+                                    @csrf
+                                    @method('PUT')
+                                    <button type="button" onclick="const inpv=this.nextElementSibling; if(inpv.value>1) {inpv.value--; this.form.submit();}"><i class="bi bi-dash"></i></button>
+                                    <input type="number" name="qty" value="{{ $item->qty }}" min="1">
+                                    <button type="button" onclick="const inpv=this.previousElementSibling; inpv.value++; this.form.submit();"><i class="bi bi-plus"></i></button>
+                                </form>
+                            </div>
+                            <div class="sf-cart-price" style="font-weight: 600; width: 60px; text-align: right;">{{ config('commerce.currency_symbol', '₹') }}{{ number_format((float) $row['line_total'], 0) }}</div>
+                            <form method="POST" action="{{ route('cart.items.destroy', $item->id) }}" style="margin-left: 12px;">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+                                <button type="submit" class="sf-cart-remove"><i class="bi bi-trash"></i></button>
                             </form>
-                        </td>
-                    </tr>
-                @endforeach
-                </tbody>
-            </table>
-        </div>
-
-        <div class="row g-4 mt-2">
-            <div class="col-md-6">
-                <div class="bg-white shadow-sm rounded p-3">
-                    <h2 class="h6 mb-3">Coupon</h2>
-                    @if ($errors->has('coupon'))
-                        <div class="alert alert-danger py-2 small">{{ $errors->first('coupon') }}</div>
-                    @endif
-                    @if ($totals['coupon'])
-                        <p class="mb-2 small text-success">{{ __('Applied: :code', ['code' => $totals['coupon']->code]) }}</p>
-                        <form action="{{ route('cart.coupon.remove') }}" method="post">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-outline-secondary">{{ __('Remove coupon') }}</button>
-                        </form>
-                    @else
-                        <form action="{{ route('cart.coupon.apply') }}" method="post" class="d-flex gap-2 flex-wrap">
-                            @csrf
-                            <input type="text" name="code" value="{{ old('code') }}" class="form-control form-control-sm" placeholder="{{ __('Coupon code') }}" maxlength="64" style="max-width:14rem;">
-                            <button type="submit" class="btn btn-sm btn-primary">{{ __('Apply') }}</button>
-                        </form>
-                    @endif
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="bg-white shadow-sm rounded p-3">
-                    <h2 class="h6 mb-3">Summary</h2>
-                    <div class="d-flex justify-content-between small mb-1">
-                        <span>{{ __('Subtotal') }}</span>
-                        <span>₹{{ number_format((float) $totals['subtotal'], 2) }}</span>
-                    </div>
-                    @if ((float) $totals['discount'] > 0)
-                        <div class="d-flex justify-content-between small mb-1 text-success">
-                            <span>{{ __('Discount') }}</span>
-                            <span>−₹{{ number_format((float) $totals['discount'], 2) }}</span>
                         </div>
-                    @endif
-                    <p class="small text-muted mb-2">{{ __('Shipping is calculated at checkout using your PIN code.') }}</p>
-                    <div class="d-flex justify-content-between fw-semibold border-top pt-2">
-                        <span>{{ __('Estimated (excl. shipping)') }}</span>
-                        <span>₹{{ number_format((float) $totals['grand'], 2) }}</span>
+                    @endforeach
+                </div>
+                
+                <div>
+                    <div class="sf-cart-summary">
+                        <h2 style="color: white; font-size: 16px; margin-bottom: 24px; text-transform: uppercase;">Order Summary</h2>
+                        
+                        <div style="margin-bottom: 24px;">
+                            @if ($errors->has('coupon'))
+                                <div style="color: var(--color-error); font-size: 12px; margin-bottom: 8px;">{{ $errors->first('coupon') }}</div>
+                            @endif
+                            @if ($totals['coupon'])
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                                    <span style="color: var(--color-success); font-size: 12px;"><i class="bi bi-tag-fill"></i> Code applied: {{ $totals['coupon']->code }}</span>
+                                    <form action="{{ route('cart.coupon.remove') }}" method="post">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" style="background: none; border: none; color: var(--color-text-muted); font-size: 11px; text-decoration: underline;">Remove</button>
+                                    </form>
+                                </div>
+                            @else
+                                <form action="{{ route('cart.coupon.apply') }}" method="post" style="display: flex; gap: 8px;">
+                                    @csrf
+                                    <input type="text" name="code" value="{{ old('code') }}" class="sf-input" placeholder="Coupon code" style="flex:1;">
+                                    <button type="submit" style="background: var(--color-bg-elevated); border: 1px solid var(--color-gold); color: var(--color-gold); border-radius: var(--radius-md); padding: 0 16px; font-size: 11px; text-transform: uppercase; font-weight: 600; cursor: pointer;">Apply</button>
+                                </form>
+                            @endif
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--color-text-secondary); margin-bottom: 8px;">
+                            <span>Subtotal</span>
+                            <span>{{ config('commerce.currency_symbol', '₹') }}{{ number_format((float) $totals['subtotal'], 0) }}</span>
+                        </div>
+                        @if ((float) $totals['discount'] > 0)
+                            <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--color-success); margin-bottom: 8px;">
+                                <span>Discount</span>
+                                <span>−{{ config('commerce.currency_symbol', '₹') }}{{ number_format((float) $totals['discount'], 0) }}</span>
+                            </div>
+                        @endif
+                        <p style="font-size: 11px; color: var(--color-text-muted); margin-bottom: 16px;">Shipping is calculated at checkout.</p>
+                        
+                        <div class="sf-cart-total">
+                            <span>Estimated Total</span>
+                            <span>{{ config('commerce.currency_symbol', '₹') }}{{ number_format((float) $totals['grand'], 0) }}</span>
+                        </div>
+
+                        <a href="{{ route('checkout.create') }}" class="btn-checkout" style="display: flex; align-items: center; justify-content: center;">Proceed to Checkout</a>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mt-4">
-            <a href="{{ route('home') }}" class="btn btn-outline-secondary">{{ __('Continue shopping') }}</a>
-            <a href="{{ route('checkout.create') }}" class="btn btn-primary btn-lg">{{ __('Checkout') }}</a>
-        </div>
-    @endif
+        @endif
+    </div>
+</section>
 @endsection
 
 @if (session('analytics_add_to_cart'))

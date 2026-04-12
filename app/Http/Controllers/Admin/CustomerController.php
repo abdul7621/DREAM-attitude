@@ -24,6 +24,12 @@ class CustomerController extends Controller
             });
         }
 
+        if ($tag = $request->get('tag')) {
+            $query->whereHas('tags', function ($q) use ($tag) {
+                $q->where('tag_name', $tag);
+            });
+        }
+
         $customers = $query->orderByDesc('id')->paginate(30)->withQueryString();
 
         return view('admin.customers.index', compact('customers'));
@@ -45,5 +51,22 @@ class CustomerController extends Controller
         $returns = \App\Models\ReturnRequest::whereIn('order_id', $user->orders->pluck('id'))->with('order')->latest()->get();
 
         return view('admin.customers.show', compact('user', 'totalSpent', 'orderCount', 'avgOrder', 'segmentBadge', 'reviews', 'returns'));
+    }
+
+    public function update(Request $request, User $user): \Illuminate\Http\RedirectResponse
+    {
+        $data = $request->validate([
+            'tags' => ['nullable', 'string']
+        ]);
+
+        $tagsStr = $data['tags'] ?? '';
+        $tagsArray = array_filter(array_map('trim', explode(',', $tagsStr)));
+
+        $user->tags()->delete();
+        foreach ($tagsArray as $tag) {
+            $user->tags()->create(['tag_name' => $tag]);
+        }
+
+        return redirect()->back()->with('status', 'Customer tags updated successfully.');
     }
 }

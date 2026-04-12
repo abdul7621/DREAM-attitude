@@ -1,14 +1,21 @@
-<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>Your Order Shipped!</title></head>
-<body style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:20px;color:#222">
-<h2>Your Order Has Shipped 🚚</h2>
-<p>Hi {{ $customer_name }},</p>
-<p>Great news! Your order <strong>#{{ $order_number }}</strong> is on its way.</p>
-@if($awb)
-<p>AWB / Tracking Number: <strong>{{ $awb }}</strong></p>
+@component('mail::message')
+# Your Order Has Been Shipped!
+
+Hi {{ $data['customer_name'] }},
+
+Good news! Your order #{{ $data['order_number'] }} has been dispatched and is on its way to you.
+
+@if(!empty($data['tracking_url']))
+@component('mail::button', ['url' => $data['tracking_url']])
+Track Your Order
+@endcomponent
+@elseif(!empty($data['awb_number']))
+**AWB Number:** {{ $data['awb_number'] }}  
+**Courier:** {{ $data['courier_name'] ?? 'Partner' }}
 @endif
-@if($tracking_url)
-<p><a href="{{ $tracking_url }}" style="background:#4f46e5;color:#fff;padding:10px 20px;text-decoration:none;border-radius:6px">Track Your Order →</a></p>
-@endif
-<p style="margin-top:32px;color:#888;font-size:13px">Thank you for shopping with us!</p>
-</body></html>
+
+Thank you for shopping with us!
+
+Thanks,<br>
+{{ config('app.name') }}
+@endcomponent

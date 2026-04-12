@@ -1,6 +1,6 @@
 @extends('layouts.storefront')
 
-@section('title', $q ? __('Search: :q', ['q' => $q]) : __('Search'))
+@section('title', $q ? __('Search: :q', ['q' => $q]) : __('All Products'))
 
 @section('content')
 <section class="sf-section">

@@ -132,12 +132,32 @@
 
     {{-- ── Right Column ───────────────────────────────────── --}}
     <div class="col-lg-4">
-        <div class="card">
+        <div class="card mb-3">
             <div class="card-header fw-semibold"><i class="bi bi-person me-1"></i> Contact Info</div>
             <div class="card-body">
                 <p class="mb-2"><i class="bi bi-envelope text-muted me-2"></i> {{ $user->email }}</p>
                 <p class="mb-2"><i class="bi bi-telephone text-muted me-2"></i> {{ $user->phone ?? 'Not provided' }}</p>
                 <p class="mb-0"><i class="bi bi-calendar text-muted me-2"></i> Joined {{ $user->created_at?->format('d M Y') ?? '—' }}</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header fw-semibold"><i class="bi bi-tags me-1"></i> Tags</div>
+            <div class="card-body">
+                <form action="{{ route('admin.customers.update', $user) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    
+                    <div class="mb-2">
+                        @foreach($user->tags as $tag)
+                            <span class="badge bg-secondary mb-1" style="font-size: .75rem;">{{ $tag->tag_name }}</span>
+                        @endforeach
+                    </div>
+
+                    <label class="form-label small text-muted">Comma-separated tags</label>
+                    <input type="text" name="tags" class="form-control form-control-sm mb-2" value="{{ $user->tags->pluck('tag_name')->implode(', ') }}">
+                    <button type="submit" class="btn btn-sm btn-primary w-100">Save Tags</button>
+                </form>
             </div>
         </div>
     </div>

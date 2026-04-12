@@ -51,6 +51,9 @@ class OrderService
                 'shipping_total' => $totals['shipping'],
                 'discount_total' => $totals['discount'],
                 'tax_total' => $totals['tax'],
+                'gst_amount' => $totals['tax'],
+                'gst_rate' => $totals['gst_rate'] ?? 0,
+                'gst_inclusive' => $totals['gst_inclusive'] ?? true,
                 'grand_total' => $totals['grand'],
                 'currency' => config('commerce.currency', 'INR'),
                 'payment_method' => $data['payment_method'] ?? 'cod',
@@ -96,6 +99,10 @@ class OrderService
 
         OrderPlaced::dispatch($order);
 
+        if (app(\App\Services\SettingsService::class)->get('shipping.shiprocket_auto_create')) {
+            \App\Jobs\CreateShiprocketShipment::dispatch($order);
+        }
+
         return $order;
     }
 
@@ -130,6 +137,9 @@ class OrderService
                 'shipping_total' => $totals['shipping'],
                 'discount_total' => $totals['discount'],
                 'tax_total' => $totals['tax'],
+                'gst_amount' => $totals['tax'],
+                'gst_rate' => $totals['gst_rate'] ?? 0,
+                'gst_inclusive' => $totals['gst_inclusive'] ?? true,
                 'grand_total' => $totals['grand'],
                 'currency' => config('commerce.currency', 'INR'),
                 'payment_method' => $data['payment_method'],
@@ -192,6 +202,10 @@ class OrderService
 
         // Fire after transaction commits
         OrderPlaced::dispatch($order);
+
+        if (app(\App\Services\SettingsService::class)->get('shipping.shiprocket_auto_create')) {
+            \App\Jobs\CreateShiprocketShipment::dispatch($order);
+        }
     }
 
     /**

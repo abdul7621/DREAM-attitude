@@ -3,87 +3,87 @@
 @section('title', 'Checkout')
 
 @section('content')
-<div class="sf-checkout-page pb-5 bg-light min-vh-100">
+<div class="sf-checkout-page" style="background: var(--color-bg-primary); padding-bottom: 60px;">
     {{-- Top Header / Progress Indicator --}}
-    <div class="bg-white border-bottom mb-4 shadow-sm">
-        <div class="container py-3">
-            <div class="d-flex justify-content-center align-items-center gap-2 gap-md-4">
-                <div class="d-flex flex-column align-items-center">
-                    <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-bold" style="width:36px;height:36px;"><i class="bi bi-check fs-5"></i></div>
-                    <small class="fw-semibold mt-1">Cart</small>
+    <div style="background: var(--color-bg-surface); border-bottom: 1px solid var(--color-border-gold); margin-bottom: 32px; padding: 24px 0;">
+        <div class="sf-container">
+            <div style="display: flex; justify-content: center; align-items: center; gap: 16px;">
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--color-success); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;"><i class="bi bi-check" style="font-size: 20px;"></i></div>
+                    <small style="font-weight: 600; margin-top: 4px; color: var(--color-success);">Cart</small>
                 </div>
-                <div class="bg-success rounded" style="height:4px;width:50px;margin-top:-20px;"></div>
-                <div class="d-flex flex-column align-items-center">
-                    <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width:36px;height:36px;background-color: var(--sf-primary, #000);">2</div>
-                    <small class="fw-bold mt-1" style="color: var(--sf-primary, #000);">Shipping</small>
+                <div style="height: 4px; width: 50px; background: var(--color-success); border-radius: 2px; margin-top: -24px;"></div>
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--color-gold); color: #0a0a0a; display: flex; align-items: center; justify-content: center; font-weight: bold;">2</div>
+                    <small style="font-weight: 600; margin-top: 4px; color: var(--color-gold);">Shipping</small>
                 </div>
-                <div class="bg-secondary bg-opacity-25 rounded" style="height:4px;width:50px;margin-top:-20px;"></div>
-                <div class="d-flex flex-column align-items-center">
-                    <div class="rounded-circle bg-light border text-muted d-flex align-items-center justify-content-center fw-bold" style="width:36px;height:36px;">3</div>
-                    <small class="text-muted mt-1">Payment</small>
+                <div style="height: 4px; width: 50px; background: rgba(201,168,76,0.3); border-radius: 2px; margin-top: -24px;"></div>
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--color-bg-elevated); border: 1px solid var(--color-border); color: var(--color-text-muted); display: flex; align-items: center; justify-content: center; font-weight: bold;">3</div>
+                    <small style="color: var(--color-text-muted); margin-top: 4px;">Payment</small>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="container">
-        <div class="row g-4 flex-lg-row-reverse">
+    <div class="sf-container">
+        <div class="sf-cart-layout" style="direction: rtl;">
             {{-- ── Right: Order Summary ────────────────────────────────── --}}
-            <div class="col-lg-5">
-                <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
-                    <div class="card-header bg-white py-3 fw-bold fs-5 border-bottom"><i class="bi bi-bag-check me-2"></i> Order Summary</div>
-                    <div class="card-body">
-                        <ul class="list-unstyled small mb-4">
+            <div style="direction: ltr;">
+                <div class="sf-cart-summary" style="position: sticky; top: 20px;">
+                    <div style="font-weight: 600; font-size: 16px; margin-bottom: 24px; color: white;"><i class="bi bi-bag-check me-2"></i> Order Summary</div>
+                    <div>
+                        <ul style="list-style: none; padding: 0; margin: 0 0 24px 0; font-size: 13px;">
                             @foreach ($lines as $row)
-                                <li class="d-flex justify-content-between py-2 border-bottom align-items-center">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="position-relative">
-                                            <img src="{{ $row['product']->primaryImage() ? asset('storage/'.$row['product']->primaryImage()->path) : 'https://placehold.co/50' }}" class="rounded shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
-                                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark">{{ $row['item']->qty }}</span>
+                                <li style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--color-border); align-items: center;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div style="position: relative;">
+                                            <img src="{{ $row['product']->primaryImage() ? asset('storage/'.$row['product']->primaryImage()->path) : 'https://placehold.co/50' }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
+                                            <span style="position: absolute; top: -8px; right: -8px; background: var(--color-gold); color: #0a0a0a; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 12px;">{{ $row['item']->qty }}</span>
                                         </div>
-                                        <span class="fw-semibold">{{ $row['product']->name }} <span class="d-block text-muted small mt-1">{{ Str::limit($row['variant']->title, 20) }}</span></span>
+                                        <span style="font-weight: 500; color: white;">{{ $row['product']->name }} <span style="display: block; color: var(--color-text-muted); font-size: 11px; margin-top: 4px;">{{ Str::limit($row['variant']->title, 20) }}</span></span>
                                     </div>
-                                    <span class="fw-bold">₹{{ number_format((float) $row['line_total'], 2) }}</span>
+                                    <span style="font-weight: 600; color: var(--color-gold);">₹{{ number_format((float) $row['line_total'], 2) }}</span>
                                 </li>
                             @endforeach
                         </ul>
-                        <div class="d-flex justify-content-between mt-3 text-secondary">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px; color: var(--color-text-secondary);">
                             <span>Subtotal</span>
-                            <span class="fw-semibold">₹{{ number_format((float) $totals['subtotal'], 2) }}</span>
+                            <span style="font-weight: 500;">₹{{ number_format((float) $totals['subtotal'], 2) }}</span>
                         </div>
                         @if ((float) $totals['discount'] > 0)
-                            <div class="d-flex justify-content-between text-success mt-2">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px; color: var(--color-success);">
                                 <span>Discount</span>
-                                <span class="fw-semibold">−₹{{ number_format((float) $totals['discount'], 2) }}</span>
+                                <span style="font-weight: 600;">−₹{{ number_format((float) $totals['discount'], 2) }}</span>
                             </div>
                         @endif
-                        <div class="d-flex justify-content-between mt-2 text-secondary">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px; color: var(--color-text-secondary);">
                             <span>Shipping</span>
                             @if ((float) $totals['shipping'] === 0.0)
-                                <span class="text-success fw-semibold">FREE</span>
+                                <span style="color: var(--color-success); font-weight: 600;">FREE</span>
                             @else
-                                <span class="fw-semibold">₹{{ number_format((float) $totals['shipping'], 2) }}</span>
+                                <span style="font-weight: 500;">₹{{ number_format((float) $totals['shipping'], 2) }}</span>
                             @endif
                         </div>
                         @if ((float) $totals['tax'] > 0)
-                            <div class="d-flex justify-content-between mt-2 text-secondary">
-                                <span>Tax</span>
-                                <span class="fw-semibold">₹{{ number_format((float) $totals['tax'], 2) }}</span>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px; color: var(--color-text-secondary);">
+                                <span>Tax ({{ app(\App\Services\SettingsService::class)->get('gst.inclusive', true) ? 'Incl.' : 'Excl.' }})</span>
+                                <span style="font-weight: 500;">₹{{ number_format((float) $totals['tax'], 2) }}</span>
                             </div>
                         @endif
-                        <div class="d-flex justify-content-between mt-3 fw-bold fs-5 border-top pt-3 text-dark">
+                        <div class="sf-cart-total">
                             <span>Total</span>
                             <span>₹{{ number_format((float) $totals['grand'], 2) }}</span>
                         </div>
                         @if ($totals['coupon'])
-                            <p class="small text-muted mb-0 mt-3 bg-light p-2 rounded"><i class="bi bi-tag-fill text-success me-1"></i> {{ __('Coupon :code applied.', ['code' => $totals['coupon']->code]) }}</p>
+                            <p style="font-size: 11px; color: var(--color-text-muted); margin: 16px 0 0 0; background: var(--color-bg-elevated); padding: 8px; border-radius: var(--radius-sm);"><i class="bi bi-tag-fill text-success me-1"></i> {{ __('Coupon :code applied.', ['code' => $totals['coupon']->code]) }}</p>
                         @endif
                     </div>
                 </div>
             </div>
 
             {{-- ── Left: Checkout Form ─────────────────────────────────── --}}
-            <div class="col-lg-7">
+            <div style="direction: ltr;">
                 <form id="checkout-form" action="{{ route('checkout.store') }}" method="post">
                     @csrf
 
@@ -99,67 +99,70 @@
                     @endif
                     
                     {{-- Contact Info --}}
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-header bg-white py-3 fw-bold fs-5 border-bottom"><i class="bi bi-person-circle me-2"></i> Contact Information</div>
-                        <div class="card-body">
-                           <div class="row g-3">
-                                <div class="col-md-6">
-                                    <x-sf-input type="text" name="customer_name" id="customer_name" label="Full Name *" value="{{ old('customer_name') }}" required />
-                                </div>
-                                <div class="col-md-6">
-                                    <x-sf-input type="tel" name="phone" id="phone" label="Phone Number *" value="{{ old('phone') }}" required />
-                                    <small class="text-danger d-none" id="phone_err">Enter a valid 10-digit number</small>
-                                </div>
-                                <div class="col-12">
-                                    <x-sf-input type="email" name="email" id="email" label="Email (Optional, to text updates)" value="{{ old('email') }}" />
-                                </div>
-                           </div>
+                    <div style="background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); margin-bottom: 24px; padding: 24px;">
+                        <div style="font-weight: 600; font-size: 16px; margin-bottom: 24px; color: white;"><i class="bi bi-person-circle me-2"></i> Contact Information</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div style="grid-column: 1 / -1;">
+                                <label class="sf-label">Full Name *</label>
+                                <input type="text" name="customer_name" id="customer_name" value="{{ old('customer_name') }}" class="sf-input" required>
+                            </div>
+                            <div>
+                                <label class="sf-label">Phone Number *</label>
+                                <input type="tel" name="phone" id="phone" value="{{ old('phone') }}" class="sf-input" required>
+                                <small class="sf-inline-err-text d-none" id="phone_err">Enter a valid 10-digit number</small>
+                            </div>
+                            <div>
+                                <label class="sf-label">Email (Optional)</label>
+                                <input type="email" name="email" id="email" value="{{ old('email') }}" class="sf-input">
+                            </div>
                         </div>
                     </div>
 
                     {{-- Shipping Info --}}
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-header bg-white py-3 fw-bold fs-5 border-bottom"><i class="bi bi-truck me-2"></i> Shipping Address</div>
-                        <div class="card-body">
-                            @auth
-                            <div class="mb-3" id="saved-addr-wrap">
-                                <label class="form-label fw-semibold">Saved Addresses</label>
-                                <select class="form-select" id="saved_address_select">
-                                    <option value="">Enter new address</option>
-                                </select>
+                    <div style="background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); margin-bottom: 24px; padding: 24px;">
+                        <div style="font-weight: 600; font-size: 16px; margin-bottom: 24px; color: white;"><i class="bi bi-truck me-2"></i> Shipping Address</div>
+                        @auth
+                        <div style="margin-bottom: 24px;" id="saved-addr-wrap">
+                            <label class="sf-label">Saved Addresses</label>
+                            <select class="sf-input" id="saved_address_select">
+                                <option value="">Enter new address</option>
+                            </select>
+                        </div>
+                        @endauth
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                            <div>
+                                <label class="sf-label">PIN Code *</label>
+                                <div style="position: relative;">
+                                    <input type="text" id="postal_code" name="postal_code" value="{{ old('postal_code') }}" class="sf-input" required maxlength="6" inputmode="numeric">
+                                </div>
+                                <small class="sf-inline-err-text d-none" id="pin_err">Enter a valid 6-digit PIN code</small>
                             </div>
-                            @endauth
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <div class="position-relative">
-                                        <x-sf-input type="text" id="postal_code" name="postal_code" label="PIN Code *" value="{{ old('postal_code') }}" required maxlength="6" inputmode="numeric" />
-                                        <div class="spinner-border spinner-border-sm text-primary position-absolute top-50 end-0 translate-middle mt-2 d-none" id="pin_spinner" role="status"></div>
-                                    </div>
-                                    <small class="text-danger d-none" id="pin_err">Enter a valid 6-digit PIN code</small>
-                                </div>
-                                <div class="col-md-4">
-                                    <x-sf-input type="text" id="city" name="city" label="City *" value="{{ old('city') }}" required readonly />
-                                </div>
-                                <div class="col-md-4">
-                                    <x-sf-input type="text" id="state" name="state" label="State *" value="{{ old('state') }}" required readonly />
-                                </div>
-                                <div class="col-12">
-                                    <x-sf-input type="text" name="address_line1" id="address_line1" label="House/Flat No., Building Name *" value="{{ old('address_line1') }}" required />
-                                </div>
-                                <div class="col-12">
-                                    <x-sf-input type="text" name="address_line2" id="address_line2" label="Street/Area/Landmark (Optional)" value="{{ old('address_line2') }}" />
-                                </div>
-                                <div class="col-12 d-none">
-                                    <input type="hidden" name="country" value="IN">
-                                </div>
+                            <div>
+                                <label class="sf-label">City *</label>
+                                <input type="text" id="city" name="city" value="{{ old('city') }}" class="sf-input" required readonly>
+                            </div>
+                            <div>
+                                <label class="sf-label">State *</label>
+                                <input type="text" id="state" name="state" value="{{ old('state') }}" class="sf-input" required readonly>
+                            </div>
+                            <div style="grid-column: 1 / -1;">
+                                <label class="sf-label">House/Flat No., Building Name *</label>
+                                <input type="text" name="address_line1" id="address_line1" value="{{ old('address_line1') }}" class="sf-input" required>
+                            </div>
+                            <div style="grid-column: 1 / -1;">
+                                <label class="sf-label">Street/Area/Landmark (Optional)</label>
+                                <input type="text" name="address_line2" id="address_line2" value="{{ old('address_line2') }}" class="sf-input">
+                            </div>
+                            <div style="display: none;">
+                                <input type="hidden" name="country" value="IN">
                             </div>
                         </div>
                     </div>
 
                     {{-- Billing Toggle --}}
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-header bg-white py-3 fw-bold fs-5 border-bottom"><i class="bi bi-receipt me-2"></i> Billing Address</div>
-                        <div class="card-body">
+                    <div style="background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); margin-bottom: 24px; padding: 24px;">
+                        <div style="font-weight: 600; font-size: 16px; margin-bottom: 24px; color: white;"><i class="bi bi-receipt me-2"></i> Billing Address</div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
                             <div class="form-check form-switch mb-2">
                                 <input class="form-check-input" type="checkbox" id="sameAsShipping" value="1" checked style="cursor: pointer; width: 2.5em; height: 1.25em;">
                                 <label class="form-check-label ps-2 mt-1 fw-medium" for="sameAsShipping" style="cursor: pointer;">Billing address is same as shipping address</label>
@@ -188,15 +191,14 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
 
                     {{-- Payment Info --}}
                     @php
                         $copy = app(\App\Services\SettingsService::class)->get('conversion_copy.checkout', config('commerce.conversion_copy.checkout'));
                     @endphp
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-header bg-white py-3 fw-bold fs-5 border-bottom"><i class="bi bi-credit-card me-2"></i> Payment Method</div>
-                        <div class="card-body p-3">
+                    <div style="background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); margin-bottom: 24px; padding: 24px;">
+                        <div style="font-weight: 600; font-size: 16px; margin-bottom: 24px; color: white;"><i class="bi bi-credit-card me-2"></i> Payment Method</div>
+                        <div>
                             @php
                                 $onlineGateways = collect($activeGateways ?? [])->where('name', '!=', 'cod');
                                 $codGateway = collect($activeGateways ?? [])->firstWhere('name', 'cod');
@@ -204,47 +206,47 @@
 
                             @if($onlineGateways->isNotEmpty())
                                 @foreach($onlineGateways as $gw)
-                                    <x-sf-card class="mb-3 payment-card" style="cursor: pointer;" id="card_{{ $gw->name }}">
-                                        <label class="d-flex gap-3 align-items-start m-0 w-100" style="cursor: pointer;">
-                                            <input class="form-check-input mt-1 shadow-sm" type="radio" name="payment_method" value="{{ $gw->name }}" @checked(old('payment_method', ($gw->is_default ? $gw->name : '')) === $gw->name) style="width: 1.5em; height: 1.5em;">
-                                            <div class="w-100">
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <span class="fw-bold fs-6">{{ $gw->label }}</span>
+                                    <div class="payment-card" style="cursor: pointer; margin-bottom: 12px; padding: 16px; border: 1px solid var(--color-border); border-radius: var(--radius-md); transition: var(--transition);" id="card_{{ $gw->name }}">
+                                        <label style="display: flex; gap: 16px; align-items: flex-start; cursor: pointer; margin: 0; width: 100%;">
+                                            <input class="sf-checkout-radio" type="radio" name="payment_method" value="{{ $gw->name }}" @checked(old('payment_method', ($gw->is_default ? $gw->name : '')) === $gw->name) style="margin-top: 4px;">
+                                            <div style="flex: 1;">
+                                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                    <span style="font-weight: 600; color: white;">{{ $gw->label }}</span>
                                                     @if($gw->is_default)
-                                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-2"><i class="bi bi-lightning-fill"></i> Recommended</span>
+                                                        <span style="font-size: 10px; font-weight: 600; color: var(--color-gold); background: rgba(201,168,76,0.1); padding: 4px 8px; border-radius: 12px; text-transform: uppercase;">Recommended</span>
                                                     @endif
                                                 </div>
-                                                <p class="text-secondary small mt-1 mb-2">{{ $gw->name === 'razorpay' ? 'UPI, Cards, NetBanking' : 'Pay via ' . $gw->label }}</p>
+                                                <p style="color: var(--color-text-muted); font-size: 12px; margin: 4px 0 0 0;">{{ $gw->name === 'razorpay' ? 'UPI, Cards, NetBanking' : 'Pay via ' . $gw->label }}</p>
                                             </div>
                                         </label>
-                                    </x-sf-card>
+                                    </div>
                                 @endforeach
                             @endif
                             
                             @if($codGateway)
-                                <x-sf-card class="payment-card" style="cursor: pointer;" id="card_cod">
-                                    <label class="d-flex gap-3 align-items-start m-0 w-100" style="cursor: pointer;">
-                                        <input class="form-check-input mt-1 shadow-sm" type="radio" name="payment_method" value="cod" @checked(old('payment_method', ($codGateway->is_default ? 'cod' : '')) === 'cod') style="width: 1.5em; height: 1.5em;">
-                                        <div class="w-100">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <span class="fw-bold fs-6">{{ $codGateway->label ?: 'Cash on Delivery (COD)' }}</span>
-                                                <span class="fw-semibold text-secondary small">{{ $copy['cod_fee_message'] ?: '₹0 Additional Fee' }}</span>
+                                <div class="payment-card" style="cursor: pointer; margin-bottom: 12px; padding: 16px; border: 1px solid var(--color-border); border-radius: var(--radius-md); transition: var(--transition);" id="card_cod">
+                                    <label style="display: flex; gap: 16px; align-items: flex-start; cursor: pointer; margin: 0; width: 100%;">
+                                        <input class="sf-checkout-radio" type="radio" name="payment_method" value="cod" @checked(old('payment_method', ($codGateway->is_default ? 'cod' : '')) === 'cod') style="margin-top: 4px;">
+                                        <div style="flex: 1;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <span style="font-weight: 600; color: white;">{{ $codGateway->label ?: 'Cash on Delivery (COD)' }}</span>
+                                                <span style="font-size: 11px; font-weight: 600; color: var(--color-text-muted);">{{ $copy['cod_fee_message'] ?: '₹0 Additional Fee' }}</span>
                                             </div>
-                                            <p class="text-secondary small mt-1 mb-0">{{ $copy['cod_message'] ?: 'Pay when your order is delivered to you.' }}</p>
+                                            <p style="color: var(--color-text-muted); font-size: 12px; margin: 4px 0 0 0;">{{ $copy['cod_message'] ?: 'Pay when your order is delivered to you.' }}</p>
                                         </div>
                                     </label>
-                                </x-sf-card>
+                                </div>
                             @endif
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-lg w-100 py-3 fw-bold fs-5 shadow sf-hover-lift" id="submitBtn" style="background-color: var(--sf-primary, #000); color: #fff;">
-                        {{ $copy['place_order_cta'] ?: 'Place Order' }} <i class="bi bi-arrow-right ms-2"></i>
+                    <button type="submit" class="sf-btn-primary" id="submitBtn">
+                        <span id="submitBtnText" style="display:flex;align-items:center;justify-content:center;">{{ $copy['place_order_cta'] ?: 'Place Order' }} <i class="bi bi-arrow-right ms-2"></i></span>
                     </button>
 
-                    <div class="mt-4 p-3 bg-white border rounded shadow-sm">
-                        <x-trust-badge icon="bi-shield-check" title="Secure Checkout" text="{{ $copy['secure_message'] ?: '100% safe & protected payments with SSL encryption' }}" />
-                        <x-trust-badge icon="bi-truck" title="Fast Delivery" text="{{ $copy['delivery_eta'] ?: 'Estimated: 2-5 Business Days' }}" />
+                    <div class="sf-trust-row" style="margin-top: 24px; padding: 20px; background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md);">
+                        <span style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-shield-check text-success fs-5"></i> Secure Checkout</span>
+                        <span style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-truck fs-5"></i> Fast Delivery</span>
                     </div>
                 </form>
             </div>
@@ -255,12 +257,25 @@
 
 @push('scripts')
 <style>
-.payment-card { transition: border-color 0.2s, background-color 0.2s; border: 2px solid transparent; }
-.payment-card.selected { border-color: var(--sf-primary, #000); background-color: #f8f9fa; }
-.sf-inline-err-text { font-size: 0.85rem; color: #dc3545; display: block; margin-top: 0.25rem; }
+.payment-card { transition: border-color 0.2s, background-color 0.2s; }
+.payment-card:hover { border-color: var(--color-gold) !important; }
+.payment-card.selected { border-color: var(--color-gold) !important; background: var(--color-bg-elevated) !important; }
+.sf-inline-err-text { font-size: 0.85rem; color: var(--color-error); display: block; margin-top: 0.25rem; }
 </style>
 <script>
 (function () {
+    const checkoutForm = document.getElementById('checkout-form');
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', function() {
+            const btn = document.getElementById('submitBtn');
+            const text = document.getElementById('submitBtnText');
+            if (btn && text) {
+                btn.disabled = true;
+                text.innerHTML = '<i class="bi bi-arrow-repeat" style="display:inline-block;animation:spin 1s linear infinite;margin-right:8px;"></i> Processing...';
+            }
+        });
+    }
+
     // ── Saved Address Loader ─────────────────────
     const addrSelect = document.getElementById('saved_address_select');
     if (addrSelect) {

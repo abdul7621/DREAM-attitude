@@ -2,41 +2,21 @@
     $copy = app(\App\Services\SettingsService::class)->get('conversion_copy.product', config('commerce.conversion_copy.product') ?? []);
     $subtext = ($product->meta['buy_now_subtext'] ?? null) ?: ($copy['buy_now_subtext'] ?? '');
 @endphp
-<div class="mb-4">
-    <div class="row g-2">
-        <div class="col-3">
-            <input type="number" name="qty" value="1" min="1" max="9999" class="form-control text-center h-100" style="min-height: 48px; border-radius: 8px; font-weight: bold; border-color: #e5e7eb;" required>
+<div class="sf-pdp-info-block">
+    <div style="display: flex; gap: 16px;">
+        <div class="sf-qty">
+            <button type="button" onclick="const inpv=this.nextElementSibling; if(inpv.value>1) inpv.value--;"><i class="bi bi-dash"></i></button>
+            <input type="number" name="qty" value="1" min="1" max="9999" required readonly>
+            <button type="button" onclick="const inpv=this.previousElementSibling; inpv.value++;"><i class="bi bi-plus"></i></button>
         </div>
-        <div class="col-9 d-flex gap-2">
-            <x-sf-button type="submit" variant="outline" size="lg" icon="bi-bag-plus" class="flex-grow-1 sf-btn-cart" id="addToCartBtn" style="border-width: 2px;">
-                Add to Cart
-            </x-sf-button>
-            <div class="flex-grow-1 d-flex flex-column gap-1">
-                <x-sf-button type="button" variant="primary" size="lg" icon="bi-lightning-charge-fill" class="w-100" id="buyNowBtn" onclick="document.getElementById('redirectInput').value='checkout'; document.getElementById('productForm').submit();">
-                    Buy Now
-                </x-sf-button>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
+            <button type="submit" class="sf-pdp-add" id="addToCartBtn">Add to Cart</button>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+                <button type="button" class="sf-pdp-buy" id="buyNowBtn" onclick="document.getElementById('redirectInput').value='checkout'; document.getElementById('productForm').submit();" style="margin-top:0;">Buy Now</button>
                 @if($subtext)
-                    <div class="text-center text-muted small" style="font-size: 0.75rem;">{{ $subtext }}</div>
+                    <div style="text-align: center; color: var(--color-text-muted); font-size: 11px;">{{ $subtext }}</div>
                 @endif
             </div>
         </div>
-        </div>
-    </div>
-
-    {{-- Payment Icons --}}
-    <div class="sf-payment-icons mt-3">
-        <span class="pay-icon fw-semibold text-dark me-2">Secure Checkout</span>
-        <div class="pay-divider"></div>
-        <span class="pay-icon"><i class="bi bi-google"></i> Pay</span>
-        <span class="pay-icon"><i class="bi bi-phone"></i> PhonePe</span>
-        <span class="pay-icon"><i class="bi bi-qr-code-scan"></i> UPI</span>
-        <span class="pay-icon"><i class="bi bi-credit-card"></i> Cards</span>
-        @php
-            $enabledGateways = \App\Models\PaymentMethod::where('is_active', true)->pluck('driver')->toArray();
-            $codEnabled = in_array('cod', $enabledGateways);
-        @endphp
-        @if($codEnabled)
-            <span class="pay-icon"><i class="bi bi-cash"></i> COD</span>
-        @endif
     </div>
 </div>

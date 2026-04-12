@@ -9,58 +9,13 @@
     <link rel="canonical" href="{{ url()->current() }}">
     @stack('meta')
     @include('partials.tracking-head')
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="{{ asset('css/storefront.css') }}?v={{ filemtime(public_path('css/storefront.css')) }}" rel="stylesheet">
     
-    {{-- ── Dynamic Theme Engine ──────────────────────────────────── --}}
     @php $ss = app(\App\Services\SettingsService::class); @endphp
-    <style>
-        :root {
-            --brand-primary: {{ $ss->get('theme.primary_color', '#000000') }};
-            --brand-secondary: {{ $ss->get('theme.secondary_color', '#6c757d') }};
-            --brand-radius: {{ $ss->get('theme.border_radius', '0.375rem') }};
-            --brand-font: {!! $ss->get('theme.font_family', 'Inter, sans-serif') !!};
-        }
-        
-        body, h1, h2, h3, h4, h5, h6, .nav-link, .btn {
-            font-family: var(--brand-font) !important;
-        }
-        
-        .btn-primary { 
-            background-color: var(--brand-primary) !important; 
-            border-color: var(--brand-primary) !important; 
-            color: #fff !important;
-            border-radius: var(--brand-radius);
-        }
-        @if($ss->get('theme.button_style') === 'outline')
-        .btn-primary {
-            background-color: transparent !important;
-            color: var(--brand-primary) !important;
-        }
-        .btn-primary:hover {
-            background-color: var(--brand-primary) !important;
-            color: #fff !important;
-        }
-        @endif
-
-        .badge.bg-primary { background-color: var(--brand-primary) !important; }
-        .text-primary { color: var(--brand-primary) !important; }
-        .bg-primary { background-color: var(--brand-primary) !important; }
-        .sf-header { background-color: var(--brand-primary) !important; }
-        
-        .card { 
-            border-radius: var(--brand-radius) !important; 
-            @if($ss->get('theme.card_shadow') === 'shadow-sm')
-            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075) !important; border: none !important;
-            @elseif($ss->get('theme.card_shadow') === 'shadow')
-            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.125) !important; border: none !important;
-            @endif
-        }
-    </style>
     @stack('styles')
     
     @php
@@ -73,13 +28,8 @@
             cart: @json($jsCart),
             user: @json($jsUser),
             settings: @json($jsSettings),
-
-            emit(event, data) {
-                document.dispatchEvent(new CustomEvent(event, { detail: data }));
-            },
-            on(event, callback) {
-                document.addEventListener(event, (e) => callback(e.detail));
-            }
+            emit(event, data) { document.dispatchEvent(new CustomEvent(event, { detail: data })); },
+            on(event, callback) { document.addEventListener(event, (e) => callback(e.detail)); }
         };
     </script>
     <script src="{{ asset('js/store.js') }}"></script>
@@ -90,86 +40,83 @@
 {{-- ── Announcement Bar ────────────────────────────────── --}}
 @php $announcementActive = $ss->get('theme.announcement_active', false); @endphp
 @if($announcementActive && $ss->get('theme.announcement_text'))
-<div class="sf-announcement-bar py-2 small fw-medium position-relative overflow-hidden" 
-     style="background: var(--brand-primary); color: #fff; z-index: 1040;" id="announcementBar">
-    <div class="marquee-container d-flex align-items-center w-100" style="white-space: nowrap;">
-        <marquee behavior="scroll" direction="left" scrollamount="6">
-            {{ $ss->get('theme.announcement_text') }}
-        </marquee>
-    </div>
-    <button type="button" class="btn-close btn-close-white position-absolute end-0 top-50 translate-middle-y me-3" style="font-size:.6rem; padding: 0.5rem; z-index: 2;" 
-            onclick="document.getElementById('announcementBar').remove();"></button>
+<div class="sf-announce-bar" id="announcementBar">
+    {{ $ss->get('theme.announcement_text') }}
+    <button type="button" class="btn-dismiss" onclick="document.getElementById('announcementBar').style.display='none'; sessionStorage.setItem('announce_closed','1');"><i class="bi bi-x"></i></button>
 </div>
+<script>
+    if(sessionStorage.getItem('announce_closed') === '1') {
+        document.getElementById('announcementBar').style.display = 'none';
+    }
+</script>
 @endif
 
 {{-- ── Header ──────────────────────────────────────────── --}}
-<nav class="navbar navbar-expand-lg sf-header">
-    <div class="container">
-        @if($ss->get('theme.logo'))
-            <a class="navbar-brand" href="{{ route('home') }}">
-                <img src="{{ asset('storage/' . $ss->get('theme.logo')) }}" alt="{{ config('app.name') }}" style="max-height: 40px;">
-            </a>
-        @else
-            <a class="navbar-brand" href="{{ route('home') }}">{{ config('app.name') }}</a>
+<header class="sf-header">
+    @if($ss->get('theme.logo'))
+        <a class="logo" href="{{ route('home') }}">
+            <img src="{{ asset('storage/' . $ss->get('theme.logo')) }}" alt="{{ config('app.name') }}" style="max-height: 40px;">
+        </a>
+    @else
+        <a class="logo" href="{{ route('home') }}">{{ config('app.name') }}</a>
+    @endif
+    
+    <nav class="sf-header-nav nav-links" id="desktopNav">
+        @if (isset($globalMenus['header']) && $globalMenus['header']->parentItems->isNotEmpty())
+            @foreach ($globalMenus['header']->parentItems as $item)
+                <a href="{{ $item->link ?: '#' }}" @if($item->is_external) target="_blank" @endif>{{ $item->label }}</a>
+            @endforeach
         @endif
-        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-controls="navMain" aria-expanded="false" aria-label="Toggle navigation">
-            <i class="bi bi-list text-white" style="font-size:1.5rem;"></i>
-        </button>
-        <div class="collapse navbar-collapse" id="navMain">
-            {{-- Dynamic Header Menu --}}
-            @if (isset($globalMenus['header']) && $globalMenus['header']->parentItems->isNotEmpty())
-                <ul class="navbar-nav me-auto gap-1">
-                    @foreach ($globalMenus['header']->parentItems as $item)
-                        @if($item->children->count() > 0)
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="{{ $item->link ?: '#' }}" role="button" data-bs-toggle="dropdown" aria-expanded="false" @if($item->is_external) target="_blank" @endif>
-                                    {{ $item->label }}
-                                </a>
-                                <ul class="dropdown-menu border-0 shadow-sm">
-                                    @foreach($item->children as $child)
-                                        <li><a class="dropdown-item" href="{{ $child->link ?: '#' }}" @if($child->is_external) target="_blank" @endif>{{ $child->label }}</a></li>
-                                    @endforeach
-                                </ul>
-                            </li>
-                        @else
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ $item->link ?: '#' }}" @if($item->is_external) target="_blank" @endif>{{ $item->label }}</a>
-                            </li>
-                        @endif
-                    @endforeach
-                </ul>
+    </nav>
+    
+    <div class="sf-header-nav">
+        <form action="{{ route('search') }}" method="get" role="search">
+            <input type="search" name="q" class="search-input" placeholder="Search products…" aria-label="Search">
+        </form>
+        @auth
+            <a href="{{ route('account.dashboard') }}" class="cart-icon ps-3"><i class="bi bi-person-circle"></i></a>
+        @else
+            <a href="{{ route('login') }}" class="cart-icon ps-3"><i class="bi bi-person"></i></a>
+        @endauth
+        <a href="{{ route('cart.index') }}" class="cart-icon position-relative ms-3">
+            <i class="bi bi-bag"></i>
+            @if (($cartCount ?? 0) > 0)
+                <span class="sf-cart-badge">{{ $cartCount }}</span>
             @endif
-
-            <div class="d-flex align-items-center gap-3 ms-auto mt-2 mt-lg-0">
-                {{-- Search --}}
-                <form action="{{ route('search') }}" method="get" role="search">
-                    <input type="search" name="q" class="search-box" placeholder="Search products…" aria-label="Search">
-                </form>
-                {{-- Cart --}}
-                <a href="{{ route('cart.index') }}" class="btn-cart">
-                    <i class="bi bi-bag"></i>
-                    @if (($cartCount ?? 0) > 0)
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill cart-badge">{{ $cartCount }}</span>
-                    @endif
-                </a>
-                {{-- Account --}}
-                @auth
-                    <a href="{{ route('account.dashboard') }}" class="nav-link d-none d-lg-inline"><i class="bi bi-person-circle"></i></a>
-                    @if (auth()->user()->isAdmin())
-                        <a href="{{ route('admin.dashboard') }}" class="nav-link d-none d-lg-inline" style="font-size:.78rem;">Admin</a>
-                    @endif
-                    <form action="{{ route('logout') }}" method="post" class="d-inline">@csrf
-                        <button type="submit" class="btn btn-sm btn-outline-light" style="font-size:.75rem;">Logout</button>
-                    </form>
-                @else
-                    <a href="{{ route('login') }}" class="nav-link"><i class="bi bi-person"></i> Login</a>
-                @endauth
-            </div>
-        </div>
+        </a>
+        <button class="sf-hamburger ms-3" onclick="document.getElementById('mobileDrawer').classList.add('open'); document.getElementById('drawerOverlay').classList.add('open');">
+            <span></span><span></span><span></span>
+        </button>
     </div>
-</nav>
+</header>
 
-{{-- ── Main Content ────────────────────────────────────── --}}
+{{-- ── Mobile Drawer ──────────────────────────────────────────── --}}
+<div class="sf-drawer-overlay" id="drawerOverlay" onclick="document.getElementById('mobileDrawer').classList.remove('open'); this.classList.remove('open');"></div>
+<div class="sf-mobile-drawer" id="mobileDrawer">
+    <button class="close-drawer" onclick="document.getElementById('mobileDrawer').classList.remove('open'); document.getElementById('drawerOverlay').classList.remove('open');"><i class="bi bi-x"></i></button>
+    <div style="margin-top: 40px;">
+        @if (isset($globalMenus['header']) && $globalMenus['header']->parentItems->isNotEmpty())
+            @foreach ($globalMenus['header']->parentItems as $item)
+                <a href="{{ $item->link ?: '#' }}" @if($item->is_external) target="_blank" @endif>{{ $item->label }}</a>
+            @endforeach
+        @endif
+        <hr style="border-color: var(--color-border); margin: 16px 0;">
+        @auth
+            <a href="{{ route('account.dashboard') }}">My Account</a>
+            @if (auth()->user()->isAdmin())
+                <a href="{{ route('admin.dashboard') }}">Admin</a>
+            @endif
+            <form action="{{ route('logout') }}" method="post" style="margin-top: 16px;">@csrf
+                <button type="submit" style="background:none;border:none;color:var(--color-error);font-size:14px;padding:0;">Logout</button>
+            </form>
+        @else
+            <a href="{{ route('login') }}">Login</a>
+            <a href="{{ route('register') ?? '/register' }}">Sign Up</a>
+        @endauth
+    </div>
+</div>
+
+<main>
     @if (session('status'))
         <script>
             document.addEventListener('DOMContentLoaded', () => {
@@ -196,7 +143,6 @@
     @if (session('analytics_add_to_cart'))
         <script>
             document.addEventListener('DOMContentLoaded', () => {
-                // Ensure single-fire execution logic via window variable state
                 if (!window.analyticsAddCartFired) {
                     window.analyticsAddCartFired = true;
                     Store.emit('analytics', {
@@ -208,83 +154,90 @@
         </script>
         {{ session()->forget('analytics_add_to_cart') /* Force clear to be safe */ }}
     @endif
+
     @yield('content')
 </main>
 
 {{-- ── Footer ──────────────────────────────────────────── --}}
 <footer class="sf-footer">
-    <div class="container">
-        <div class="row g-4">
-            <div class="col-lg-4">
-                <h6>{{ config('app.name') }}</h6>
-                <p class="small" style="max-width:280px;">{{ $ss->get('store.footer_text', 'Premium quality products delivered to your doorstep. 100% authentic, fast delivery across India.') }}</p>
-                <div class="mt-3">
+    <div class="sf-container">
+        <div class="sf-footer-grid">
+            <div>
+                <div class="brand">{{ config('app.name') }}</div>
+                <div class="tagline">{{ $ss->get('store.footer_text', 'Premium quality products delivered to your doorstep.') }}</div>
+                <div class="social-icons">
                     @if($ss->get('store.instagram'))
-                        <a href="{{ $ss->get('store.instagram') }}" class="social-icon" target="_blank" rel="noopener"><i class="bi bi-instagram"></i></a>
+                        <a href="{{ $ss->get('store.instagram') }}" target="_blank" rel="noopener"><i class="bi bi-instagram"></i></a>
                     @endif
                     @if($ss->get('store.facebook'))
-                        <a href="{{ $ss->get('store.facebook') }}" class="social-icon" target="_blank" rel="noopener"><i class="bi bi-facebook"></i></a>
+                        <a href="{{ $ss->get('store.facebook') }}" target="_blank" rel="noopener"><i class="bi bi-facebook"></i></a>
                     @endif
                     @if($ss->get('store.whatsapp'))
-                        <a href="https://wa.me/{{ $ss->get('store.whatsapp') }}" class="social-icon" target="_blank" rel="noopener"><i class="bi bi-whatsapp"></i></a>
+                        <a href="https://wa.me/{{ $ss->get('store.whatsapp') }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp"></i></a>
                     @endif
                 </div>
             </div>
-            <div class="col-6 col-lg-2">
-                <h6>Shop</h6>
-                <ul class="footer-links">
-                    <li><a href="{{ route('home') }}">Home</a></li>
-                    <li><a href="{{ route('search') }}">All Products</a></li>
-                    <li><a href="{{ route('cart.index') }}">Cart</a></li>
-                </ul>
+            
+            <div>
+                <h4>Shop</h4>
+                <div class="links">
+                    <a href="{{ route('home') }}">Home</a>
+                    <a href="{{ route('search') }}">All Products</a>
+                    <a href="{{ route('cart.index') }}">Cart</a>
+                </div>
             </div>
-            <div class="col-6 col-lg-3">
-                <h6>Policies</h6>
-                <ul class="footer-links">
+            
+            <div>
+                <h4>Policies</h4>
+                <div class="links">
                     @if(isset($globalMenus['footer']) && $globalMenus['footer']->parentItems->isNotEmpty())
                         @foreach($globalMenus['footer']->parentItems as $item)
-                            <li><a href="{{ $item->link ?: '#' }}" @if($item->is_external) target="_blank" @endif>{{ $item->label }}</a></li>
+                            <a href="{{ $item->link ?: '#' }}" @if($item->is_external) target="_blank" @endif>{{ $item->label }}</a>
                         @endforeach
                     @else
                         @foreach (['privacy-policy','return-policy','shipping-policy','terms-conditions'] as $slug)
                             @php $pg = \App\Models\Page::where('slug', $slug)->where('is_active', true)->first(); @endphp
                             @if ($pg)
-                                <li><a href="{{ route('page.show', $pg) }}">{{ $pg->title }}</a></li>
+                                <a href="{{ route('page.show', $pg) }}">{{ $pg->title }}</a>
                             @endif
                         @endforeach
                     @endif
-                </ul>
+                </div>
             </div>
-            <div class="col-lg-3">
-                <h6>Contact</h6>
-                <ul class="footer-links">
-                    @php $ss = app(\App\Services\SettingsService::class); @endphp
+            
+            <div>
+                <h4>Contact</h4>
+                <div class="links">
                     @if ($ss->get('store.email'))
-                        <li><i class="bi bi-envelope me-1"></i> <a href="mailto:{{ $ss->get('store.email') }}">{{ $ss->get('store.email') }}</a></li>
+                        <a href="mailto:{{ $ss->get('store.email') }}"><i class="bi bi-envelope"></i> {{ $ss->get('store.email') }}</a>
                     @endif
                     @if ($ss->get('store.phone'))
-                        <li><i class="bi bi-telephone me-1"></i> <a href="tel:{{ $ss->get('store.phone') }}">{{ $ss->get('store.phone') }}</a></li>
+                        <a href="tel:{{ $ss->get('store.phone') }}"><i class="bi bi-telephone"></i> {{ $ss->get('store.phone') }}</a>
                     @endif
-                </ul>
+                </div>
             </div>
         </div>
-        
-        <div class="row mt-5 pt-4 border-top border-secondary border-opacity-25">
-            <div class="col-12 text-center text-md-start">
-                @if($ss->get('theme.footer_seo_text'))
-                <div class="small text-muted mb-3" style="font-size: 0.75rem;">
-                    {!! nl2br(e($ss->get('theme.footer_seo_text'))) !!}
-                </div>
-        @endif
 
-        <div class="footer-bottom text-center mt-4">
+        <div class="sf-footer-trust">
+            <span><i class="bi bi-shield-check"></i> Secure Checkout</span>
+            <span><i class="bi bi-truck"></i> Fast Delivery</span>
+            <span><i class="bi bi-arrow-repeat"></i> Easy Returns</span>
+        </div>
+        
+        @if($ss->get('theme.footer_seo_text'))
+            <div style="font-size: 11px; color: var(--color-text-muted); margin-top: 24px;">
+                {!! nl2br(e($ss->get('theme.footer_seo_text'))) !!}
+            </div>
+        @endif
+        
+        <div class="sf-footer-copy">
             © {{ date('Y') }} {{ config('app.name') }}. All rights reserved.
         </div>
     </div>
 </footer>
 
 <x-toast />
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 {{-- Wishlist Heart System --}}
 <script>
 (function() {
@@ -299,7 +252,8 @@
                 document.querySelectorAll('.wishlist-heart').forEach(btn => {
                     const pid = parseInt(btn.dataset.productId);
                     if (ids.includes(pid)) {
-                        btn.querySelector('i').className = 'bi bi-heart-fill text-danger';
+                        btn.classList.add('active');
+                        btn.querySelector('i').className = 'bi bi-heart-fill';
                         btn.dataset.wishlisted = '1';
                     }
                 });
@@ -332,9 +286,11 @@
         .then(r => r.json())
         .then(data => {
             if (data.wishlisted) {
-                icon.className = 'bi bi-heart-fill text-danger';
+                btn.classList.add('active');
+                icon.className = 'bi bi-heart-fill';
                 btn.dataset.wishlisted = '1';
             } else {
+                btn.classList.remove('active');
                 icon.className = 'bi bi-heart';
                 btn.dataset.wishlisted = '0';
             }
@@ -349,4 +305,3 @@
 @stack('scripts')
 </body>
 </html>
-

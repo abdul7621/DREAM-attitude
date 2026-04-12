@@ -69,6 +69,13 @@ class ShopifyImporter
                 $counts['products']++;
 
                 foreach ($product['variants'] as $v) {
+                    // Guard: never insert a variant with price 0 — it's
+                    // almost certainly a CSV parsing issue, not a real price.
+                    if (empty($v['price']) || $v['price'] <= 0) {
+                        $counts['errors'][] = "Product {$handle}: Variant '{$v['title']}' skipped — price is 0 or empty";
+                        continue;
+                    }
+
                     $variant = ProductVariant::query()->updateOrCreate(
                         ['product_id' => $p->id, 'sku' => $v['sku'] ?: null],
                         [
@@ -384,6 +391,12 @@ class ShopifyImporter
         $totalVariants  = 0;
         $totalImages    = 0;
 
+        // Per-handle carry-forward state for Shopify CSV quirks:
+        // Subsequent variant rows may leave price/compare-at empty.
+        $lastKnownPrice     = [];
+        $lastKnownCompareAt = [];
+        $lastKnownGrams     = [];
+
         foreach ($rows as $row) {
             $handle = trim($row['Handle'] ?? '');
             if (! $handle) {
@@ -403,6 +416,9 @@ class ShopifyImporter
                     'variants'  => [],
                     'images'    => [],
                 ];
+                $lastKnownPrice[$handle]     = 0;
+                $lastKnownCompareAt[$handle] = null;
+                $lastKnownGrams[$handle]     = 0;
             }
 
             $imgSrc = trim($row['Image Src'] ?? '');
@@ -417,12 +433,30 @@ class ShopifyImporter
                 $row['Option3 Value'] ?? '',
             ])->filter()->implode(' / ');
 
+            // Carry-forward pricing: Shopify CSV may leave subsequent
+            // variant rows with empty price (not null — empty string).
+            // (float)"" = 0 which is incorrect. Carry forward from
+            // the last row that had a real price.
+            $rawPrice     = trim($row['Variant Price'] ?? '');
+            $rawCompareAt = trim($row['Variant Compare At Price'] ?? '');
+            $rawGrams     = trim($row['Variant Grams'] ?? '');
+
+            if ($rawPrice !== '') {
+                $lastKnownPrice[$handle] = (float) $rawPrice;
+            }
+            if ($rawCompareAt !== '') {
+                $lastKnownCompareAt[$handle] = ((float) $rawCompareAt) ?: null;
+            }
+            if ($rawGrams !== '') {
+                $lastKnownGrams[$handle] = (int) $rawGrams;
+            }
+
             $products[$handle]['variants'][] = [
                 'title'      => $varTitle ?: 'Default',
                 'sku'        => trim($row['Variant SKU'] ?? ''),
-                'price'      => (float) ($row['Variant Price'] ?? 0),
-                'compare_at' => (float) ($row['Variant Compare At Price'] ?? 0) ?: null,
-                'grams'      => (int) ($row['Variant Grams'] ?? 0),
+                'price'      => $lastKnownPrice[$handle],
+                'compare_at' => $lastKnownCompareAt[$handle],
+                'grams'      => $lastKnownGrams[$handle],
                 'stock'      => (int) ($row['Variant Inventory Qty'] ?? 0),
             ];
             $totalVariants++;

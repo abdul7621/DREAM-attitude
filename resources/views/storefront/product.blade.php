@@ -47,22 +47,22 @@
 @endpush
 
 @section('content')
-<section class="sf-section" style="padding-top: 1.5rem;">
+<section class="sf-section">
     <div class="sf-container">
         {{-- Breadcrumb --}}
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb small">
-                <li class="breadcrumb-item"><a href="{{ route('home') }}" class="text-decoration-none">Home</a></li>
-                @if ($product->category)
-                    <li class="breadcrumb-item"><a href="{{ route('category.show', $product->category) }}" class="text-decoration-none">{{ $product->category->name }}</a></li>
-                @endif
-                <li class="breadcrumb-item active">{{ $product->name }}</li>
-            </ol>
+        <nav style="margin-bottom: 32px; font-size: 13px; color: var(--color-text-muted);">
+            <a href="{{ route('home') }}" style="color: var(--color-text-secondary);">Home</a> 
+            @if ($product->category)
+                <span style="margin: 0 8px;">/</span> 
+                <a href="{{ route('category.show', $product->category) }}" style="color: var(--color-text-secondary);">{{ $product->category->name }}</a>
+            @endif
+            <span style="margin: 0 8px;">/</span> 
+            <span style="color: var(--color-gold);">{{ $product->name }}</span>
         </nav>
 
-        <div class="row g-4 g-lg-5">
+        <div class="sf-pdp">
             {{-- ── Left Column: Media Gallery ───────────────────── --}}
-            <div class="col-md-6 col-lg-7">
+            <div>
                 @include('storefront.product.sections.gallery', [
                     'product' => $product,
                     'selectedVariant' => $selectedVariant
@@ -70,7 +70,7 @@
             </div>
 
             {{-- ── Right Column: Product Information ────────────── --}}
-            <div class="col-md-6 col-lg-5 sf-product-info sf-pdp-info">
+            <div>
                 <form method="post" action="{{ route('cart.items.store') }}" id="productForm">
                     @csrf
                     <input type="hidden" name="redirect" id="redirectInput" value="">
@@ -102,24 +102,22 @@
 </section>
 
 {{-- ── Sticky Mobile Cart Bar ─────────────────────────────── --}}
-<div class="sf-sticky-cart d-md-none bg-white border-top p-3 fixed-bottom shadow-lg" style="z-index: 1040;">
-    <div class="sf-container d-flex justify-content-between align-items-center gap-3">
-        <div class="d-flex align-items-center gap-2">
-            @if($product->primaryImage())
-                <img src="{{ asset('storage/'.$product->primaryImage()->path) }}" style="width: 40px; height: 40px; object-fit: cover;" class="rounded d-none d-sm-block">
-            @endif
-            <div>
-                <div class="d-flex align-items-baseline gap-2">
-                    <span class="fw-bold fs-5" id="stickyPrice">₹0</span>
-                    <span class="small text-muted text-decoration-line-through" id="stickyCompare" style="display:none;"></span>
-                </div>
-                <div class="small text-muted text-truncate" style="max-width: 150px;">{{ $product->name }} <span id="stickyVariant"></span></div>
+<div class="sf-mobile-sticky">
+    <div style="flex: 1; display: flex; align-items: center; gap: 12px;">
+        @if($product->primaryImage())
+            <img src="{{ asset('storage/'.$product->primaryImage()->path) }}" style="width: 40px; height: 40px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
+        @endif
+        <div style="display: flex; flex-direction: column; overflow: hidden;">
+            <div style="display: flex; align-items: baseline; gap: 8px;">
+                <span style="color: var(--color-gold); font-weight: 600; font-size: 14px;" id="stickyPrice">₹0</span>
+                <span style="color: var(--color-text-muted); text-decoration: line-through; font-size: 11px;" id="stickyCompare" style="display:none;"></span>
             </div>
+            <div style="color: var(--color-text-secondary); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $product->name }} <span id="stickyVariant"></span></div>
         </div>
-        <button onclick="document.getElementById('redirectInput').value='checkout'; document.getElementById('productForm').submit();" class="btn btn-dark fw-bold px-4 py-2 flex-grow-1" style="max-width: 160px; border-radius: 50px;">
-            Buy Now
-        </button>
     </div>
+    <button onclick="document.getElementById('redirectInput').value='checkout'; document.getElementById('productForm').submit();" style="background: var(--color-gold); color: #0a0a0a; border: none; height: 40px; padding: 0 20px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+        Buy Now
+    </button>
 </div>
 
 {{-- ── Social Proof Toast ──────────────────────────────── --}}
@@ -129,13 +127,16 @@
     $spInterval = $product->meta['social_proof_interval'] ?? ($copy['social_proof_interval'] ?? 8000);
 @endphp
 @if($spEnabled)
-<div id="sfSocialProof" class="sf-social-proof">
-    <i class="bi bi-check-circle-fill sp-icon"></i>
+<div id="sfSocialProof" style="position: fixed; bottom: 80px; left: 16px; background: var(--color-bg-elevated); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 12px 16px; display: flex; align-items: center; gap: 12px; transform: translateY(100px); opacity: 0; transition: all 0.3s ease; z-index: 1050; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+    <i class="bi bi-check-circle-fill" style="color: var(--color-success); font-size: 20px;"></i>
     <div>
-        <div class="fw-bold" id="spText">Someone just bought this!</div>
-        <div class="sp-time"><span id="spTime">2</span> minutes ago</div>
+        <div style="color: white; font-size: 13px; font-weight: 500;" id="spText">Someone just bought this!</div>
+        <div style="color: var(--color-text-muted); font-size: 11px;"><span id="spTime">2</span> minutes ago</div>
     </div>
 </div>
+<style>
+#sfSocialProof.show { transform: translateY(0) !important; opacity: 1 !important; }
+</style>
 @endif
 @endsection
 
@@ -166,6 +167,17 @@
         const stock = parseInt(btn.dataset.stock);
         const track = btn.dataset.track === '1';
         const vname = btn.dataset.name || '';
+        const vimg = btn.dataset.img || '';
+
+        if (vimg) {
+            const mainImg = document.querySelector('.main-img');
+            if (mainImg) {
+                mainImg.src = vimg;
+                document.querySelectorAll('.sf-pdp-thumbs img').forEach(t => t.classList.remove('active'));
+                const thumb = Array.from(document.querySelectorAll('.sf-pdp-thumbs img')).find(t => t.src === vimg);
+                if (thumb) thumb.classList.add('active');
+            }
+        }
 
         priceLabel.textContent = fmt(p);
         if (stickyPrice) stickyPrice.textContent = fmt(p);

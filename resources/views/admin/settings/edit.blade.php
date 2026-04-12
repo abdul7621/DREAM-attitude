@@ -16,7 +16,9 @@
         'checkout'    => ['icon' => 'bi-cart-check',        'label' => 'Checkout'],
         'conversion'  => ['icon' => 'bi-funnel-fill',       'label' => 'Conversion Control'],
         'notify'      => ['icon' => 'bi-bell',              'label' => 'Notifications'],
+        'email'       => ['icon' => 'bi-envelope',          'label' => 'Email/SMTP'],
         'policies'    => ['icon' => 'bi-file-earmark-text', 'label' => 'Policies'],
+        'tax'         => ['icon' => 'bi-percent',           'label' => 'Tax/GST'],
     ];
     $activeTab = request('tab', 'store');
 @endphp
@@ -172,6 +174,33 @@
         <div class="col-md-6">
             <label class="form-label">Ship From — Pincode</label>
             <input type="text" name="shipping__origin_pincode" class="form-control" value="{{ $groups['shipping']['origin_pincode'] ?? '' }}">
+        </div>
+
+        <div class="col-12 mt-4">
+            <h6 class="fw-bold border-bottom pb-2">🚀 Shiprocket Integration</h6>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Shiprocket Enabled</label>
+            <select name="shipping__shiprocket_enabled" class="form-select">
+                <option value="1" {{ ($groups['shipping']['shiprocket_enabled'] ?? '0') === '1' ? 'selected' : '' }}>Yes</option>
+                <option value="0" {{ ($groups['shipping']['shiprocket_enabled'] ?? '0') === '0' ? 'selected' : '' }}>No</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Auto Create Shipment</label>
+            <select name="shipping__shiprocket_auto_create" class="form-select">
+                <option value="1" {{ ($groups['shipping']['shiprocket_auto_create'] ?? '0') === '1' ? 'selected' : '' }}>Yes</option>
+                <option value="0" {{ ($groups['shipping']['shiprocket_auto_create'] ?? '0') === '0' ? 'selected' : '' }}>No</option>
+            </select>
+        </div>
+        <div class="col-md-6"></div>
+        <div class="col-md-6">
+            <label class="form-label">Shiprocket Email</label>
+            <input type="email" name="shipping__shiprocket_email" class="form-control" value="{{ $groups['shipping']['shiprocket_email'] ?? '' }}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Shiprocket Password</label>
+            <input type="password" name="shipping__shiprocket_password" class="form-control" value="{{ $groups['shipping']['shiprocket_password'] ?? '' }}">
         </div>
     </div>
 @endif
@@ -337,6 +366,80 @@
             <label class="form-label">Offer / Savings Message</label>
             <input type="text" name="conversion_copy__product__offer_message" class="form-control" value="{{ $groups['conversion_copy']['product']['offer_message'] ?? config('commerce.conversion_copy.product.offer_message') }}">
             <div class="form-text">Extra savings ya discount highlight karein.</div>
+        </div>
+    </div>
+@endif
+
+{{-- ═══ EMAIL / SMTP ════════════════════════════════════════ --}}
+@if ($activeTab === 'email')
+    <h5 class="mb-3">✉️ Email / SMTP Settings</h5>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">Mail Host</label>
+            <input type="text" name="email__mail_host" class="form-control" value="{{ $groups['email']['mail_host'] ?? '' }}" placeholder="smtp.gmail.com">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Mail Port</label>
+            <input type="text" name="email__mail_port" class="form-control" value="{{ $groups['email']['mail_port'] ?? '587' }}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Mail Username</label>
+            <input type="text" name="email__mail_username" class="form-control" value="{{ $groups['email']['mail_username'] ?? '' }}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Mail Password</label>
+            <input type="password" name="email__mail_password" class="form-control" value="{{ $groups['email']['mail_password'] ?? '' }}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Mail From Address</label>
+            <input type="email" name="email__mail_from_address" class="form-control" value="{{ $groups['email']['mail_from_address'] ?? '' }}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Mail From Name</label>
+            <input type="text" name="email__mail_from_name" class="form-control" value="{{ $groups['email']['mail_from_name'] ?? '' }}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Mail Encryption</label>
+            <select name="email__mail_encryption" class="form-select">
+                <option value="tls" {{ ($groups['email']['mail_encryption'] ?? 'tls') === 'tls' ? 'selected' : '' }}>TLS</option>
+                <option value="ssl" {{ ($groups['email']['mail_encryption'] ?? '') === 'ssl' ? 'selected' : '' }}>SSL</option>
+                <option value="" {{ ($groups['email']['mail_encryption'] ?? '') === '' ? 'selected' : '' }}>None</option>
+            </select>
+        </div>
+    </div>
+@endif
+
+{{-- ═══ TAX / GST ═══════════════════════════════════════════ --}}
+@if ($activeTab === 'tax')
+    <h5 class="mb-3">🧾 Tax & GST Settings</h5>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">GST Enabled</label>
+            <select name="gst__enabled" class="form-select">
+                <option value="1" {{ ($groups['gst']['enabled'] ?? '0') == '1' ? 'selected' : '' }}>Yes</option>
+                <option value="0" {{ ($groups['gst']['enabled'] ?? '0') == '0' ? 'selected' : '' }}>No</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">GST Inclusive Prices</label>
+            <select name="gst__inclusive" class="form-select">
+                <option value="1" {{ ($groups['gst']['inclusive'] ?? '1') == '1' ? 'selected' : '' }}>Yes (Prices include GST)</option>
+                <option value="0" {{ ($groups['gst']['inclusive'] ?? '1') == '0' ? 'selected' : '' }}>No (Add GST at checkout)</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Default GST Rate (%)</label>
+            <select name="gst__rate" class="form-select">
+                <option value="0" {{ ($groups['gst']['rate'] ?? '18') == '0' ? 'selected' : '' }}>0%</option>
+                <option value="5" {{ ($groups['gst']['rate'] ?? '18') == '5' ? 'selected' : '' }}>5%</option>
+                <option value="12" {{ ($groups['gst']['rate'] ?? '18') == '12' ? 'selected' : '' }}>12%</option>
+                <option value="18" {{ ($groups['gst']['rate'] ?? '18') == '18' ? 'selected' : '' }}>18%</option>
+                <option value="28" {{ ($groups['gst']['rate'] ?? '18') == '28' ? 'selected' : '' }}>28%</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Store GSTIN</label>
+            <input type="text" name="gst__gstin" class="form-control" value="{{ $groups['gst']['gstin'] ?? '' }}" placeholder="22AAAAA0000A1Z5">
         </div>
     </div>
 @endif

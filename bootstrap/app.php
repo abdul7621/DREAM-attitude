@@ -22,6 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'role' => \App\Http\Middleware\CheckRole::class,
         ]);
+        $middleware->validateCsrfTokens(except: [
+            'api/shiprocket/webhook',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

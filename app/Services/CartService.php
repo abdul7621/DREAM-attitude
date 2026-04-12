@@ -245,15 +245,37 @@ class CartService
         $shipping = $pc !== ''
             ? $this->shipping->quote($pc, $this->totalWeightGrams(), $subtotal)
             : '0.00';
-        $tax = '0.00';
+        
         $afterDisc = $this->subMoney($subtotal, $discount);
-        $grand = $this->moneyAdd($this->moneyAdd($afterDisc, $shipping), $tax);
+        
+        $tax = '0.00';
+        $settings = app(\App\Services\SettingsService::class);
+        $taxInclusive = true;
+        if ($settings->get('gst.enabled')) {
+            $rate = (float) $settings->get('gst.rate', 18);
+            $inclusive = (bool) $settings->get('gst.inclusive', true);
+            $taxInclusive = $inclusive;
+            
+            $taxableAmount = (float) $afterDisc;
+            if ($inclusive) {
+                $taxVal = ($taxableAmount * $rate) / (100 + $rate);
+                $tax = number_format($taxVal, 2, '.', '');
+            } else {
+                $taxVal = ($taxableAmount * $rate) / 100;
+                $tax = number_format($taxVal, 2, '.', '');
+            }
+        }
+
+        $grandBeforeTax = $this->moneyAdd($afterDisc, $shipping);
+        $grand = $taxInclusive ? $grandBeforeTax : $this->moneyAdd($grandBeforeTax, $tax);
 
         return [
             'subtotal' => $subtotal,
             'discount' => $discount,
             'shipping' => $shipping,
             'tax' => $tax,
+            'gst_rate' => $settings->get('gst.enabled') ? $settings->get('gst.rate', 18) : 0,
+            'gst_inclusive' => $settings->get('gst.enabled') ? $settings->get('gst.inclusive', true) : true,
             'grand' => $grand,
             'coupon' => $coupon,
         ];

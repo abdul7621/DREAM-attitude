@@ -2,70 +2,165 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Invoice {{ $order->order_number }}</title>
+    <title>Invoice - {{ $order->order_number }}</title>
     <style>
-        body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #222; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
-        th { background: #f5f5f5; }
-        .right { text-align: right; }
-        .muted { color: #666; font-size: 11px; }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .header {
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+        }
+        .header .meta {
+            color: #777;
+            font-size: 12px;
+        }
+        .totals {
+            width: 50%;
+            float: right;
+        }
+        .totals td {
+            border: none;
+            padding: 4px 12px;
+        }
+        .totals .final {
+            font-weight: bold;
+            font-size: 16px;
+            border-top: 2px solid #333;
+            padding-top: 8px;
+        }
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+        .company-info {
+            float: left;
+        }
+        .customer-info {
+            float: right;
+            text-align: right;
+        }
     </style>
 </head>
 <body>
-    <h2>Tax invoice</h2>
-    <p><strong>{{ config('commerce.name', config('app.name')) }}</strong><br>
-        <span class="muted">GSTIN: {{ config('commerce.gstin', '—') }}</span></p>
-    <p>
-        <strong>Invoice #:</strong> {{ $order->order_number }}<br>
-        <strong>Date:</strong> {{ $order->placed_at?->timezone(config('commerce.timezone'))->format('d M Y, H:i') ?? '—' }}<br>
-        <strong>Payment:</strong> {{ strtoupper($order->payment_method) }} — {{ $order->payment_status }}
-    </p>
-    <h3>Bill to</h3>
-    <p>
-        {{ $order->customer_name }}<br>
-        @if ($order->email) {{ $order->email }}<br> @endif
-        {{ $order->phone }}<br>
-        {{ $order->address_line1 }}<br>
-        @if ($order->address_line2) {{ $order->address_line2 }}<br> @endif
-        {{ $order->city }}, {{ $order->state }} {{ $order->postal_code }}<br>
-        {{ $order->country }}
-    </p>
+    <div class="header clearfix">
+        <div class="company-info">
+            <h1>{{ app(\App\Services\SettingsService::class)->get('store.name', config('app.name')) }}</h1>
+            <div class="meta">
+                {{ app(\App\Services\SettingsService::class)->get('store.email') }}<br>
+                @if(app(\App\Services\SettingsService::class)->get('gst.enabled'))
+                    GSTIN: {{ app(\App\Services\SettingsService::class)->get('gst.gstin', 'N/A') }}
+                @endif
+            </div>
+        </div>
+        <div class="customer-info">
+            <h2>INVOICE</h2>
+            <div class="meta">
+                Order Number: {{ $order->order_number }}<br>
+                Date: {{ $order->placed_at ? $order->placed_at->format('d M Y') : $order->created_at->format('d M Y') }}
+            </div>
+        </div>
+    </div>
+
+    <div class="clearfix" style="margin-bottom: 30px;">
+        <div style="float: left; width: 45%;">
+            <strong>Billed To:</strong><br>
+            {{ $order->customer_name }}<br>
+            {{ $order->address_line1 }}<br>
+            @if($order->address_line2) {{ $order->address_line2 }}<br> @endif
+            {{ $order->city }}, {{ $order->state }} {{ $order->postal_code }}<br>
+            Phone: {{ $order->phone }}<br>
+            Email: {{ $order->email }}
+        </div>
+        <div style="float: right; width: 45%; text-align: right;">
+            <strong>Payment Method:</strong><br>
+            {{ strtoupper($order->payment_method) }}<br>
+            <strong>Payment Status:</strong><br>
+            {{ ucfirst($order->payment_status) }}
+        </div>
+    </div>
+
     <table>
         <thead>
             <tr>
-                <th>#</th>
                 <th>Item</th>
-                <th class="right">Qty</th>
-                <th class="right">Rate</th>
-                <th class="right">Amount</th>
+                <th>Qty</th>
+                <th class="text-right">Unit Price</th>
+                <th class="text-right">Total</th>
             </tr>
         </thead>
         <tbody>
-            @foreach ($order->orderItems as $i => $oi)
-                <tr>
-                    <td>{{ $i + 1 }}</td>
-                    <td>{{ $oi->product_name_snapshot }} @if ($oi->variant_title_snapshot) ({{ $oi->variant_title_snapshot }}) @endif<br><span class="muted">SKU: {{ $oi->sku_snapshot }}</span></td>
-                    <td class="right">{{ $oi->qty }}</td>
-                    <td class="right">₹{{ number_format((float) $oi->unit_price, 2) }}</td>
-                    <td class="right">₹{{ number_format((float) $oi->line_total, 2) }}</td>
-                </tr>
+            @foreach($order->orderItems as $item)
+            <tr>
+                <td>
+                    {{ $item->product_name_snapshot }}
+                    @if($item->variant_title_snapshot)
+                        <br><small style="color: #777;">{{ $item->variant_title_snapshot }}</small>
+                    @endif
+                </td>
+                <td>{{ $item->qty }}</td>
+                <td class="text-right">₹{{ number_format((float)$item->unit_price, 2) }}</td>
+                <td class="text-right">₹{{ number_format((float)$item->line_total, 2) }}</td>
+            </tr>
             @endforeach
         </tbody>
     </table>
-    <p class="right">
-        <strong>Subtotal:</strong> ₹{{ number_format((float) $order->subtotal, 2) }}<br>
-        @if ((float) $order->discount_total > 0)
-            <strong>Discount:</strong> −₹{{ number_format((float) $order->discount_total, 2) }}<br>
-        @endif
-        <strong>Shipping:</strong> ₹{{ number_format((float) $order->shipping_total, 2) }}<br>
-        @if ((float) $order->tax_total > 0)
-            <strong>Tax (GST):</strong> ₹{{ number_format((float) $order->tax_total, 2) }}<br>
-        @endif
-        <strong>Grand total:</strong> ₹{{ number_format((float) $order->grand_total, 2) }} {{ $order->currency }}
-    </p>
-    @if ($order->coupon_code_snapshot)
-        <p class="muted">Coupon: {{ $order->coupon_code_snapshot }}</p>
-    @endif
+
+    <div class="clearfix">
+        <table class="totals">
+            <tr>
+                <td>Subtotal</td>
+                <td class="text-right">₹{{ number_format((float)$order->subtotal, 2) }}</td>
+            </tr>
+            @if((float)$order->discount_total > 0)
+            <tr>
+                <td>Discount</td>
+                <td class="text-right">-₹{{ number_format((float)$order->discount_total, 2) }}</td>
+            </tr>
+            @endif
+            <tr>
+                <td>Shipping</td>
+                <td class="text-right">₹{{ number_format((float)$order->shipping_total, 2) }}</td>
+            </tr>
+            @if((float)$order->tax_total > 0)
+            <tr>
+                <td>Tax ({{ app(\App\Services\SettingsService::class)->get('gst.inclusive', true) ? 'Incl.' : 'Excl.' }})</td>
+                <td class="text-right">₹{{ number_format((float)$order->tax_total, 2) }}</td>
+            </tr>
+            @endif
+            <tr>
+                <td class="final">Grand Total</td>
+                <td class="text-right final">₹{{ number_format((float)$order->grand_total, 2) }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div style="margin-top: 50px; text-align: center; color: #777; font-size: 12px;">
+        Thank you for shopping with {{ app(\App\Services\SettingsService::class)->get('store.name', config('app.name')) }}!
+    </div>
 </body>
 </html>

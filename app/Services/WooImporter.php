@@ -75,18 +75,26 @@ class WooImporter
                 $type = strtolower(trim($row['Type'] ?? 'simple'));
 
                 if ($type === 'simple') {
-                    ProductVariant::query()->updateOrCreate(
-                        ['product_id' => $p->id, 'sku' => $sku ?: null],
-                        [
-                            'title'            => 'Default',
-                            'price_retail'     => (float) ($row['Regular price'] ?? 0),
-                            'price_compare_at' => (float) ($row['Sale price'] ?? 0) ?: null,
-                            'stock_qty'        => max(0, (int) ($row['Stock'] ?? 0)),
-                            'track_inventory'  => true,
-                            'is_active'        => true,
-                        ]
-                    );
-                    $counts['variants']++;
+                    $rawPrice = trim($row['Regular price'] ?? '');
+                    $simplePrice = $rawPrice !== '' ? (float) $rawPrice : 0;
+
+                    if ($simplePrice <= 0) {
+                        $counts['errors'][] = "{$name}: Skipped — price is 0 or empty";
+                    } else {
+                        $rawSale = trim($row['Sale price'] ?? '');
+                        ProductVariant::query()->updateOrCreate(
+                            ['product_id' => $p->id, 'sku' => $sku ?: null],
+                            [
+                                'title'            => 'Default',
+                                'price_retail'     => $simplePrice,
+                                'compare_at_price' => ($rawSale !== '' && (float) $rawSale > 0) ? (float) $rawSale : null,
+                                'stock_qty'        => max(0, (int) ($row['Stock'] ?? 0)),
+                                'track_inventory'  => true,
+                                'is_active'        => true,
+                            ]
+                        );
+                        $counts['variants']++;
+                    }
                 } else {
                     // Variable — pick up child variations
                     $id  = trim($row['ID'] ?? '');
@@ -99,12 +107,22 @@ class WooImporter
                                 $attrParts[] = $val;
                             }
                         }
+                        $varRawPrice = trim($v['Regular price'] ?? '');
+                        $varPrice = $varRawPrice !== '' ? (float) $varRawPrice : 0;
+                        $varTitle = implode(' / ', $attrParts) ?: 'Variant';
+
+                        if ($varPrice <= 0) {
+                            $counts['errors'][] = "{$name}: Variant '{$varTitle}' skipped — price is 0 or empty";
+                            continue;
+                        }
+
+                        $varRawSale = trim($v['Sale price'] ?? '');
                         ProductVariant::query()->updateOrCreate(
                             ['product_id' => $p->id, 'sku' => trim($v['SKU'] ?? '') ?: null],
                             [
-                                'title'            => implode(' / ', $attrParts) ?: 'Variant',
-                                'price_retail'     => (float) ($v['Regular price'] ?? 0),
-                                'price_compare_at' => (float) ($v['Sale price'] ?? 0) ?: null,
+                                'title'            => $varTitle,
+                                'price_retail'     => $varPrice,
+                                'compare_at_price' => ($varRawSale !== '' && (float) $varRawSale > 0) ? (float) $varRawSale : null,
                                 'stock_qty'        => max(0, (int) ($v['Stock'] ?? 0)),
                                 'track_inventory'  => true,
                                 'is_active'        => true,

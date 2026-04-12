@@ -66,12 +66,19 @@ ${SSH_CMD} -t "cd ${APP_DIR} && \
     echo '🗄  Running migrations (if any)...' && \
     ${MIGRATE_CMD} \
     echo '📂 Syncing public assets to public_html...' && \
-    rsync -av --delete --exclude='storage' --exclude='.htaccess' public/ ~/${PUBLIC_HTML}/ && \
-    cp -n public/.htaccess ~/${PUBLIC_HTML}/.htaccess 2>/dev/null; true && \
+    rsync -av --delete \
+        --exclude='storage' \
+        --exclude='.htaccess' \
+        --exclude='index.php' \
+        public/ ~/${PUBLIC_HTML}/ && \
+    cp -n public/.htaccess ~/${PUBLIC_HTML}/.htaccess 2>/dev/null || true && \
     echo '🔄 Rebuilding caches...' && \
     php artisan optimize:clear && \
     php artisan config:cache && \
+    php artisan route:cache && \
     php artisan view:cache && \
+    php artisan event:cache && \
+    chmod -R 755 storage bootstrap/cache && \
     echo '✅ All remote tasks completed successfully!'"
     
 echo ""

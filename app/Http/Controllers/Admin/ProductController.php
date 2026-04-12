@@ -183,6 +183,7 @@ class ProductController extends Controller
             'variants.*.track_inventory' => ['nullable', 'boolean'],
             'variants.*.weight_grams' => ['nullable', 'integer', 'min:0'],
             'variants.*.is_active' => ['nullable', 'boolean'],
+            'variants.*.image_id' => ['nullable', 'integer', 'exists:product_images,id'],
             'remove_image_ids' => ['nullable', 'array'],
             'remove_image_ids.*' => ['integer', 'exists:product_images,id'],
             'images.*' => ['nullable', 'image', 'max:5120'],
@@ -253,8 +254,15 @@ class ProductController extends Controller
                     $variant->update($payload);
                     $existingVariantIds[] = $variant->id;
                 } else {
-                    $created = $product->variants()->create($payload);
-                    $existingVariantIds[] = $created->id;
+                    $variant = $product->variants()->create($payload);
+                    $existingVariantIds[] = $variant->id;
+                }
+
+                if (!empty($row['image_id'])) {
+                    ProductImage::query()->where('variant_id', $variant->id)->update(['variant_id' => null]);
+                    ProductImage::query()->where('id', $row['image_id'])->where('product_id', $product->id)->update(['variant_id' => $variant->id]);
+                } else {
+                    ProductImage::query()->where('variant_id', $variant->id)->update(['variant_id' => null]);
                 }
             }
 

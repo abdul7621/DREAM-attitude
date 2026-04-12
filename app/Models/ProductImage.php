@@ -9,6 +9,7 @@ class ProductImage extends Model
 {
     protected $fillable = [
         'product_id',
+        'variant_id',
         'path',
         'alt_text',
         'sort_order',

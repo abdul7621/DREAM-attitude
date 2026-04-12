@@ -45,6 +45,24 @@ class CartController extends Controller
             ? route('checkout.create') 
             : url()->previous();
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => __('Added to cart.'),
+                'total_items' => $this->cart->linesWithPricing()->sum(fn($row) => $row['item']->qty),
+                'analytics' => [
+                    'currency' => config('commerce.currency', 'INR'),
+                    'value' => round($unit * $qty, 2),
+                    'items' => [[
+                        'item_id' => $variant->sku ?: 'v'.$variant->id,
+                        'item_name' => $variant->product->name,
+                        'price' => $unit,
+                        'quantity' => $qty,
+                    ]],
+                ]
+            ]);
+        }
+
         return redirect($redirectUrl)
             ->with('status', __('Added to cart.'))
             ->with('analytics_add_to_cart', [

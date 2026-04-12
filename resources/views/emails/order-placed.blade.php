@@ -1,10 +1,17 @@
-<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>Order Confirmed</title></head>
-<body style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:20px;color:#222">
-<h2>Order Confirmed ✅</h2>
-<p>Hi {{ $customer_name }},</p>
-<p>Your order <strong>#{{ $order_number }}</strong> has been placed successfully!</p>
-<p>Total: <strong>{{ $grand_total }}</strong></p>
-<p>We'll send you a shipping update once your order is dispatched.</p>
-<p style="margin-top:32px;color:#888;font-size:13px">Thank you for shopping with us!</p>
-</body></html>
+@component('mail::message')
+# Order #{{ $data['order_number'] }} Confirmed
+
+Hi {{ $data['customer_name'] }},
+
+Thank you for your purchase! We've received your order and are getting it ready for shipment.
+
+**Order Details:**
+- **Total:** ₹{{ current(explode('.', $data['grand_total'])) }}
+- **Payment Method:** {{ strtoupper($data['payment_method']) }}
+- **Status:** {{ $data['order_status'] }}
+
+We will notify you once your order has been shipped.
+
+Thanks,<br>
+{{ config('app.name') }}
+@endcomponent

@@ -1,42 +1,38 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login — {{ config('app.name') }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-</head>
-<body class="bg-light d-flex align-items-center min-vh-100">
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-5">
-            <div class="card shadow-sm">
-                <div class="card-body p-4">
-                    <h1 class="h4 mb-3">Admin login</h1>
-                    @if ($errors->any())
-                        <div class="alert alert-danger">{{ $errors->first() }}</div>
-                    @endif
-                    <form method="post" action="{{ route('login') }}">
-                        @csrf
-                        <div class="mb-3">
-                            <label class="form-label">Email</label>
-                            <input type="email" name="email" value="{{ old('email') }}" class="form-control" required autofocus>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Password</label>
-                            <input type="password" name="password" class="form-control" required>
-                        </div>
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" name="remember" class="form-check-input" id="r1" value="1">
-                            <label class="form-check-label" for="r1">Remember me</label>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">Sign in</button>
-                    </form>
-                    <p class="mt-3 mb-0 small text-center"><a href="{{ route('home') }}">Back to store</a></p>
+@extends('layouts.storefront')
+
+@section('title', 'Login')
+
+@section('content')
+<section class="sf-section">
+    <div class="sf-container">
+        <div class="sf-auth-card">
+            <div class="logo">{{ config('app.name') }}</div>
+            <h1 style="color: white; font-size: 18px; text-align: center; margin-bottom: 24px; text-transform: uppercase;">Login</h1>
+            @if ($errors->any())
+                <div style="background: rgba(197, 48, 48, 0.1); border: 1px solid var(--color-error); color: var(--color-error); padding: 12px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 24px;">{{ $errors->first() }}</div>
+            @endif
+            <form method="post" action="{{ route('login') }}">
+                @csrf
+                <div style="margin-bottom: 16px;">
+                    <label class="sf-label">Email</label>
+                    <input type="email" name="email" value="{{ old('email') }}" class="sf-input" required autofocus>
                 </div>
+                <div style="margin-bottom: 24px;">
+                    <label class="sf-label">Password</label>
+                    <input type="password" name="password" class="sf-input" required>
+                </div>
+                <div style="margin-bottom: 24px; display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" name="remember" id="r1" value="1" style="accent-color: var(--color-gold);">
+                    <label for="r1" style="color: var(--color-text-secondary); font-size: 12px;">Remember me</label>
+                </div>
+                <button type="submit" class="sf-btn-primary">Sign in</button>
+            </form>
+            @if(Route::has('register'))
+            <div class="sf-auth-link">
+                Don't have an account? <a href="{{ route('register') }}">Sign up</a>
             </div>
+            @endif
         </div>
     </div>
-</div>
-</body>
-</html>
+</section>
+@endsection

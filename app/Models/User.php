@@ -76,4 +76,14 @@ class User extends Authenticatable
     {
         return $this->hasOne(StoreCreditBalance::class);
     }
+
+    public function tags(): HasMany
+    {
+        return $this->hasMany(CustomerTag::class);
+    }
+
+    public function hasTag(string $tag): bool
+    {
+        return $this->tags()->where('tag_name', $tag)->exists();
+    }
 }

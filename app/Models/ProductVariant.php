@@ -72,4 +72,9 @@ class ProductVariant extends Model
 
         return $this->stock_qty >= $qty;
     }
+
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class, 'variant_id');
+    }
 }
