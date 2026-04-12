@@ -38,12 +38,21 @@
                     <span class="discount">{{ $discount }}% OFF</span>
                 @endif
             </div>
-            <form action="{{ route('cart.items.store') }}" method="POST" class="form-add-to-cart">
-                @csrf
-                <input type="hidden" name="variant_id" value="{{ $variant->id }}">
-                <input type="hidden" name="qty" value="1">
-                <button type="submit" class="btn-add">Add to Cart</button>
-            </form>
+            
+            @if ($product->variants->count() > 1)
+                <a href="{{ route('product.show', $product) }}" class="btn-add text-center" style="text-decoration:none; display:inline-block; line-height:36px; background:var(--color-bg-surface); color:var(--color-gold); border:1px solid var(--color-gold);">Select Options</a>
+            @else
+                @if ($variant->inStock())
+                    <form action="{{ route('cart.items.store') }}" method="POST" class="form-add-to-cart">
+                        @csrf
+                        <input type="hidden" name="variant_id" value="{{ $variant->id }}">
+                        <input type="hidden" name="qty" value="1">
+                        <button type="submit" class="btn-add">Add to Cart</button>
+                    </form>
+                @else
+                    <button type="button" class="btn-add" disabled>Out of Stock</button>
+                @endif
+            @endif
         @endif
     </div>
 </div>

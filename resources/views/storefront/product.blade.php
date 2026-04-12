@@ -212,10 +212,12 @@
             addToCartBtn.disabled = true;
             buyNowBtn.disabled = true;
             addToCartBtn.innerHTML = '<i class="bi bi-x-circle me-1"></i> Sold Out';
+            buyNowBtn.innerHTML = 'Out of Stock';
         } else {
             addToCartBtn.disabled = false;
             buyNowBtn.disabled = false;
             addToCartBtn.innerHTML = '<i class="bi bi-bag-plus me-1"></i> Add to Cart';
+            buyNowBtn.innerHTML = 'Buy Now';
         }
 
         // Emit global event

@@ -112,11 +112,11 @@ class CartService
 
         $variant = ProductVariant::query()->with('product')->findOrFail($variantId);
         if (! $variant->is_active || $variant->product->status !== \App\Models\Product::STATUS_ACTIVE) {
-            abort(422, __('This product is not available.'));
+            throw \Illuminate\Validation\ValidationException::withMessages(['variant_id' => __('This product is not available.')]);
         }
 
         if ($this->maxQty($variant, $qty) < 1) {
-            abort(422, __('This product is out of stock.'));
+            throw \Illuminate\Validation\ValidationException::withMessages(['variant_id' => __('This product is out of stock.')]);
         }
 
         $cart = $this->getCart();

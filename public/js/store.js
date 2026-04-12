@@ -24,7 +24,7 @@
         localStorage.setItem('sf_cart', JSON.stringify(data));
         
         // Update UI
-        const badge = document.querySelector('.cart-badge');
+        const badge = document.querySelector('.sf-cart-badge') || document.querySelector('.cart-badge');
         if (badge) {
             badge.innerText = data.count > 0 ? data.count : '';
         }

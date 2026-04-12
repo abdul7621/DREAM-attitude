@@ -85,7 +85,7 @@ class ShopifyImporter
                             'compare_at_price' => $v['compare_at'] ?: null,
                             'weight_grams'     => $v['grams'],
                             'stock_qty'        => max(0, (int) $v['stock']),
-                            'track_inventory'  => true,
+                            'track_inventory'  => $v['track'] ?? true,
                             'is_active'        => true,
                         ]
                     );
@@ -451,6 +451,9 @@ class ShopifyImporter
                 $lastKnownGrams[$handle] = (int) $rawGrams;
             }
 
+            $policy = strtolower(trim($row['Variant Inventory Policy'] ?? ''));
+            $track = $policy !== 'continue';
+
             $products[$handle]['variants'][] = [
                 'title'      => $varTitle ?: 'Default',
                 'sku'        => trim($row['Variant SKU'] ?? ''),
@@ -458,6 +461,7 @@ class ShopifyImporter
                 'compare_at' => $lastKnownCompareAt[$handle],
                 'grams'      => $lastKnownGrams[$handle],
                 'stock'      => (int) ($row['Variant Inventory Qty'] ?? 0),
+                'track'      => $track,
             ];
             $totalVariants++;
         }

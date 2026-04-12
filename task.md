@@ -1,0 +1,8 @@
+- [x] **Issue 1**: Variant Product Add To Cart - Home (Card logic) and Backend requirement logic.
+- [x] **Issue 2**: Out Of Stock Backend 422 - Replace abort(422) with ValidationException. Check Shopify importer.
+- [x] **Issue 3**: Buy Now Button validation and visual disable text.
+- [x] **Issue 4**: Pincode autofill broken (add spinner missing element).
+- [x] **Issue 5**: Product Page CSS (related products not using `sf-product-grid`).
+- [x] **Issue 6**: Cart count badge positioning logic.
+- [x] **Issue 7**: Cart Count UI missing/broken.
+- [x] **Issue 8**: Profile / Account Page UI.

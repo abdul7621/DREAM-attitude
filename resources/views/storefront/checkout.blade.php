@@ -134,6 +134,7 @@
                                 <label class="sf-label">PIN Code *</label>
                                 <div style="position: relative;">
                                     <input type="text" id="postal_code" name="postal_code" value="{{ old('postal_code') }}" class="sf-input" required maxlength="6" inputmode="numeric">
+                                    <div id="pin_spinner" class="spinner-border spinner-border-sm text-secondary d-none" style="position:absolute; right:12px; top:12px;" role="status"><span class="visually-hidden">Loading...</span></div>
                                 </div>
                                 <small class="sf-inline-err-text d-none" id="pin_err">Enter a valid 6-digit PIN code</small>
                             </div>
