@@ -3,25 +3,31 @@
 
     // Restore from localStorage if backend cart count is 0
     if (Store.cart && Store.cart.count === 0) {
-        const saved = localStorage.getItem('sf_cart');
-        if (saved) {
-            try {
-                Store.cart = JSON.parse(saved);
-            } catch (e) {
-                console.error('Failed to parse cart from localStorage', e);
+        try {
+            const saved = localStorage.getItem('sf_cart');
+            if (saved) {
+                try {
+                    Store.cart = JSON.parse(saved);
+                } catch (e) {
+                    console.error('Failed to parse cart from localStorage', e);
+                }
             }
-        }
+        } catch(e) {}
     }
 
     // Sync localStorage to server truth
     if (Store.user && Store.user.loggedIn && Store.cart && Store.cart.count > 0) {
-        localStorage.setItem('sf_cart', JSON.stringify(Store.cart));
+        try {
+            localStorage.setItem('sf_cart', JSON.stringify(Store.cart));
+        } catch(e) {}
     }
 
     // Event listeners
     Store.on('cart:updated', (data) => {
         Store.cart = data;
-        localStorage.setItem('sf_cart', JSON.stringify(data));
+        try {
+            localStorage.setItem('sf_cart', JSON.stringify(data));
+        } catch(e) {}
         
         // Update UI
         const badge = document.querySelector('.sf-cart-badge') || document.querySelector('.cart-badge');
@@ -31,7 +37,9 @@
     });
 
     Store.on('variant:changed', (data) => {
-        localStorage.setItem('sf_last_variant_' + data.productId, data.variantId);
+        try {
+            localStorage.setItem('sf_last_variant_' + data.productId, data.variantId);
+        } catch(e) {}
     });
 
     // Default analytics listener
@@ -42,7 +50,12 @@
 
     // AJAX Add to Cart Interceptor
     document.addEventListener('submit', function(e) {
-        const form = e.target;
+        let form = e.target;
+        while(form && form.tagName !== 'FORM') {
+            form = form.parentElement;
+        }
+        if (!form) return;
+
         if (form.id === 'productForm' || form.classList.contains('form-add-to-cart')) {
             // Check if it's a Buy Now redirect
             const redirectInput = form.querySelector('input[name="redirect"]');
@@ -65,9 +78,13 @@
                 }
             }
 
+            // Create object fallback for spread operator compatibility
+            let analyticsFallback = {};
+            
             const formData = new FormData(form);
             fetch(form.action, {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'Accept': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest'
@@ -81,7 +98,9 @@
                         Store.emit('toast', { type: 'success', message: data.message || 'Added to cart' });
                         Store.emit('cart:updated', { count: data.total_items });
                         if (data.analytics) {
-                            Store.emit('analytics', { event: 'add_to_cart', ...data.analytics });
+                            // Non-spread object assign
+                            analyticsFallback = Object.assign({ event: 'add_to_cart' }, data.analytics);
+                            Store.emit('analytics', analyticsFallback);
                         }
                     }
                 } else {

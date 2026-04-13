@@ -104,16 +104,16 @@
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                             <div style="grid-column: 1 / -1;">
                                 <label class="sf-label">Full Name *</label>
-                                <input type="text" name="customer_name" id="customer_name" value="{{ old('customer_name') }}" class="sf-input" required>
+                                <input type="text" name="customer_name" id="customer_name" value="{{ old('customer_name') }}" autocomplete="name" class="sf-input" required>
                             </div>
                             <div>
                                 <label class="sf-label">Phone Number *</label>
-                                <input type="tel" name="phone" id="phone" value="{{ old('phone') }}" class="sf-input" required>
+                                <input type="tel" name="phone" id="phone" value="{{ old('phone') }}" autocomplete="tel" class="sf-input" required>
                                 <small class="sf-inline-err-text d-none" id="phone_err">Enter a valid 10-digit number</small>
                             </div>
                             <div>
                                 <label class="sf-label">Email (Optional)</label>
-                                <input type="email" name="email" id="email" value="{{ old('email') }}" class="sf-input">
+                                <input type="email" name="email" id="email" value="{{ old('email') }}" autocomplete="email" class="sf-input">
                             </div>
                         </div>
                     </div>
@@ -133,22 +133,22 @@
                             <div>
                                 <label class="sf-label">PIN Code *</label>
                                 <div style="position: relative;">
-                                    <input type="text" id="postal_code" name="postal_code" value="{{ old('postal_code') }}" class="sf-input" required maxlength="6" inputmode="numeric">
-                                    <div id="pin_spinner" class="spinner-border spinner-border-sm text-secondary d-none" style="position:absolute; right:12px; top:12px;" role="status"><span class="visually-hidden">Loading...</span></div>
+                                    <input type="text" id="postal_code" name="postal_code" value="{{ old('postal_code') }}" class="sf-input" required maxlength="6" inputmode="numeric" autocomplete="postal-code" pattern="[0-9]{6}">
+                                    <div id="pin_spinner" class="d-none" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); width:16px; height:16px; border:2px solid var(--color-border); border-top-color:var(--color-gold); border-radius:50%; animation:spin 0.8s linear infinite;"></div>
                                 </div>
                                 <small class="sf-inline-err-text d-none" id="pin_err">Enter a valid 6-digit PIN code</small>
                             </div>
                             <div>
                                 <label class="sf-label">City *</label>
-                                <input type="text" id="city" name="city" value="{{ old('city') }}" class="sf-input" required readonly>
+                                <input type="text" id="city" name="city" value="{{ old('city') }}" autocomplete="address-level2" class="sf-input" required readonly>
                             </div>
                             <div>
                                 <label class="sf-label">State *</label>
-                                <input type="text" id="state" name="state" value="{{ old('state') }}" class="sf-input" required readonly>
+                                <input type="text" id="state" name="state" value="{{ old('state') }}" autocomplete="address-level1" class="sf-input" required readonly>
                             </div>
                             <div style="grid-column: 1 / -1;">
                                 <label class="sf-label">House/Flat No., Building Name *</label>
-                                <input type="text" name="address_line1" id="address_line1" value="{{ old('address_line1') }}" class="sf-input" required>
+                                <input type="text" name="address_line1" id="address_line1" value="{{ old('address_line1') }}" autocomplete="address-line1" class="sf-input" required>
                             </div>
                             <div style="grid-column: 1 / -1;">
                                 <label class="sf-label">Street/Area/Landmark (Optional)</label>
@@ -349,50 +349,92 @@
         if(!sameAsShipping.checked) billingForm.classList.remove('d-none');
     }
 
+    // Inline blur validations
+    function showError(input, text) {
+        if (!input) return;
+        input.classList.add('is-invalid');
+        input.classList.remove('is-valid');
+        let err = input.nextElementSibling;
+        if(!err || !err.classList.contains('sf-inline-err-text')) {
+             err = document.createElement('span');
+             err.className = 'sf-inline-err-text';
+             if(input.parentNode) input.parentNode.appendChild(err);
+        }
+        err.innerText = text;
+    }
+    function hideError(input) {
+        if (!input) return;
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
+        if(input.parentNode) {
+            const err = input.parentNode.querySelector('.sf-inline-err-text');
+            if(err) err.remove();
+        }
+    }
+
     // Pincode API
     if (pinInput && cityInput && stateInput) {
+        pinInput.readOnly = false;
+        pinInput.removeAttribute('readonly');
+
         pinInput.addEventListener('input', function() {
             this.value = this.value.replace(/[^0-9]/g, '');
+            
+            // Hide error while typing
+            const errEl = document.getElementById('pin_err');
+            if (errEl) errEl.classList.add('d-none');
+            this.classList.remove('is-invalid');
+            
             if (this.value.length === 6) {
                 // Fetch
-                spinner.classList.remove('d-none');
-                pinInput.setAttribute('readonly', 'true');
+                if (spinner) spinner.classList.remove('d-none');
+                this.readOnly = true;
                 
-                fetch(`https://api.postalpincode.in/pincode/${this.value}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data[0].Status === 'Success') {
-                            const info = data[0].PostOffice[0];
-                            cityInput.value = info.District;
-                            stateInput.value = info.State;
-                            if (window.Store) {
-                                Store.emit('pincode:resolved', { city: info.District, state: info.State, pincode: this.value });
-                                Store.emit('toast', {type:'success', message: `Delivering to ${info.District}, ${info.State}`});
-                            }
-                            
-                            // Remove readonly from city and state (they should be readonly by default though, so keep them readonly)
-                            cityInput.setAttribute('readonly', 'true');
-                            stateInput.setAttribute('readonly', 'true');
-                            document.getElementById('pin_err')?.classList.add('d-none');
-                            pinInput.classList.remove('is-invalid');
-                        } else {
-                            cityInput.value = '';
-                            stateInput.value = '';
-                            // Don't remove readonly from city/state as they should only be populated by API
-                            if (window.Store) Store.emit('toast', {type:'error', message: 'Invalid PIN code.'});
-                            document.getElementById('pin_err')?.classList.remove('d-none');
-                            pinInput.classList.add('is-invalid');
+                fetch('https://api.postalpincode.in/pincode/' + this.value, {
+                    method: 'GET'
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data[0] && data[0].Status === 'Success' && data[0].PostOffice && data[0].PostOffice.length > 0) {
+                        const info = data[0].PostOffice[0];
+                        cityInput.value = info.District;
+                        stateInput.value = info.State;
+                        
+                        cityInput.setAttribute('readonly', 'true');
+                        stateInput.setAttribute('readonly', 'true');
+                        
+                        if (errEl) errEl.classList.add('d-none');
+                        this.classList.remove('is-invalid');
+                        this.classList.add('is-valid');
+
+                        if (window.Store) {
+                            Store.emit('pincode:resolved', { city: info.District, state: info.State, pincode: this.value });
+                            Store.emit('toast', {type:'success', message: `Delivering to ${info.District}, ${info.State}`});
                         }
-                    })
-                    .catch(err => {})
-                    .finally(() => {
-                        spinner.classList.add('d-none');
-                        pinInput.removeAttribute('readonly');
-                        // removed pinInput.focus() to avoid infinite loop / UX trap
-                    });
-            } else {
-                document.getElementById('pin_err')?.classList.add('d-none');
-                pinInput.classList.remove('is-invalid');
+                    } else {
+                        cityInput.value = '';
+                        stateInput.value = '';
+                        this.classList.add('is-invalid');
+                        this.classList.remove('is-valid');
+                        if (errEl) {
+                            errEl.textContent = 'Invalid PIN code. Please check.';
+                            errEl.classList.remove('d-none');
+                        }
+                        if (window.Store) Store.emit('toast', {type:'error', message: 'Invalid PIN code.'});
+                    }
+                })
+                .catch(err => {
+                    console.error("Postal API error: ", err);
+                })
+                .finally(() => {
+                    this.readOnly = false;
+                    this.removeAttribute('readonly');
+                    if (spinner) spinner.classList.add('d-none');
+                });
+            } else if (this.value.length > 0 && this.value.length < 6) {
+                cityInput.value = '';
+                stateInput.value = '';
+                this.classList.remove('is-valid');
             }
         });
         
@@ -400,25 +442,6 @@
         if(pinInput.value.length === 6 && !cityInput.value) {
             pinInput.dispatchEvent(new Event('input'));
         }
-    }
-
-    // Inline blur validations
-    function showError(input, text) {
-        input.classList.add('is-invalid');
-        input.classList.remove('is-valid');
-        let err = input.nextElementSibling;
-        if(!err || !err.classList.contains('sf-inline-err-text')) {
-             err = document.createElement('span');
-             err.className = 'sf-inline-err-text';
-             input.parentNode.appendChild(err);
-        }
-        err.innerText = text;
-    }
-    function hideError(input) {
-        input.classList.remove('is-invalid');
-        input.classList.add('is-valid');
-        const err = input.parentNode.querySelector('.sf-inline-err-text');
-        if(err) err.remove();
     }
 
     if (phoneInput) {
@@ -454,10 +477,20 @@
 
     if (pinInput) {
         pinInput.addEventListener('blur', function() {
-            if (this.value.trim().length !== 6) {
+            if (this.readOnly) return; // API in progress
+            const val = this.value.trim();
+            const errEl = document.getElementById('pin_err');
+            if (val.length > 0 && val.length < 6) {
                 showError(this, 'PIN code must be exactly 6 digits');
-            } else if (!this.classList.contains('is-invalid')) {
-                hideError(this);
+                if (errEl) {
+                    errEl.textContent = 'PIN code must be exactly 6 digits';
+                    errEl.classList.remove('d-none');
+                }
+            } else if (val.length === 6) {
+                if (errEl) errEl.classList.add('d-none');
+                if (!this.classList.contains('is-invalid')) {
+                    hideError(this);
+                }
             }
         });
     }

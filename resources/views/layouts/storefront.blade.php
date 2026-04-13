@@ -2,10 +2,19 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @php $ss = app(\App\Services\SettingsService::class); @endphp
     <title>{{ $pageTitle ?? $storeSettings['store_name'] ?? config('app.name') }}</title>
     <meta name="description" content="{{ $pageDescription ?? $storeSettings['meta_description'] ?? '' }}">
+    <meta property="og:title" content="{{ $pageTitle ?? $storeSettings['store_name'] ?? config('app.name') }}">
+    <meta property="og:description" content="{{ $pageDescription ?? $storeSettings['meta_description'] ?? '' }}">
+    <meta property="og:image" content="{{ asset('storage/' . ($ss->get('theme.og_image') ?? $ss->get('theme.logo') ?? '')) }}">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
     <link rel="canonical" href="{{ url()->current() }}">
     @stack('meta')
     @include('partials.tracking-head')
@@ -15,7 +24,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="{{ asset('css/storefront.css') }}?v={{ filemtime(public_path('css/storefront.css')) }}" rel="stylesheet">
     
-    @php $ss = app(\App\Services\SettingsService::class); @endphp
     @stack('styles')
     
     @php
@@ -42,12 +50,14 @@
 @if($announcementActive && $ss->get('theme.announcement_text'))
 <div class="sf-announce-bar" id="announcementBar">
     {{ $ss->get('theme.announcement_text') }}
-    <button type="button" class="btn-dismiss" onclick="document.getElementById('announcementBar').style.display='none'; sessionStorage.setItem('announce_closed','1');"><i class="bi bi-x"></i></button>
+    <button type="button" class="btn-dismiss" onclick="document.getElementById('announcementBar').style.display='none'; try{ sessionStorage.setItem('announce_closed','1'); }catch(e){}"><i class="bi bi-x"></i></button>
 </div>
 <script>
-    if(sessionStorage.getItem('announce_closed') === '1') {
-        document.getElementById('announcementBar').style.display = 'none';
-    }
+    try {
+        if(sessionStorage.getItem('announce_closed') === '1') {
+            document.getElementById('announcementBar').style.display = 'none';
+        }
+    } catch(e) {}
 </script>
 @endif
 
