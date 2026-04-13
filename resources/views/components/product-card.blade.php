@@ -5,6 +5,15 @@
     $compare = $variant?->compare_at_price;
     $price = $variant?->price_retail;
     $discount = ($compare && $price && $compare > $price) ? round((($compare - $price) / $compare) * 100) : 0;
+
+    $realVariants = $product->variants
+        ->where('is_active', true)
+        ->filter(fn($v) =>
+            !in_array(strtolower(trim($v->title)),
+            ['default title', 'default', ''])
+        );
+    $hasMultipleVariants = $realVariants->count() > 1;
+    $isOutOfStock = $variant && $variant->track_inventory && $variant->stock_qty <= 0;
 @endphp
 <div class="sf-product-card">
     <div class="img-wrap">
@@ -39,19 +48,17 @@
                 @endif
             </div>
             
-            @if ($product->variants->count() > 1)
-                <a href="{{ route('product.show', $product) }}" class="btn-add text-center" style="text-decoration:none; display:inline-block; line-height:36px; background:var(--color-bg-surface); color:var(--color-gold); border:1px solid var(--color-gold);">Select Options</a>
+            @if ($hasMultipleVariants)
+                <a href="{{ route('product.show', $product) }}" class="btn-add" style="display:block;text-align:center;text-decoration:none;line-height:36px;">Select Options →</a>
+            @elseif ($isOutOfStock)
+                <button type="button" class="btn-add" disabled style="opacity:0.5;cursor:not-allowed;">Out of Stock</button>
             @else
-                @if ($variant->inStock())
-                    <form action="{{ route('cart.items.store') }}" method="POST" class="form-add-to-cart">
-                        @csrf
-                        <input type="hidden" name="variant_id" value="{{ $variant->id }}">
-                        <input type="hidden" name="qty" value="1">
-                        <button type="submit" class="btn-add">Add to Cart</button>
-                    </form>
-                @else
-                    <button type="button" class="btn-add" disabled>Out of Stock</button>
-                @endif
+                <form action="{{ route('cart.items.store') }}" method="POST" class="form-add-to-cart">
+                    @csrf
+                    <input type="hidden" name="variant_id" value="{{ $variant->id }}">
+                    <input type="hidden" name="qty" value="1">
+                    <button type="submit" class="btn-add">Add to Cart</button>
+                </form>
             @endif
         @endif
     </div>

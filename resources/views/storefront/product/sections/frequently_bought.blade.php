@@ -1,26 +1,34 @@
 @if (isset($frequentlyBought) && $frequentlyBought->isNotEmpty())
-    <section class="sf-section mt-5 p-4 rounded" style="background-color: var(--sf-bg-light, #f8f9fa);">
-        <h2 class="fs-4 fw-bold mb-4"><i class="bi bi-bag-heart me-2"></i> Frequently Bought Together</h2>
-        <div class="d-flex flex-wrap gap-3 align-items-center">
-            {{-- Current Product --}}
-            <div class="text-center" style="width: 130px;">
-                <div class="position-relative">
-                    <img src="{{ $product->primaryImage() ? asset('storage/'.$product->primaryImage()->path) : 'https://placehold.co/150' }}" class="img-thumbnail border-2" style="border-color: var(--sf-primary, #000) !important;" alt="Current">
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-white" style="background-color: var(--sf-primary, #000);">This Item</span>
+    <section class="sf-section" style="background:var(--color-bg-elevated);border-radius:var(--radius-md);padding:32px 0;">
+        <div class="sf-container">
+            <h2 class="sf-section-title" style="margin-bottom:24px;">
+                <i class="bi bi-bag-heart" style="color:var(--color-gold);margin-right:8px;"></i>Frequently Bought Together
+            </h2>
+            <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;">
+                {{-- Current Product --}}
+                <div style="text-align:center;width:130px;">
+                    <div style="position:relative;">
+                        <img src="{{ $product->primaryImage() ? asset('storage/'.$product->primaryImage()->path) : '' }}"
+                             style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:var(--radius-md);border:2px solid var(--color-gold);"
+                             alt="Current">
+                        <span style="position:absolute;top:-8px;right:-8px;background:var(--color-gold);color:#0a0a0a;font-size:9px;padding:3px 6px;border-radius:var(--radius-sm);font-weight:600;text-transform:uppercase;">This Item</span>
+                    </div>
+                    <div style="font-size:12px;font-weight:500;margin-top:8px;color:white;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ $product->name }}">{{ $product->name }}</div>
                 </div>
-                <div class="small fw-semibold mt-2 text-truncate" title="{{ $product->name }}">{{ $product->name }}</div>
+
+                @foreach ($frequentlyBought as $fb)
+                    <div style="color:var(--color-text-muted);font-size:20px;"><i class="bi bi-plus-lg"></i></div>
+                    <div style="text-align:center;width:130px;">
+                        <a href="{{ route('product.show', $fb) }}" style="text-decoration:none;">
+                            <img src="{{ $fb->primaryImage() ? asset('storage/'.$fb->primaryImage()->path) : '' }}"
+                                 style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:var(--radius-md);border:1px solid var(--color-border);"
+                                 alt="{{ $fb->name }}">
+                            <div style="font-size:12px;font-weight:500;margin-top:8px;color:white;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ $fb->name }}">{{ $fb->name }}</div>
+                            <div style="font-size:13px;font-weight:600;color:var(--color-gold);">₹{{ $fb->variants->where('is_active', true)->sortBy('price_retail')->first()?->price_retail ?? 0 }}</div>
+                        </a>
+                    </div>
+                @endforeach
             </div>
-            
-            @foreach ($frequentlyBought as $fb)
-                <div class="text-muted fs-4"><i class="bi bi-plus-lg"></i></div>
-                <div class="text-center" style="width: 130px;">
-                    <a href="{{ route('product.show', $fb) }}" class="text-decoration-none text-dark sf-hover-lift">
-                        <img src="{{ $fb->primaryImage() ? asset('storage/'.$fb->primaryImage()->path) : 'https://placehold.co/150' }}" class="img-thumbnail shadow-sm" alt="{{ $fb->name }}">
-                        <div class="small fw-semibold mt-2 text-truncate" title="{{ $fb->name }}">{{ $fb->name }}</div>
-                        <div class="small fw-bold" style="color: var(--sf-primary, #000);">₹{{ $fb->variants->where('is_active', true)->sortBy('price_retail')->first()?->price_retail ?? 0 }}</div>
-                    </a>
-                </div>
-            @endforeach
         </div>
     </section>
 @endif

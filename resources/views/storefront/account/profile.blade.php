@@ -1,65 +1,65 @@
 @extends('layouts.account')
 @section('title', 'Profile')
 @section('account-content')
-<h1 class="h4 fw-bold mb-4"><i class="bi bi-person me-2"></i>Profile</h1>
+<h1 style="color:white;font-size:20px;font-weight:500;text-transform:uppercase;letter-spacing:1px;margin-bottom:24px;display:flex;align-items:center;gap:8px;">
+    <i class="bi bi-person" style="color:var(--color-gold);"></i>Profile
+</h1>
 
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-header bg-white fw-semibold">Personal Information</div>
-    <div class="card-body">
-        <form action="{{ route('account.profile.update') }}" method="post">
-            @csrf
-            @method('PUT')
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">Name</label>
-                    <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $user->name) }}" required>
-                    @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Email</label>
-                    <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email', $user->email) }}">
-                    @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Phone</label>
-                    <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror" value="{{ old('phone', $user->phone) }}">
-                    @error('phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-12">
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                </div>
+{{-- Personal Information --}}
+<div class="sf-account-card">
+    <div style="font-weight:600;color:white;font-size:14px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--color-border);">Personal Information</div>
+    <form action="{{ route('account.profile.update') }}" method="post">
+        @csrf
+        @method('PUT')
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));gap:16px;">
+            <div>
+                <label class="sf-label">Name</label>
+                <input type="text" name="name" class="sf-input @error('name') is-invalid @enderror" value="{{ old('name', $user->name) }}" required>
+                @error('name') <div style="color:var(--color-error);font-size:12px;margin-top:4px;">{{ $message }}</div> @enderror
             </div>
-        </form>
-    </div>
+            <div>
+                <label class="sf-label">Email</label>
+                <input type="email" name="email" class="sf-input @error('email') is-invalid @enderror" value="{{ old('email', $user->email) }}">
+                @error('email') <div style="color:var(--color-error);font-size:12px;margin-top:4px;">{{ $message }}</div> @enderror
+            </div>
+            <div>
+                <label class="sf-label">Phone</label>
+                <input type="text" name="phone" class="sf-input @error('phone') is-invalid @enderror" value="{{ old('phone', $user->phone) }}">
+                @error('phone') <div style="color:var(--color-error);font-size:12px;margin-top:4px;">{{ $message }}</div> @enderror
+            </div>
+        </div>
+        <div style="margin-top:20px;">
+            <button type="submit" class="sf-btn-primary" style="width:auto;padding:0 32px;height:42px;font-size:12px;">Save Changes</button>
+        </div>
+    </form>
 </div>
 
-<div class="card border-0 shadow-sm">
-    <div class="card-header bg-white fw-semibold">Change Password</div>
-    <div class="card-body">
-        <form action="{{ route('account.password.update') }}" method="post">
-            @csrf
-            @method('PUT')
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">Current Password</label>
-                    <input type="password" name="current_password" class="form-control @error('current_password') is-invalid @enderror" required>
-                    @error('current_password') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-6"></div>
-                <div class="col-md-6">
-                    <label class="form-label">New Password</label>
-                    <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" required>
-                    @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Confirm New Password</label>
-                    <input type="password" name="password_confirmation" class="form-control" required>
-                </div>
-                <div class="col-12">
-                    <button type="submit" class="btn btn-dark">Update Password</button>
-                </div>
+{{-- Change Password --}}
+<div class="sf-account-card">
+    <div style="font-weight:600;color:white;font-size:14px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--color-border);">Change Password</div>
+    <form action="{{ route('account.password.update') }}" method="post">
+        @csrf
+        @method('PUT')
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));gap:16px;">
+            <div>
+                <label class="sf-label">Current Password</label>
+                <input type="password" name="current_password" class="sf-input @error('current_password') is-invalid @enderror" required>
+                @error('current_password') <div style="color:var(--color-error);font-size:12px;margin-top:4px;">{{ $message }}</div> @enderror
             </div>
-        </form>
-    </div>
+            <div style="display:none;">{{-- spacer --}}</div>
+            <div>
+                <label class="sf-label">New Password</label>
+                <input type="password" name="password" class="sf-input @error('password') is-invalid @enderror" required>
+                @error('password') <div style="color:var(--color-error);font-size:12px;margin-top:4px;">{{ $message }}</div> @enderror
+            </div>
+            <div>
+                <label class="sf-label">Confirm New Password</label>
+                <input type="password" name="password_confirmation" class="sf-input" required>
+            </div>
+        </div>
+        <div style="margin-top:20px;">
+            <button type="submit" class="sf-btn-primary" style="width:auto;padding:0 32px;height:42px;font-size:12px;background:var(--color-bg-elevated);color:var(--color-gold);border:1px solid var(--color-gold);">Update Password</button>
+        </div>
+    </form>
 </div>
 @endsection

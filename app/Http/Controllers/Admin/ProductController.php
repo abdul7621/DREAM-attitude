@@ -143,7 +143,14 @@ class ProductController extends Controller
 
     public function edit(Product $product): View
     {
-        $product->load(['variants', 'images']);
+        try {
+            $product->load(['variants', 'images', 'category']);
+        } catch (\Exception $e) {
+            // Fallback: load without relationships that may depend on pending migrations
+            $product->load(['variants', 'images']);
+            \Log::warning('Product edit partial load: ' . $e->getMessage(), ['product_id' => $product->id]);
+        }
+
         $categories = Category::query()->where('is_active', true)->orderBy('name')->get();
 
         return view('admin.products.edit', compact('product', 'categories'));
@@ -310,19 +317,43 @@ class ProductController extends Controller
 
     public function destroy(Product $product): RedirectResponse
     {
-        DB::transaction(function () use ($product): void {
-            $product->load('images');
-            foreach ($product->images as $img) {
-                Storage::disk('public')->delete($img->path);
-            }
-            $product->delete();
-        });
+        try {
+            DB::transaction(function () use ($product): void {
+                $product->load(['images', 'variants']);
 
-        Cache::forget('home_featured');
-        Cache::forget('home_bestsellers');
-        Cache::forget('home_latest');
-        Cache::forget('dashboard_kpi');
+                // Delete storage files first
+                foreach ($product->images as $img) {
+                    if ($img->path && Storage::disk('public')->exists($img->path)) {
+                        Storage::disk('public')->delete($img->path);
+                    }
+                }
 
-        return redirect()->route('admin.products.index')->with('status', __('Product deleted.'));
+                // Delete all related records
+                $product->variants()->each(function ($v) {
+                    try {
+                        $v->images()->delete();
+                    } catch (\Exception $e) {
+                        // variant_id column may not exist yet
+                    }
+                    $v->delete();
+                });
+                $product->images()->delete();
+                $product->delete();
+            });
+
+            Cache::forget('home_featured');
+            Cache::forget('home_bestsellers');
+            Cache::forget('home_latest');
+            Cache::forget('dashboard_kpi');
+
+            return redirect()->route('admin.products.index')->with('status', __('Product deleted successfully.'));
+
+        } catch (\Exception $e) {
+            \Log::error('Product delete failed: ' . $e->getMessage(), [
+                'product_id' => $product->id,
+            ]);
+
+            return back()->with('error', 'Delete failed: ' . $e->getMessage());
+        }
     }
 }

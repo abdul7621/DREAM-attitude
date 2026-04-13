@@ -59,7 +59,7 @@
             Logout</button>
         </form>
       </div>
-      <div> 
+      <div class="sf-account-content">
           @yield('account-content')
       </div>
     </div>

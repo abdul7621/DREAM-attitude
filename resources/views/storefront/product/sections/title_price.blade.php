@@ -65,10 +65,10 @@
             <span style="width:8px;height:8px;background:var(--color-gold);border-radius:50%;box-shadow:0 0 8px var(--color-gold);"></span>
             <span id="urgencyLabel">{{ str_replace('{stock}', $displayQty, $msg) }}</span>
         </div>
-    @elseif($urgencyMsg)
-        <div style="display:flex;align-items:center;gap:8px;background:var(--color-bg-elevated);color:var(--color-gold);padding:8px 12px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;margin-bottom:16px;">
-            <span style="width:8px;height:8px;background:var(--color-gold);border-radius:50%;box-shadow:0 0 8px var(--color-gold);"></span>
-            <span>{{ str_replace('{stock}', '', $urgencyMsg) }}</span>
+    @elseif($firstVariant && $firstVariant->track_inventory && $firstVariant->stock_qty <= 0)
+        <div style="background:rgba(197,48,48,0.1);color:#f87171;padding:8px 12px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+            <i class="bi bi-x-circle"></i>
+            Out of Stock
         </div>
     @endif
 </div>

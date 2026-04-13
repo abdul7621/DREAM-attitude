@@ -122,7 +122,11 @@
                         <td><input type="text" class="form-control form-control-sm" name="variants[{{ $i }}][id]" value="{{ $row['id'] ?? '' }}" readonly tabindex="-1"></td>
                         <td>
                             @php
-                                $imgId = \App\Models\ProductImage::where('variant_id', $row['id'] ?? null)->value('id');
+                                try {
+                                    $imgId = \App\Models\ProductImage::where('variant_id', $row['id'] ?? null)->value('id');
+                                } catch (\Exception $e) {
+                                    $imgId = null;
+                                }
                             @endphp
                             <select name="variants[{{ $i }}][image_id]" class="form-select form-select-sm" style="min-width: 80px;">
                                 <option value="">-</option>

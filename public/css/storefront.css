@@ -943,3 +943,28 @@ a { color: inherit; text-decoration: none; }
     border-left: 4px solid #60a5fa;
 }
 .sf-toast-info::before { content: '\F431'; } /* info-circle-fill */
+
+/* ── Account Content Area ────────────────────────── */
+.sf-account-content {
+    padding: 32px;
+    min-height: 400px;
+}
+@media(max-width:767px) {
+    .sf-account-content { padding: 16px; }
+}
+
+/* ── Additional Badge States ─────────────────────── */
+.sf-badge.pending,
+.sf-badge.confirmed { background: rgba(201, 168, 76, 0.15); color: var(--color-gold); }
+.sf-badge.refunded { background: rgba(85, 85, 85, 0.3); color: var(--color-text-secondary); }
+
+/* ── Select/Dropdown Input ───────────────────────── */
+.sf-input option {
+    background: var(--color-bg-elevated);
+    color: white;
+}
+select.sf-input {
+    appearance: auto;
+    cursor: pointer;
+}
+

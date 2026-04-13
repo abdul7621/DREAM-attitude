@@ -1,59 +1,66 @@
 @extends('layouts.account')
 @section('title', 'My Account')
 @section('account-content')
-<h1 class="h4 fw-bold mb-4" style="color: white;"><i class="bi bi-grid me-2 text-gold"></i>Dashboard</h1>
+<div class="sf-account-content">
+    <h1 style="color:white;font-size:20px;font-weight:500;text-transform:uppercase;letter-spacing:1px;margin-bottom:24px;display:flex;align-items:center;gap:8px;">
+        <i class="bi bi-grid" style="color:var(--color-gold);"></i>Dashboard
+    </h1>
 
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px;">
-    <div class="sf-account-card text-center text-white p-4" style="margin-bottom: 0;">
-        <div class="fs-2 fw-bold text-gold">{{ $totalOrders }}</div>
-        <small class="text-muted text-uppercase" style="letter-spacing: 1px;">Total Orders</small>
+    {{-- Stat Cards --}}
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:16px;margin-bottom:32px;">
+        <div class="sf-account-card" style="text-align:center;padding:24px 16px;margin-bottom:0;">
+            <span style="color:var(--color-gold);font-size:28px;font-weight:600;display:block;">{{ $totalOrders }}</span>
+            <span style="color:var(--color-text-muted);font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-top:4px;display:block;">Total Orders</span>
+        </div>
+        <div class="sf-account-card" style="text-align:center;padding:24px 16px;margin-bottom:0;">
+            <span style="color:var(--color-gold);font-size:28px;font-weight:600;display:block;">₹{{ number_format($totalSpent, 0) }}</span>
+            <span style="color:var(--color-text-muted);font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-top:4px;display:block;">Total Spent</span>
+        </div>
+        <div class="sf-account-card" style="text-align:center;padding:24px 16px;margin-bottom:0;">
+            <span style="color:var(--color-gold);font-size:28px;font-weight:600;display:block;">{{ $wishlistCount }}</span>
+            <span style="color:var(--color-text-muted);font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-top:4px;display:block;">Wishlist Items</span>
+        </div>
     </div>
-    <div class="sf-account-card text-center text-white p-4" style="margin-bottom: 0;">
-        <div class="fs-2 fw-bold text-gold">₹{{ number_format($totalSpent, 0) }}</div>
-        <small class="text-muted text-uppercase" style="letter-spacing: 1px;">Total Spent</small>
-    </div>
-    <div class="sf-account-card text-center text-white p-4" style="margin-bottom: 0;">
-        <div class="fs-2 fw-bold text-gold">{{ $wishlistCount }}</div>
-        <small class="text-muted text-uppercase" style="letter-spacing: 1px;">Wishlist Items</small>
+
+    {{-- Recent Orders --}}
+    <div class="sf-account-card" style="padding:0;overflow:hidden;">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--color-border);font-weight:600;color:white;font-size:14px;">Recent Orders</div>
+        @if ($recentOrders->isEmpty())
+            <div style="text-align:center;padding:48px 20px;color:var(--color-text-muted);">
+                <i class="bi bi-bag" style="font-size:32px;display:block;margin-bottom:12px;color:var(--color-gold);"></i>
+                No orders yet. <a href="{{ route('home') }}" style="text-decoration:none;color:var(--color-gold);font-weight:600;">Start shopping →</a>
+            </div>
+        @else
+            <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr style="border-bottom:1px solid var(--color-border);">
+                            <th style="padding:10px 20px;text-align:left;color:var(--color-text-muted);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:400;">Order #</th>
+                            <th style="padding:10px 20px;text-align:left;color:var(--color-text-muted);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:400;">Date</th>
+                            <th style="padding:10px 20px;text-align:left;color:var(--color-text-muted);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:400;">Total</th>
+                            <th style="padding:10px 20px;text-align:left;color:var(--color-text-muted);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:400;">Status</th>
+                            <th style="padding:10px 20px;text-align:right;color:var(--color-text-muted);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:400;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach ($recentOrders as $order)
+                        <tr style="border-bottom:1px solid var(--color-border);transition:background 0.2s;" onmouseenter="this.style.background='rgba(255,255,255,0.02)'" onmouseleave="this.style.background='transparent'">
+                            <td style="padding:12px 20px;color:white;font-weight:600;font-size:13px;">{{ Str::limit($order->order_number, 16) }}</td>
+                            <td style="padding:12px 20px;color:var(--color-text-muted);font-size:13px;">{{ $order->placed_at?->format('d M Y') ?? '—' }}</td>
+                            <td style="padding:12px 20px;color:white;font-size:13px;">₹{{ number_format($order->grand_total, 2) }}</td>
+                            <td style="padding:12px 20px;"><span class="sf-badge {{ strtolower($order->order_status) }}">{{ \App\Models\Order::STATUS_LABELS[$order->order_status]['label'] ?? $order->order_status }}</span></td>
+                            <td style="padding:12px 20px;text-align:right;">
+                                <a href="{{ route('account.orders.show', $order) }}" style="text-decoration:none;color:var(--color-gold);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">View</a>
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+            <div style="padding:16px 20px;text-align:right;border-top:1px solid var(--color-border);">
+                <a href="{{ route('account.orders') }}" style="text-decoration:none;color:var(--color-gold);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;">View All Orders →</a>
+            </div>
+        @endif
     </div>
 </div>
-
-<div class="sf-account-card" style="padding: 0; overflow: hidden;">
-    <div style="padding: 16px 20px; border-bottom: 1px solid var(--color-border); font-weight: 600; color: white;">Recent Orders</div>
-    @if ($recentOrders->isEmpty())
-        <div class="text-center text-muted py-5">
-            <i class="bi bi-bag fs-1 d-block mb-3" style="color: var(--color-gold);"></i>
-            No orders yet. <a href="{{ route('home') }}" class="fw-semibold text-gold" style="text-decoration:none;">Start shopping →</a>
-        </div>
-    @else
-        <div class="table-responsive">
-            <table class="table table-dark table-hover mb-0" style="--bs-table-bg: transparent; --bs-table-hover-bg: rgba(255,255,255,0.02); margin:0;">
-                <thead><tr style="border-bottom: 1px solid var(--color-border); color: var(--color-text-muted);">
-                    <th class="fw-normal px-4 py-3 border-0">Order #</th>
-                    <th class="fw-normal px-4 py-3 border-0">Date</th>
-                    <th class="fw-normal px-4 py-3 border-0">Total</th>
-                    <th class="fw-normal px-4 py-3 border-0">Status</th>
-                    <th class="fw-normal px-4 py-3 border-0"></th>
-                </tr></thead>
-                <tbody>
-                @foreach ($recentOrders as $order)
-                    <tr style="border-bottom: 1px solid var(--color-border);">
-                        <td class="fw-semibold px-4 py-3 border-0 align-middle text-white">{{ $order->order_number }}</td>
-                        <td class="px-4 py-3 border-0 align-middle text-muted">{{ $order->placed_at?->format('d M Y') ?? '—' }}</td>
-                        <td class="px-4 py-3 border-0 align-middle text-white">₹{{ number_format($order->grand_total, 2) }}</td>
-                        <td class="px-4 py-3 border-0 align-middle"><span class="sf-badge {{ strtolower($order->order_status) }}">{{ \App\Models\Order::STATUS_LABELS[$order->order_status]['label'] ?? $order->order_status }}</span></td>
-                        <td class="px-4 py-3 border-0 align-middle text-end"><a href="{{ route('account.orders.show', $order) }}" style="text-decoration:none; color:var(--color-gold); font-size:12px; font-weight:600; text-transform:uppercase;">View</a></td>
-                    </tr>
-                @endforeach
-                </tbody>
-            </table>
-        </div>
-        <div style="padding: 16px 20px; text-align: right; border-top: 1px solid var(--color-border);">
-            <a href="{{ route('account.orders') }}" style="text-decoration:none; color:var(--color-text-secondary); font-size:12px; font-weight:600; text-transform:uppercase;">View All Orders →</a>
-        </div>
-    @endif
-</div>
-<style>
-.text-gold { color: var(--color-gold) !important; }
-</style>
 @endsection
