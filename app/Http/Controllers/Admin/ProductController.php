@@ -318,35 +318,17 @@ class ProductController extends Controller
     public function destroy(Product $product): RedirectResponse
     {
         try {
-            DB::transaction(function () use ($product): void {
-                $product->load(['images', 'variants']);
-
-                // Delete storage files first
-                foreach ($product->images as $img) {
-                    if ($img->path && Storage::disk('public')->exists($img->path)) {
-                        Storage::disk('public')->delete($img->path);
-                    }
-                }
-
-                // Delete all related records
-                $product->variants()->each(function ($v) {
-                    try {
-                        $v->images()->delete();
-                    } catch (\Exception $e) {
-                        // variant_id column may not exist yet
-                    }
-                    $v->delete();
-                });
-                $product->images()->delete();
-                $product->delete();
-            });
+            // Soft delete — product hidden from storefront
+            // but order history preserved (no FK violation)
+            $product->delete();
 
             Cache::forget('home_featured');
             Cache::forget('home_bestsellers');
             Cache::forget('home_latest');
             Cache::forget('dashboard_kpi');
 
-            return redirect()->route('admin.products.index')->with('status', __('Product deleted successfully.'));
+            return redirect()->route('admin.products.index')
+                ->with('status', 'Product deleted successfully.');
 
         } catch (\Exception $e) {
             \Log::error('Product delete failed: ' . $e->getMessage(), [

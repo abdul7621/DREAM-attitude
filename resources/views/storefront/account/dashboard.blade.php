@@ -1,7 +1,6 @@
 @extends('layouts.account')
 @section('title', 'My Account')
 @section('account-content')
-<div class="sf-account-content">
     <h1 style="color:white;font-size:20px;font-weight:500;text-transform:uppercase;letter-spacing:1px;margin-bottom:24px;display:flex;align-items:center;gap:8px;">
         <i class="bi bi-grid" style="color:var(--color-gold);"></i>Dashboard
     </h1>
@@ -62,5 +61,5 @@
             </div>
         @endif
     </div>
-</div>
 @endsection
+

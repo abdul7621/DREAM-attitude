@@ -28,7 +28,7 @@
                             <span style="background:var(--color-gold);color:#0a0a0a;padding:3px 8px;border-radius:var(--radius-sm);font-size:10px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Default</span>
                         @endif
                     </div>
-                    <div style="position:relative;" x-data="{ open: false }">
+                    <div style="position:relative;">
                         <button type="button" style="background:none;border:none;color:var(--color-text-muted);cursor:pointer;font-size:16px;padding:4px;" onclick="this.nextElementSibling.classList.toggle('sf-dropdown-visible')">
                             <i class="bi bi-three-dots-vertical"></i>
                         </button>

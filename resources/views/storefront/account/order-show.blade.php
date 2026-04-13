@@ -6,7 +6,6 @@
 </h1>
 
 <div style="display:grid;gap:24px;grid-template-columns:1fr;">
-@media(min-width:1024px) {}
 
     {{-- Order Items --}}
     <div class="sf-account-card" style="padding:0;overflow:hidden;">

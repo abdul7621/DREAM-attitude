@@ -78,10 +78,10 @@
         @else
             <a href="{{ route('login') }}" class="cart-icon ps-3"><i class="bi bi-person"></i></a>
         @endauth
-        <a href="{{ route('cart.index') }}" class="cart-icon position-relative ms-3">
-            <i class="bi bi-bag"></i>
+        <a href="{{ route('cart.index') }}" class="cart-icon" style="position:relative;display:inline-flex;align-items:center;margin-left:12px;">
+            <i class="bi bi-bag" style="font-size:20px;"></i>
             @if (($cartCount ?? 0) > 0)
-                <span class="sf-cart-badge">{{ $cartCount }}</span>
+                <span class="sf-cart-badge" style="pointer-events:none;">{{ $cartCount }}</span>
             @endif
         </a>
         <button class="sf-hamburger ms-3" onclick="document.getElementById('mobileDrawer').classList.add('open'); document.getElementById('drawerOverlay').classList.add('open');">
