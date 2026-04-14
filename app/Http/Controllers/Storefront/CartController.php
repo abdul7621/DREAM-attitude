@@ -27,7 +27,7 @@ class CartController extends Controller
         return view('storefront.cart', compact('lines', 'totals'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|\Illuminate\Http\JsonResponse
     {
         $data = $request->validate([
             'variant_id' => ['required', 'exists:product_variants,id'],
