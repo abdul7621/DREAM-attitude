@@ -474,18 +474,14 @@ class ShopifyImporter
                 $totalImages++;
             }
 
-            // [STEP 1] CSV ROW TYPE DETECTION & [STEP 3] IMAGE HANDLING
+            // RULE 1: Image mapping is already handled safely above (images preserved)
+            
+            // RULE 2: VARIANT MUST HAVE PRICE TO BE CREATED
             $rawPrice = trim($row['Variant Price'] ?? '');
-            $rawSku   = trim($row['Variant SKU'] ?? '');
 
-            // If it has NO variant properties but HAS an image, it's just an Image Row, SKIP variant processing.
-            // DO NOT create variant.
-            if ($rawPrice === '' && $rawSku === '' && $imgSrc !== '') {
-                continue;
-            }
-
-            // Guard against completely empty ghost-rows
-            if ($rawPrice === '' && $rawSku === '') {
+            // If Price is empty, this row cannot form a valid variant (even if it has an SKU). 
+            // Skip the rest of the parsing logic for this row.
+            if ($rawPrice === '') {
                 continue;
             }
 
