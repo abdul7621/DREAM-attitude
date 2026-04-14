@@ -489,6 +489,8 @@
         if(pinInput.value.length === 6 && !cityInput.value) {
             pinInput.dispatchEvent(new Event('input'));
         }
+    }
+
     if (phoneInput) {
         phoneInput.addEventListener('blur', function() {
             var val = this.value.trim().replace(/[^0-9]/g, '');
