@@ -15,6 +15,7 @@
                     <option value="status_active">Mark Active</option>
                     <option value="status_draft">Mark Draft</option>
                     <option value="delete">Delete (Soft)</option>
+                    <option value="force_delete">Permanent Delete</option>
                 </select>
                 <button type="submit" class="btn btn-sm btn-outline-primary me-3" id="bulk-submit" disabled>Apply</button>
                 <a class="btn btn-sm btn-primary" href="{{ route('admin.products.create') }}">Add product</a>

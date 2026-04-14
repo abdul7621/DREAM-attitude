@@ -378,7 +378,7 @@ class ProductController extends Controller
     public function bulkAction(Request $request): RedirectResponse
     {
         $request->validate([
-            'action' => 'required|in:status_active,status_draft,delete',
+            'action' => 'required|in:status_active,status_draft,delete,force_delete',
             'ids' => 'required|array',
             'ids.*' => 'integer|exists:products,id'
         ]);
@@ -391,6 +391,20 @@ class ProductController extends Controller
                 if ($action === 'delete') {
                     // Soft Delete
                     Product::query()->whereIn('id', $ids)->delete();
+                } elseif ($action === 'force_delete') {
+                    // Permanent Delete
+                    $products = Product::withTrashed()->whereIn('id', $ids)->get();
+                    foreach ($products as $p) {
+                        // Wipe local storage image files
+                        foreach ($p->images as $img) {
+                            \Illuminate\Support\Facades\Storage::disk('public')->delete($img->path);
+                            $img->delete();
+                        }
+                        // Cascade wipe variants
+                        $p->variants()->delete();
+                        // Nuke product completely
+                        $p->forceDelete();
+                    }
                 } elseif ($action === 'status_active') {
                     Product::query()->whereIn('id', $ids)->update(['status' => 'active']);
                 } elseif ($action === 'status_draft') {
