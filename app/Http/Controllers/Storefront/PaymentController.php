@@ -8,6 +8,7 @@ use App\Services\OrderService;
 use App\Services\PaymentManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
@@ -22,13 +23,13 @@ class PaymentController extends Controller
         $incomingId = $gatewayDriver->extractOrderId($request->all());
 
         if (!$incomingId) {
-            \Illuminate\Support\Facades\Log::error('Payment callback missing reference ID', ['gateway' => $gateway, 'payload' => $request->all()]);
+            Log::error('Payment callback missing reference ID', ['gateway' => $gateway, 'payload' => $request->all()]);
             return redirect()->route('checkout.create')->withErrors(['payment' => __('Payment reference missing.')]);
         }
 
         $order = Order::query()->where('gateway_order_id', $incomingId)->firstOrFail();
 
-        // Idempotency / Double payment protection
+        // Idempotency / Double payment protection — if already paid, send to success
         if ($order->payment_status === Order::PAYMENT_STATUS_PAID) {
             return redirect()->route('order.success', ['orderNumber' => $order->order_number]);
         }
@@ -42,12 +43,18 @@ class PaymentController extends Controller
             // Amount validation is cryptographically assured by driver signature verification
             $this->orders->finalizeOnlinePayment($order, $request->all());
         } catch (\Exception $e) {
+            // Mark order as abandoned/failed
             $order->update([
                 'payment_status' => Order::PAYMENT_STATUS_FAILED,
                 'order_status' => Order::ORDER_STATUS_ABANDONED
             ]);
-            
-            \Illuminate\Support\Facades\Log::info('order_abandoned', [
+
+            // Fix #2: No stock restore needed here for online orders since stock
+            // was NOT deducted at order creation. Stock only deducts on successful
+            // finalization. If finalization fails AFTER stock deduction (e.g. DB error),
+            // the transaction inside finalizeOnlinePayment will rollback automatically.
+
+            Log::info('order_abandoned', [
                 'order_id' => $order->id,
                 'user_id' => $order->user_id,
                 'amount' => $order->grand_total,

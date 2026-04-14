@@ -7,7 +7,7 @@
     @if ($product->images->count() > 1)
         <div class="sf-pdp-thumbs">
             @foreach ($product->images as $i => $image)
-                <img src="{{ asset('storage/'.$image->path) }}" alt="thumb"
+                <img src="{{ asset('storage/'.$image->path) }}" alt="{{ $product->name }} - Image {{ $i + 1 }}"
                      class="{{ $i === 0 ? 'active' : '' }}"
                      onclick="document.querySelector('.main-img').src=this.src; document.querySelectorAll('.sf-pdp-thumbs img').forEach(t=>t.classList.remove('active')); this.classList.add('active');">
             @endforeach

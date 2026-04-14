@@ -1,11 +1,12 @@
 @extends('layouts.storefront')
 
 @section('title', $product->seo_title ?: $product->name)
+@section('og_type', 'product')
 
 @push('meta')
     <link rel="canonical" href="{{ route('product.show', $product, true) }}">
     @php
-        $desc = $product->seo_description ?: \Illuminate\Support\Str::limit(strip_tags((string) ($product->short_description ?: $product->description)), 160);
+        $desc = $product->seo_description ?: \Illuminate\Support\Str::limit(strip_tags(html_entity_decode((string) ($product->short_description ?: $product->description))), 160);
     @endphp
     @if ($desc)
         <meta name="description" content="{{ $desc }}">
@@ -123,6 +124,10 @@
     <button onclick="document.getElementById('redirectInput').value='checkout'; document.getElementById('productForm').submit();" style="background: var(--color-gold); color: #0a0a0a; border: none; height: 40px; padding: 0 20px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
         Buy Now
     </button>
+    {{-- Fix #10: Add to Cart icon button in sticky bar --}}
+    <button id="stickyAddToCartBtn" onclick="document.getElementById('redirectInput').value=''; document.getElementById('productForm').submit();" style="background: transparent; border: 1px solid var(--color-gold); color: var(--color-gold); width: 40px; height: 40px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer;" title="Add to Cart">
+        <i class="bi bi-bag-plus" style="font-size: 16px;"></i>
+    </button>
 </div>
 
 {{-- ── Social Proof Toast ──────────────────────────────── --}}
@@ -206,6 +211,14 @@
             compareLabel.textContent = fmt(c);
             savingsBadge.style.display = 'inline';
             savingsAmount.textContent = fmt(c - p);
+            // Fix #8: Update percentage discount badge on variant change
+            var percentOff = Math.round((1 - p / c) * 100);
+            var percentBadge = document.getElementById('discountPercentBadge');
+            var percentValue = document.getElementById('discountPercentValue');
+            if (percentBadge && percentValue) {
+                percentBadge.style.display = 'inline-block';
+                percentValue.textContent = percentOff;
+            }
             if(stickyCompare) {
                 stickyCompare.style.display = 'inline';
                 stickyCompare.textContent = fmt(c);
@@ -213,6 +226,8 @@
         } else {
             compareLabel.style.display = 'none';
             savingsBadge.style.display = 'none';
+            var percentBadge = document.getElementById('discountPercentBadge');
+            if (percentBadge) percentBadge.style.display = 'none';
             if(stickyCompare) stickyCompare.style.display = 'none';
         }
 
@@ -288,12 +303,14 @@ dataLayer.push({
     }
 });
 @if (config('commerce.meta.pixel_id'))
-fbq('track', 'ViewContent', {
-    content_ids: [{!! json_encode($v0?->sku ?: 'p'.$product->id) !!}],
-    content_type: 'product',
-    value: {!! json_encode($vprice) !!},
-    currency: '{{ config('commerce.currency', 'INR') }}'
-});
+if (typeof fbq === 'function') {
+    fbq('track', 'ViewContent', {
+        content_ids: [{!! json_encode($v0?->sku ?: 'p'.$product->id) !!}],
+        content_type: 'product',
+        value: {!! json_encode($vprice) !!},
+        currency: '{{ config('commerce.currency', 'INR') }}'
+    });
+}
 @endif
 
 @if($spEnabled)

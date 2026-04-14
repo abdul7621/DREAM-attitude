@@ -13,7 +13,7 @@
     <meta property="og:description" content="{{ $pageDescription ?? $storeSettings['meta_description'] ?? '' }}">
     <meta property="og:image" content="{{ asset('storage/' . ($ss->get('theme.og_image') ?? $ss->get('theme.logo') ?? '')) }}">
     <meta property="og:url" content="{{ url()->current() }}">
-    <meta property="og:type" content="website">
+    <meta property="og:type" content="@yield('og_type', 'website')">
     <meta name="twitter:card" content="summary_large_image">
     <link rel="canonical" href="{{ url()->current() }}">
     @stack('meta')
@@ -90,9 +90,8 @@
         @endauth
         <a href="{{ route('cart.index') }}" class="cart-icon" style="position:relative;display:inline-flex;align-items:center;margin-left:12px;">
             <i class="bi bi-bag" style="font-size:20px;"></i>
-            @if (($cartCount ?? 0) > 0)
-                <span class="sf-cart-badge" style="pointer-events:none;">{{ $cartCount }}</span>
-            @endif
+            {{-- Fix #12: Badge always rendered; hidden via style when count is 0 so JS can update --}}
+            <span class="sf-cart-badge" style="pointer-events:none;{{ ($cartCount ?? 0) > 0 ? '' : 'display:none;' }}">{{ $cartCount ?? 0 }}</span>
         </a>
         <button class="sf-hamburger ms-3" onclick="document.getElementById('mobileDrawer').classList.add('open'); document.getElementById('drawerOverlay').classList.add('open');">
             <span></span><span></span><span></span>

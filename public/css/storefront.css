@@ -1051,3 +1051,29 @@ textarea.sf-input {
     line-height: 1.6;
 }
 
+/* ── Fix #11: Cart Remove Button Visibility ───────── */
+.sf-cart-remove {
+    color: var(--color-text-muted);
+    cursor: pointer;
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    flex-shrink: 0;
+}
+.sf-cart-remove:hover {
+    color: var(--color-error);
+    border-color: var(--color-error);
+    background: rgba(197, 48, 48, 0.1);
+}
+
+/* ── Fix #19: Mobile bottom padding for sticky bar ── */
+@media(max-width: 768px) {
+    .sf-pdp { padding-bottom: 80px; }
+    body.has-sticky-bar { padding-bottom: 80px; }
+}

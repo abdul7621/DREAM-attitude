@@ -36,12 +36,15 @@
         $defPrice = $defaultVar ? ((float) ($variantPrices[$defaultVar->id]['display'] ?? $defaultVar->price_retail)) : 0;
         $defCompare = $defaultVar ? ((float) ($variantPrices[$defaultVar->id]['compare'] ?? $defaultVar->compare_at_price)) : 0;
         $defSavings = $defCompare > $defPrice ? ($defCompare - $defPrice) : 0;
+        $defDiscountPercent = $defCompare > $defPrice ? round((1 - $defPrice / $defCompare) * 100) : 0;
     @endphp
 
     {{-- Price --}}
-    <div class="price-block" style="margin-bottom: 16px;">
+    <div class="price-block" style="margin-bottom: 16px; flex-wrap: wrap;">
         <span id="priceLabel" class="price">₹{{ number_format($defPrice) }}</span>
         <span class="mrp" id="compareLabel" style="display:{{ $defCompare > $defPrice ? 'inline' : 'none' }};">₹{{ number_format($defCompare) }}</span>
+        {{-- Fix #8: Prominent percentage discount badge --}}
+        <span id="discountPercentBadge" style="display:{{ $defDiscountPercent > 0 ? 'inline-block' : 'none' }};font-size:12px;font-weight:700;color:#0a0a0a;background:var(--color-gold);padding:4px 10px;border-radius:var(--radius-sm);letter-spacing:0.5px;"><span id="discountPercentValue">{{ $defDiscountPercent }}</span>% OFF</span>
         <span id="savingsBadge" style="display:{{ $defSavings > 0 ? 'inline' : 'none' }};font-size:11px;color:var(--color-success);background:rgba(39, 103, 73, 0.1);padding:4px 8px;border-radius:var(--radius-sm);"><i class="bi bi-tag-fill"></i> Save <span id="savingsAmount">₹{{ number_format($defSavings) }}</span></span>
     </div>
 

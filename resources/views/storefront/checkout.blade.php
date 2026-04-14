@@ -88,7 +88,7 @@
                     @csrf
 
                     @if ($errors->any())
-                        <div class="sf-checkout-errors" role="alert">
+                        <div class="sf-checkout-errors" role="alert" id="checkoutErrors">
                             <div class="error-title"><i class="bi bi-exclamation-triangle-fill me-1"></i> Please fix the following errors:</div>
                             <ul>
                                 @foreach ($errors->all() as $error)
@@ -104,16 +104,16 @@
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                             <div style="grid-column: 1 / -1;">
                                 <label class="sf-label">Full Name *</label>
-                                <input type="text" name="customer_name" id="customer_name" value="{{ old('customer_name') }}" autocomplete="name" class="sf-input" required>
+                                <input type="text" name="customer_name" id="customer_name" value="{{ old('customer_name') }}" autocomplete="name" class="sf-input @error('customer_name') is-invalid @enderror" required>
                             </div>
                             <div>
                                 <label class="sf-label">Phone Number *</label>
-                                <input type="tel" name="phone" id="phone" value="{{ old('phone') }}" autocomplete="tel" class="sf-input" required>
+                                <input type="tel" name="phone" id="phone" value="{{ old('phone') }}" autocomplete="tel" class="sf-input @error('phone') is-invalid @enderror" required>
                                 <small class="sf-inline-err-text d-none" id="phone_err">Enter a valid 10-digit number</small>
                             </div>
                             <div>
                                 <label class="sf-label">Email (Optional)</label>
-                                <input type="email" name="email" id="email" value="{{ old('email') }}" autocomplete="email" class="sf-input">
+                                <input type="email" name="email" id="email" value="{{ old('email') }}" autocomplete="email" class="sf-input @error('email') is-invalid @enderror">
                             </div>
                         </div>
                     </div>
@@ -133,22 +133,22 @@
                             <div>
                                 <label class="sf-label">PIN Code *</label>
                                 <div style="position: relative;">
-                                    <input type="text" id="postal_code" name="postal_code" value="{{ old('postal_code') }}" class="sf-input" required maxlength="6" inputmode="numeric" autocomplete="postal-code" pattern="[0-9]{6}">
+                                    <input type="text" id="postal_code" name="postal_code" value="{{ old('postal_code') }}" class="sf-input @error('postal_code') is-invalid @enderror" required maxlength="6" inputmode="numeric" autocomplete="postal-code" pattern="[0-9]{6}">
                                     <div id="pin_spinner" class="d-none" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); width:16px; height:16px; border:2px solid var(--color-border); border-top-color:var(--color-gold); border-radius:50%; animation:spin 0.8s linear infinite;"></div>
                                 </div>
                                 <small class="sf-inline-err-text d-none" id="pin_err">Enter a valid 6-digit PIN code</small>
                             </div>
                             <div>
                                 <label class="sf-label">City *</label>
-                                <input type="text" id="city" name="city" value="{{ old('city') }}" autocomplete="address-level2" class="sf-input" required readonly>
+                                <input type="text" id="city" name="city" value="{{ old('city') }}" autocomplete="address-level2" class="sf-input @error('city') is-invalid @enderror" required readonly>
                             </div>
                             <div>
                                 <label class="sf-label">State *</label>
-                                <input type="text" id="state" name="state" value="{{ old('state') }}" autocomplete="address-level1" class="sf-input" required readonly>
+                                <input type="text" id="state" name="state" value="{{ old('state') }}" autocomplete="address-level1" class="sf-input @error('state') is-invalid @enderror" required readonly>
                             </div>
                             <div style="grid-column: 1 / -1;">
                                 <label class="sf-label">House/Flat No., Building Name *</label>
-                                <input type="text" name="address_line1" id="address_line1" value="{{ old('address_line1') }}" autocomplete="address-line1" class="sf-input" required>
+                                <input type="text" name="address_line1" id="address_line1" value="{{ old('address_line1') }}" autocomplete="address-line1" class="sf-input @error('address_line1') is-invalid @enderror" required>
                             </div>
                             <div style="grid-column: 1 / -1;">
                                 <label class="sf-label">Street/Area/Landmark (Optional)</label>
@@ -241,14 +241,18 @@
                         </div>
                     </div>
 
+                    {{-- Fix #6: Trust badges BEFORE Place Order button --}}
+                    <div class="sf-trust-row" style="margin-bottom: 16px; padding: 16px 20px; background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); justify-content: center;">
+                        <span style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-shield-lock-fill" style="color: var(--color-success); font-size: 16px;"></i> Secure Checkout</span>
+                        <span style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-phone-fill" style="color: var(--color-gold); font-size: 16px;"></i> UPI</span>
+                        <span style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-credit-card-2-front-fill" style="color: var(--color-gold); font-size: 16px;"></i> Cards</span>
+                        <span style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-cash-coin" style="color: var(--color-gold); font-size: 16px;"></i> COD</span>
+                        <span style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-truck" style="color: var(--color-gold); font-size: 16px;"></i> Fast Delivery</span>
+                    </div>
+
                     <button type="submit" class="sf-btn-primary" id="submitBtn">
                         <span id="submitBtnText" style="display:flex;align-items:center;justify-content:center;">{{ $copy['place_order_cta'] ?: 'Place Order' }} <i class="bi bi-arrow-right ms-2"></i></span>
                     </button>
-
-                    <div class="sf-trust-row" style="margin-top: 24px; padding: 20px; background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md);">
-                        <span style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-shield-check text-success fs-5"></i> Secure Checkout</span>
-                        <span style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-truck fs-5"></i> Fast Delivery</span>
-                    </div>
                 </form>
             </div>
         </div>
@@ -262,9 +266,49 @@
 .payment-card:hover { border-color: var(--color-gold) !important; }
 .payment-card.selected { border-color: var(--color-gold) !important; background: var(--color-bg-elevated) !important; }
 .sf-inline-err-text { font-size: 0.85rem; color: var(--color-error); display: block; margin-top: 0.25rem; }
+.sf-input.is-invalid { border-color: var(--color-error) !important; box-shadow: 0 0 0 1px var(--color-error); }
 </style>
 <script>
 (function () {
+    // Fix #5: Auto-scroll to error block on page load
+    var errBlock = document.getElementById('checkoutErrors');
+    if (errBlock) {
+        errBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Fix #15: Fire InitiateCheckout pixel on page load (dedup guarded)
+    if (!window.__checkout_tracked) {
+        window.__checkout_tracked = true;
+        try {
+            window.dataLayer = window.dataLayer || [];
+            dataLayer.push({ ecommerce: null });
+            dataLayer.push({
+                event: 'begin_checkout',
+                ecommerce: {
+                    currency: '{{ config('commerce.currency', 'INR') }}',
+                    value: {{ (float) $totals['grand'] }},
+                    items: [
+                        @foreach ($lines as $row)
+                        {
+                            item_id: @json($row['variant']->sku ?: 'v'.$row['variant']->id),
+                            item_name: @json($row['product']->name),
+                            price: {{ (float) $row['unit_price'] }},
+                            quantity: {{ (int) $row['item']->qty }}
+                        }@if(! $loop->last),@endif
+                        @endforeach
+                    ]
+                }
+            });
+            if (typeof fbq === 'function') {
+                fbq('track', 'InitiateCheckout', {
+                    value: {{ (float) $totals['grand'] }},
+                    currency: '{{ config('commerce.currency', 'INR') }}',
+                    num_items: {{ (int) $lines->sum(fn ($r) => $r['item']->qty) }}
+                });
+            }
+        } catch(e) { console.error('Checkout tracking error:', e); }
+    }
+
     const checkoutForm = document.getElementById('checkout-form');
     if (checkoutForm) {
         checkoutForm.addEventListener('submit', function() {
@@ -566,15 +610,8 @@
                 ]
             }
         });
-        @if (config('commerce.meta.pixel_id'))
-        if (typeof fbq === 'function') {
-            fbq('track', 'InitiateCheckout', {
-                value: {{ (float) $totals['grand'] }},
-                currency: '{{ config('commerce.currency', 'INR') }}',
-                num_items: {{ (int) $lines->sum(fn ($r) => $r['item']->qty) }}
-            });
-        }
-        @endif
+        // InitiateCheckout already fires on page load (Fix #15 — dedup guarded)
+        // Do NOT fire again on submit to avoid double events
     });
 })();
 </script>

@@ -29,10 +29,16 @@
             localStorage.setItem('sf_cart', JSON.stringify(data));
         } catch(e) {}
         
-        // Update UI
-        const badge = document.querySelector('.sf-cart-badge') || document.querySelector('.cart-badge');
+        // Fix #12: Update badge — always show/hide, never create new element
+        var badge = document.querySelector('.sf-cart-badge');
         if (badge) {
-            badge.innerText = data.count > 0 ? data.count : '';
+            if (data.count > 0) {
+                badge.innerText = data.count;
+                badge.style.display = '';
+            } else {
+                badge.innerText = '0';
+                badge.style.display = 'none';
+            }
         }
     });
 
@@ -45,7 +51,6 @@
     // Default analytics listener
     Store.on('analytics', (data) => {
         console.debug('[Analytics]', data.event, data);
-        // Future: fbq('track', ...), gtag('event', ...), etc.
     });
 
     // AJAX Add to Cart Interceptor
@@ -78,9 +83,6 @@
                 }
             }
 
-            // Create object fallback for spread operator compatibility
-            let analyticsFallback = {};
-            
             const formData = new FormData(form);
             fetch(form.action, {
                 method: 'POST',
@@ -97,10 +99,46 @@
                     if (window.Store) {
                         Store.emit('toast', { type: 'success', message: data.message || 'Added to cart' });
                         Store.emit('cart:updated', { count: data.total_items });
+
+                        // Fix #13: Fire AddToCart pixel on AJAX add-to-cart
                         if (data.analytics) {
-                            // Non-spread object assign
-                            analyticsFallback = Object.assign({ event: 'add_to_cart' }, data.analytics);
-                            Store.emit('analytics', analyticsFallback);
+                            var analyticsData = Object.assign({ event: 'add_to_cart' }, data.analytics);
+                            Store.emit('analytics', analyticsData);
+
+                            // GA4 dataLayer push
+                            try {
+                                window.dataLayer = window.dataLayer || [];
+                                dataLayer.push({ ecommerce: null });
+                                dataLayer.push({
+                                    event: 'add_to_cart',
+                                    ecommerce: {
+                                        currency: data.analytics.currency || 'INR',
+                                        value: data.analytics.value || 0,
+                                        items: data.analytics.items || []
+                                    }
+                                });
+                            } catch(e) { console.error('GA4 add_to_cart error:', e); }
+
+                            // fbq AddToCart — dedup by variant in session
+                            try {
+                                if (typeof fbq === 'function') {
+                                    var variantId = (data.analytics.items && data.analytics.items[0]) 
+                                        ? data.analytics.items[0].item_id : '';
+                                    var dedupKey = 'sf_atc_' + variantId;
+                                    var alreadyFired = false;
+                                    try { alreadyFired = sessionStorage.getItem(dedupKey) === '1'; } catch(e) {}
+
+                                    if (!alreadyFired) {
+                                        fbq('track', 'AddToCart', {
+                                            value: data.analytics.value || 0,
+                                            currency: data.analytics.currency || 'INR',
+                                            content_ids: [variantId],
+                                            content_type: 'product'
+                                        });
+                                        try { sessionStorage.setItem(dedupKey, '1'); } catch(e) {}
+                                    }
+                                }
+                            } catch(e) { console.error('fbq AddToCart error:', e); }
                         }
                     }
                 } else {
