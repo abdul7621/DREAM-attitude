@@ -41,8 +41,9 @@
 {{-- Errors --}}
 @if(count($importErrors) > 0)
 <div class="card shadow-sm border-danger">
-    <div class="card-header fw-semibold text-danger bg-danger bg-opacity-10">
-        <i class="bi bi-exclamation-triangle me-2"></i>{{ count($importErrors) }} Errors
+    <div class="card-header fw-semibold text-danger bg-danger bg-opacity-10 d-flex justify-content-between align-items-center">
+        <div><i class="bi bi-exclamation-triangle me-2"></i>{{ count($importErrors) }} Errors</div>
+        <a href="{{ route('admin.import.exportErrors', $importJob) }}" class="btn btn-sm btn-outline-danger">Download CSV</a>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">

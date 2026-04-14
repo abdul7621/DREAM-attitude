@@ -23,7 +23,7 @@ class ProductController extends Controller
 
     public function index(): View
     {
-        $products = Product::query()->with('category')->latest()->paginate(30);
+        $products = Product::withTrashed()->with('category')->latest()->paginate(30);
 
         return view('admin.products.index', compact('products'));
     }
@@ -328,7 +328,7 @@ class ProductController extends Controller
             Cache::forget('dashboard_kpi');
 
             return redirect()->route('admin.products.index')
-                ->with('status', 'Product deleted successfully.');
+                ->with('status', 'Product archived successfully. Use Permanent Delete if you wish to fully remove it.');
 
         } catch (\Exception $e) {
             \Log::error('Product delete failed: ' . $e->getMessage(), [
@@ -336,6 +336,79 @@ class ProductController extends Controller
             ]);
 
             return back()->with('error', 'Delete failed: ' . $e->getMessage());
+        }
+    }
+
+    public function forceDestroy(int $id): RedirectResponse
+    {
+        try {
+            $product = Product::withTrashed()->findOrFail($id);
+
+            DB::transaction(function () use ($product) {
+                // Wipe local storage image files
+                foreach ($product->images as $img) {
+                    Storage::disk('public')->delete($img->path);
+                    $img->delete();
+                }
+
+                // Cascade wipe variants
+                $product->variants()->delete();
+
+                // Nuke product completely
+                $product->forceDelete();
+            });
+
+            Cache::forget('home_featured');
+            Cache::forget('home_bestsellers');
+            Cache::forget('home_latest');
+            Cache::forget('dashboard_kpi');
+
+            return redirect()->route('admin.products.index')
+                ->with('status', 'Product permanently deleted from database.');
+
+        } catch (\Exception $e) {
+            \Log::error('Product force delete failed: ' . $e->getMessage(), [
+                'product_id' => $id,
+            ]);
+
+            return back()->with('error', 'Permanent Delete failed: ' . $e->getMessage());
+        }
+    }
+
+    public function bulkAction(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'action' => 'required|in:status_active,status_draft,delete',
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:products,id'
+        ]);
+
+        $action = $request->input('action');
+        $ids = $request->input('ids');
+
+        try {
+            DB::transaction(function () use ($action, $ids) {
+                if ($action === 'delete') {
+                    // Soft Delete
+                    Product::query()->whereIn('id', $ids)->delete();
+                } elseif ($action === 'status_active') {
+                    Product::query()->whereIn('id', $ids)->update(['status' => 'active']);
+                } elseif ($action === 'status_draft') {
+                    Product::query()->whereIn('id', $ids)->update(['status' => 'draft']);
+                }
+            });
+
+            Cache::forget('home_featured');
+            Cache::forget('home_bestsellers');
+            Cache::forget('home_latest');
+            Cache::forget('dashboard_kpi');
+
+            return redirect()->route('admin.products.index')
+                ->with('status', 'Bulk action applied successfully.');
+
+        } catch (\Exception $e) {
+            \Log::error('Bulk product action failed: ' . $e->getMessage(), ['action' => $action]);
+            return back()->with('error', 'Bulk action failed: ' . $e->getMessage());
         }
     }
 }

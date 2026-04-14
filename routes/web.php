@@ -131,6 +131,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('orders/{order}/packing', [AdminOrderController::class, 'packingPdf'])->name('orders.packing');
 
     // Catalog
+    Route::post('products/bulk', [AdminProductController::class, 'bulkAction'])->name('products.bulk');
+    Route::delete('products/{product}/force', [AdminProductController::class, 'forceDestroy'])->name('products.forceDestroy');
     Route::resource('products', AdminProductController::class)->except(['show']);
     Route::resource('categories', AdminCategoryController::class)->except(['show']);
 
@@ -199,4 +201,5 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('import/{importJob}/preview', [AdminImportController::class, 'preview'])->name('import.preview');
     Route::post('import/{importJob}/confirm', [AdminImportController::class, 'confirm'])->name('import.confirm');
     Route::get('import/{importJob}/details', [AdminImportController::class, 'show'])->name('import.show');
+    Route::get('import/{importJob}/export-errors', [AdminImportController::class, 'exportErrors'])->name('import.exportErrors');
 });

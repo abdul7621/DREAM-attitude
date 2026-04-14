@@ -45,42 +45,47 @@ class ShopifyImporter
             try {
                 $category = $this->resolveCategory($product['category']);
 
-                $existing = Product::query()->where('slug', Str::slug($handle))->first();
+                $slug = Str::slug($handle);
+                $existing = Product::withTrashed()->where('slug', $slug)->first();
 
-                $p = $existing ?? Product::query()->create([
-                    'name'        => $product['title'],
-                    'slug'        => $this->uniqueSlug($handle),
-                    'description' => $product['body'],
-                    'status'      => $product['published'] ? Product::STATUS_ACTIVE : 'draft',
-                    'category_id' => $category?->id,
-                    'is_bestseller' => false,
-                ]);
+                $bodyHtml = $this->cleanHtml($product['body']);
 
                 if ($existing) {
+                    if ($existing->trashed()) {
+                        $existing->restore(); // Restore if soft deleted
+                    }
                     $existing->update([
                         'name'        => $product['title'],
-                        'description' => $product['body'],
+                        'description' => $bodyHtml,
                         'status'      => $product['published'] ? Product::STATUS_ACTIVE : 'draft',
                         'category_id' => $category?->id,
                     ]);
                     $p = $existing;
+                } else {
+                    $p = Product::query()->create([
+                        'name'          => $product['title'],
+                        'slug'          => $this->uniqueSlug($handle),
+                        'description'   => $bodyHtml,
+                        'status'        => $product['published'] ? Product::STATUS_ACTIVE : 'draft',
+                        'category_id'   => $category?->id,
+                        'is_bestseller' => false,
+                    ]);
                 }
 
                 $counts['products']++;
 
+                // Pre-map variant images so we don't duplicate downloads
+                $variantImageMap = [];
                 foreach ($product['variants'] as $v) {
-                    // Guard: never insert a variant with price 0 — it's
-                    // almost certainly a CSV parsing issue, not a real price.
                     if (empty($v['price']) || $v['price'] <= 0) {
                         $counts['errors'][] = "Product {$handle}: Variant '{$v['title']}' skipped — price is 0 or empty";
                         continue;
                     }
 
                     $variant = ProductVariant::query()->updateOrCreate(
-                        ['product_id' => $p->id, 'sku' => $v['sku'] ?: null],
+                        ['product_id' => $p->id, 'sku' => $v['sku']],
                         [
                             'title'            => $v['title'],
-                            'sku'              => $v['sku'] ?: null,
                             'price_retail'     => $v['price'],
                             'compare_at_price' => $v['compare_at'] ?: null,
                             'weight_grams'     => $v['grams'],
@@ -90,6 +95,10 @@ class ShopifyImporter
                         ]
                     );
                     $counts['variants']++;
+
+                    if ($v['image']) {
+                        $variantImageMap[$v['image']] = $variant->id;
+                    }
                 }
 
                 foreach ($product['images'] as $imgUrl) {
@@ -99,18 +108,23 @@ class ShopifyImporter
                     try {
                         $path = $this->images->fetch($imgUrl);
                         if ($path) {
+                            $varId = $variantImageMap[$imgUrl] ?? null;
                             ProductImage::query()->firstOrCreate(
                                 ['product_id' => $p->id, 'path' => $path],
-                                ['alt_text' => $product['title'], 'sort_order' => 0]
+                                ['alt_text' => $product['title'], 'sort_order' => 0, 'variant_id' => $varId]
                             );
                             $counts['images']++;
                         }
-                    } catch (\Throwable) {
-                        $counts['errors'][] = "Image failed: {$imgUrl}";
+                    } catch (\Throwable $e) {
+                        $counts['errors'][] = "Image failed ({$imgUrl}): ".$e->getMessage();
                     }
                 }
             } catch (\Throwable $e) {
-                $counts['errors'][] = "Product {$handle}: ".$e->getMessage();
+                // Log the exact error along with the full row raw data context if possible
+                $counts['errors'][] = [
+                    'message' => "Product {$handle}: ".$e->getMessage(),
+                    'raw'     => $product['raw_rows'],
+                ];
             }
         }
 
@@ -415,11 +429,14 @@ class ShopifyImporter
                     'category'  => $cat,
                     'variants'  => [],
                     'images'    => [],
+                    'raw_rows'  => [],
                 ];
                 $lastKnownPrice[$handle]     = 0;
                 $lastKnownCompareAt[$handle] = null;
                 $lastKnownGrams[$handle]     = 0;
             }
+
+            $products[$handle]['raw_rows'][] = $row;
 
             $imgSrc = trim($row['Image Src'] ?? '');
             if ($imgSrc && ! in_array($imgSrc, $products[$handle]['images'], true)) {
@@ -433,10 +450,6 @@ class ShopifyImporter
                 $row['Option3 Value'] ?? '',
             ])->filter()->implode(' / ');
 
-            // Carry-forward pricing: Shopify CSV may leave subsequent
-            // variant rows with empty price (not null — empty string).
-            // (float)"" = 0 which is incorrect. Carry forward from
-            // the last row that had a real price.
             $rawPrice     = trim($row['Variant Price'] ?? '');
             $rawCompareAt = trim($row['Variant Compare At Price'] ?? '');
             $rawGrams     = trim($row['Variant Grams'] ?? '');
@@ -454,19 +467,43 @@ class ShopifyImporter
             $policy = strtolower(trim($row['Variant Inventory Policy'] ?? ''));
             $track = $policy !== 'continue';
 
+            // Deterministic SKU computation
+            $skuRaw = trim($row['Variant SKU'] ?? '');
+            if (!$skuRaw) {
+                $optVal = Str::slug($varTitle ?: 'default');
+                // Use handle as base + options slug
+                $skuRaw = $handle . '-' . ($optVal ? $optVal : count($products[$handle]['variants']));
+            }
+
             $products[$handle]['variants'][] = [
                 'title'      => $varTitle ?: 'Default',
-                'sku'        => trim($row['Variant SKU'] ?? ''),
+                'sku'        => $skuRaw,
                 'price'      => $lastKnownPrice[$handle],
                 'compare_at' => $lastKnownCompareAt[$handle],
                 'grams'      => $lastKnownGrams[$handle],
                 'stock'      => (int) ($row['Variant Inventory Qty'] ?? 0),
                 'track'      => $track,
+                'image'      => trim($row['Variant Image'] ?? ''),
             ];
             $totalVariants++;
         }
 
         return compact('products', 'categories', 'totalVariants', 'totalImages');
+    }
+
+    private function cleanHtml(string $html): string
+    {
+        if (!$html) return '';
+
+        // Safe HTML Whitelist (No divs, spans, tables unless required)
+        $allowedTags = '<p><ul><li><br><strong><b><i><em><img>';
+        $cleaned = strip_tags($html, $allowedTags);
+
+        // Strip inline styles, classes, and data-* attributes
+        $cleaned = preg_replace('/(style|class|data-[a-z0-9\-]+)="[^"]*"/i', '', $cleaned);
+
+        // Clean up empty tags and multiple spaces if needed
+        return trim($cleaned);
     }
 
     private function resolveCategory(string $name): ?Category
@@ -486,7 +523,7 @@ class ShopifyImporter
         $base  = Str::slug($handle);
         $slug  = $base;
         $i     = 1;
-        while (Product::query()->where('slug', $slug)->exists()) {
+        while (Product::withTrashed()->where('slug', $slug)->exists()) {
             $slug = $base.'-'.$i++;
         }
 

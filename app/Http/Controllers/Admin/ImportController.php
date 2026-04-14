@@ -128,4 +128,40 @@ class ImportController extends Controller
 
         return redirect()->route('admin.import.index')->with('success', 'Import completed successfully.');
     }
+
+    public function exportErrors(ImportJob $importJob)
+    {
+        $errors = $importJob->stats['errors'] ?? [];
+        if (empty($errors)) {
+            return back()->with('error', 'No errors to export.');
+        }
+
+        $filename = 'import_errors_job_' . $importJob->id . '.csv';
+
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$filename",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $callback = function () use ($errors) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['Error Message', 'Raw Data (JSON)']);
+
+            foreach ($errors as $error) {
+                if (is_string($error)) {
+                    fputcsv($file, [$error, '']);
+                } else {
+                    $msg = $error['message'] ?? 'Unknown Error';
+                    $raw = $error['raw'] ?? [];
+                    fputcsv($file, [$msg, json_encode($raw)]);
+                }
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }
