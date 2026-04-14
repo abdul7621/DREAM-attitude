@@ -84,7 +84,7 @@
 
             {{-- ── Left: Checkout Form ─────────────────────────────────── --}}
             <div style="direction: ltr;">
-                <form id="checkout-form" action="{{ route('checkout.store') }}" method="post">
+                <form id="checkout-form" action="{{ route('checkout.store') }}" method="post" novalidate>
                     @csrf
 
                     @if ($errors->any())
@@ -390,13 +390,19 @@
                 if (spinner) spinner.classList.remove('d-none');
                 this.readOnly = true;
                 
+                var processEnd = function() {
+                    pinInput.readOnly = false;
+                    pinInput.removeAttribute('readonly');
+                    if (spinner) spinner.classList.add('d-none');
+                };
+
                 fetch('https://api.postalpincode.in/pincode/' + this.value, {
                     method: 'GET'
                 })
-                .then(res => res.json())
-                .then(data => {
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
                     if (data && data[0] && data[0].Status === 'Success' && data[0].PostOffice && data[0].PostOffice.length > 0) {
-                        const info = data[0].PostOffice[0];
+                        var info = data[0].PostOffice[0];
                         cityInput.value = info.District;
                         stateInput.value = info.State;
                         
@@ -404,32 +410,29 @@
                         stateInput.setAttribute('readonly', 'true');
                         
                         if (errEl) errEl.classList.add('d-none');
-                        this.classList.remove('is-invalid');
-                        this.classList.add('is-valid');
+                        pinInput.classList.remove('is-invalid');
+                        pinInput.classList.add('is-valid');
 
                         if (window.Store) {
-                            Store.emit('pincode:resolved', { city: info.District, state: info.State, pincode: this.value });
-                            Store.emit('toast', {type:'success', message: `Delivering to ${info.District}, ${info.State}`});
+                            Store.emit('pincode:resolved', { city: info.District, state: info.State, pincode: pinInput.value });
+                            Store.emit('toast', {type:'success', message: 'Delivering to ' + info.District + ', ' + info.State});
                         }
                     } else {
                         cityInput.value = '';
                         stateInput.value = '';
-                        this.classList.add('is-invalid');
-                        this.classList.remove('is-valid');
+                        pinInput.classList.add('is-invalid');
+                        pinInput.classList.remove('is-valid');
                         if (errEl) {
                             errEl.textContent = 'Invalid PIN code. Please check.';
                             errEl.classList.remove('d-none');
                         }
                         if (window.Store) Store.emit('toast', {type:'error', message: 'Invalid PIN code.'});
                     }
+                    processEnd();
                 })
-                .catch(err => {
+                .catch(function(err) {
                     console.error("Postal API error: ", err);
-                })
-                .finally(() => {
-                    this.readOnly = false;
-                    this.removeAttribute('readonly');
-                    if (spinner) spinner.classList.add('d-none');
+                    processEnd();
                 });
             } else if (this.value.length > 0 && this.value.length < 6) {
                 cityInput.value = '';
@@ -442,15 +445,17 @@
         if(pinInput.value.length === 6 && !cityInput.value) {
             pinInput.dispatchEvent(new Event('input'));
         }
-    }
-
     if (phoneInput) {
         phoneInput.addEventListener('blur', function() {
-            const val = this.value.trim().replace(/[^0-9]/g, '');
+            var val = this.value.trim().replace(/[^0-9]/g, '');
             if (val.length < 10) {
-                showError(this, 'Enter a valid 10-digit phone number');
+                showError(this, 'Enter a valid 10-digit number');
+                var pe = document.getElementById('phone_err');
+                if(pe) { pe.classList.remove('d-none'); pe.textContent = 'Enter a valid 10-digit number'; }
             } else {
                 hideError(this);
+                var pe = document.getElementById('phone_err');
+                if(pe) pe.classList.add('d-none');
             }
         });
     }
@@ -478,8 +483,8 @@
     if (pinInput) {
         pinInput.addEventListener('blur', function() {
             if (this.readOnly) return; // API in progress
-            const val = this.value.trim();
-            const errEl = document.getElementById('pin_err');
+            var val = this.value.trim();
+            var errEl = document.getElementById('pin_err');
             if (val.length > 0 && val.length < 6) {
                 showError(this, 'PIN code must be exactly 6 digits');
                 if (errEl) {
@@ -496,12 +501,12 @@
     }
 
     // Analytics and Form Submit
-    const form = document.getElementById('checkout-form');
+    var form = document.getElementById('checkout-form');
     if (!form) return;
     
     form.addEventListener('submit', function (e) {
         // Run validations manually
-        let hasError = false;
+        var hasError = false;
         
         if (phoneInput && phoneInput.value.trim().length < 10) {
             showError(phoneInput, 'Enter a valid 10-digit phone number');
@@ -535,7 +540,7 @@
             document.getElementById('billing_address_line1').value = document.getElementById('address_line1').value;
         }
         
-        const btn = document.getElementById('submitBtn');
+        var btn = document.getElementById('submitBtn');
         if(btn) {
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Processing...';
             btn.classList.add('disabled');

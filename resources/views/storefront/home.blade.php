@@ -73,7 +73,7 @@
                             @if ($cat->image_path)
                                 <img src="{{ asset('storage/'.$cat->image_path) }}" alt="{{ $cat->name }}" loading="lazy">
                             @else
-                                <div style="position:absolute;inset:0;background:var(--color-bg-elevated);"></div>
+                                <div style="position:absolute;top:0;right:0;bottom:0;left:0;background:var(--color-bg-elevated);"></div>
                             @endif
                             <div class="cat-overlay"></div>
                             <label>{{ $cat->name }}</label>

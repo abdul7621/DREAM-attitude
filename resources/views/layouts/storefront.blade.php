@@ -252,27 +252,38 @@
 <script>
 (function() {
     const isLoggedIn = {{ Auth::check() ? 'true' : 'false' }};
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
 
     // Hydrate hearts from server
     if (isLoggedIn) {
-        fetch('{{ route("account.api.wishlist-ids") }}')
-            .then(r => r.json())
-            .then(ids => {
-                document.querySelectorAll('.wishlist-heart').forEach(btn => {
-                    const pid = parseInt(btn.dataset.productId);
-                    if (ids.includes(pid)) {
+        fetch('{{ route("account.api.wishlist-ids") }}', {
+            credentials: 'same-origin'
+        })
+            .then(function(r) { return r.json(); })
+            .then(function(ids) {
+                var hearts = document.querySelectorAll('.wishlist-heart');
+                for (var h = 0; h < hearts.length; h++) {
+                    var btn = hearts[h];
+                    var pid = parseInt(btn.dataset.productId);
+                    if (ids.indexOf(pid) !== -1) {
                         btn.classList.add('active');
-                        btn.querySelector('i').className = 'bi bi-heart-fill';
+                        var icon = btn.querySelector('i');
+                        if (icon) icon.className = 'bi bi-heart-fill';
                         btn.dataset.wishlisted = '1';
                     }
-                });
-            }).catch(() => {});
+                }
+            }).catch(function() {});
     }
 
-    // Toggle click handler
+    // Toggle click handler (safe for all browsers - no closest())
     document.addEventListener('click', function(e) {
-        const btn = e.target.closest('.wishlist-heart');
+        var el = e.target;
+        var btn = null;
+        while (el && el !== document) {
+            if (el.classList && el.classList.contains('wishlist-heart')) { btn = el; break; }
+            el = el.parentElement;
+        }
         if (!btn) return;
         e.preventDefault();
 
@@ -281,11 +292,12 @@
             return;
         }
 
-        const productId = btn.dataset.productId;
-        const icon = btn.querySelector('i');
+        var productId = btn.dataset.productId;
+        var icon = btn.querySelector('i');
 
         fetch('{{ route("account.wishlist.toggle") }}', {
             method: 'POST',
+            credentials: 'same-origin',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': csrfToken,
@@ -293,20 +305,20 @@
             },
             body: JSON.stringify({ product_id: productId })
         })
-        .then(r => r.json())
-        .then(data => {
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
             if (data.wishlisted) {
                 btn.classList.add('active');
-                icon.className = 'bi bi-heart-fill';
+                if (icon) icon.className = 'bi bi-heart-fill';
                 btn.dataset.wishlisted = '1';
             } else {
                 btn.classList.remove('active');
-                icon.className = 'bi bi-heart';
+                if (icon) icon.className = 'bi bi-heart';
                 btn.dataset.wishlisted = '0';
             }
             if (window.Store) Store.emit('toast', { type: 'success', message: data.message });
         })
-        .catch(() => {
+        .catch(function() {
             if (window.Store) Store.emit('toast', { type: 'error', message: 'Could not update wishlist.' });
         });
     });

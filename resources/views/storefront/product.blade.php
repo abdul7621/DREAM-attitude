@@ -143,55 +143,58 @@
 @push('scripts')
 <script>
 (function () {
-    const variantBtns = document.querySelectorAll('.sf-variant-btn');
-    const hiddenInput = document.getElementById('hidden_variant_id');
-    const priceLabel = document.getElementById('priceLabel');
-    const compareLabel = document.getElementById('compareLabel');
-    const savingsBadge = document.getElementById('savingsBadge');
-    const savingsAmount = document.getElementById('savingsAmount');
-    const stickyPrice = document.getElementById('stickyPrice');
-    const addToCartBtn = document.getElementById('addToCartBtn');
-    const buyNowBtn = document.getElementById('buyNowBtn');
+    var variantBtns = document.querySelectorAll('.sf-variant-btn');
+    var hiddenInput = document.getElementById('hidden_variant_id');
+    var priceLabel = document.getElementById('priceLabel');
+    var compareLabel = document.getElementById('compareLabel');
+    var savingsBadge = document.getElementById('savingsBadge');
+    var savingsAmount = document.getElementById('savingsAmount');
+    var stickyPrice = document.getElementById('stickyPrice');
+    var addToCartBtn = document.getElementById('addToCartBtn');
+    var buyNowBtn = document.getElementById('buyNowBtn');
 
-    function fmt(n) { return '₹' + parseFloat(n).toLocaleString('en-IN', {minimumFractionDigits: 0}); }
+    function fmt(n) { return '\u20b9' + parseFloat(n).toLocaleString('en-IN', {minimumFractionDigits: 0}); }
 
     function refreshUi(btn) {
         if (!btn) return;
         
-        variantBtns.forEach(b => b.classList.remove('active'));
+        for (var i = 0; i < variantBtns.length; i++) { variantBtns[i].classList.remove('active'); }
         btn.classList.add('active');
         hiddenInput.value = btn.dataset.id;
         
-        const p = parseFloat(btn.dataset.price);
-        const c = parseFloat(btn.dataset.compare) || 0;
-        const stock = parseInt(btn.dataset.stock);
-        const track = btn.dataset.track === '1';
-        const vname = btn.dataset.name || '';
-        const vimg = btn.dataset.img || '';
+        var p = parseFloat(btn.dataset.price);
+        var c = parseFloat(btn.dataset.compare) || 0;
+        var stock = parseInt(btn.dataset.stock);
+        var track = btn.dataset.track === '1';
+        var vname = btn.dataset.name || '';
+        var vimg = btn.dataset.img || '';
 
         if (vimg) {
-            const mainImg = document.querySelector('.main-img');
+            var mainImg = document.querySelector('.main-img');
             if (mainImg) {
                 mainImg.src = vimg;
-                document.querySelectorAll('.sf-pdp-thumbs img').forEach(t => t.classList.remove('active'));
-                const thumb = Array.from(document.querySelectorAll('.sf-pdp-thumbs img')).find(t => t.src === vimg);
-                if (thumb) thumb.classList.add('active');
+                var thumbs = document.querySelectorAll('.sf-pdp-thumbs img');
+                for (var ti = 0; ti < thumbs.length; ti++) { thumbs[ti].classList.remove('active'); }
+                // Find matching thumb manually (no Array.from/find)
+                for (var tj = 0; tj < thumbs.length; tj++) {
+                    if (thumbs[tj].src === vimg) { thumbs[tj].classList.add('active'); break; }
+                }
             }
         }
 
         priceLabel.textContent = fmt(p);
         if (stickyPrice) stickyPrice.textContent = fmt(p);
         
-        const stickyVariant = document.getElementById('stickyVariant');
+        var stickyVariant = document.getElementById('stickyVariant');
         if (stickyVariant && vname) stickyVariant.textContent = '- ' + vname;
 
-        const urgencyLabel = document.getElementById('urgencyLabel');
+        var urgencyLabel = document.getElementById('urgencyLabel');
         if(urgencyLabel) {
-            let msg = urgencyLabel.innerHTML;
+            var msg = urgencyLabel.innerHTML;
             urgencyLabel.innerHTML = msg.replace(/\d+/, Math.min(stock, {{ $product->meta['stock_display_cap'] ?? 80 }}));
         }
 
-        const stickyCompare = document.getElementById('stickyCompare');
+        var stickyCompare = document.getElementById('stickyCompare');
 
         if (c > p) {
             compareLabel.style.display = 'inline';
@@ -230,22 +233,25 @@
         });
     }
 
-    variantBtns.forEach(btn => {
-        btn.addEventListener('click', () => refreshUi(btn));
-    });
+    for (var vi = 0; vi < variantBtns.length; vi++) {
+        (function(b) { b.addEventListener('click', function() { refreshUi(b); }); })(variantBtns[vi]);
+    }
 
     // Initial state setup
-    const activeBtn = document.querySelector('.sf-variant-btn.active') || variantBtns[0];
+    var activeBtn = document.querySelector('.sf-variant-btn.active') || variantBtns[0];
     if (activeBtn) refreshUi(activeBtn);
 
     // Form submit listener for analytics
-    document.getElementById('productForm').addEventListener('submit', (e) => {
-        Store.emit('analytics', { 
-            event: 'add_to_cart', 
-            productId: {{ $product->id }}, 
-            variantId: hiddenInput.value 
+    var pForm = document.getElementById('productForm');
+    if (pForm) {
+        pForm.addEventListener('submit', function() {
+            Store.emit('analytics', { 
+                event: 'add_to_cart', 
+                productId: {{ $product->id }}, 
+                variantId: hiddenInput.value 
+            });
         });
-    });
+    }
 })();
 
 // Call view_item analytics

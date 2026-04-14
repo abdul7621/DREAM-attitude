@@ -2,7 +2,7 @@
     @if ($product->primaryImage())
         <img src="{{ asset('storage/'.$product->primaryImage()->path) }}" class="main-img" alt="{{ $product->primaryImage()->alt_text ?? $product->name }}">
     @else
-        <div style="background:var(--color-bg-elevated);width:100%;aspect-ratio:1/1;border: 1px solid var(--color-border);border-radius: var(--radius-md);"></div>
+        <div style="background:var(--color-bg-elevated);width:100%;position:relative;padding-top:100%;border: 1px solid var(--color-border);border-radius: var(--radius-md);"></div>
     @endif
     @if ($product->images->count() > 1)
         <div class="sf-pdp-thumbs">

@@ -21,7 +21,7 @@
             @if ($img)
                 <img src="{{ asset('storage/'.$img->path) }}" alt="{{ $img->alt_text ?? $product->name }}" loading="lazy">
             @else
-                <div style="background:var(--color-bg-elevated);width:100%;aspect-ratio:1/1;"></div>
+                <div style="background:var(--color-bg-elevated);width:100%;position:relative;padding-top:100%;"></div>
             @endif
         </a>
         <button type="button"

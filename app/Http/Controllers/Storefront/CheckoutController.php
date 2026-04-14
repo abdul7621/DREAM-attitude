@@ -60,34 +60,45 @@ class CheckoutController extends Controller
 
         $data = $validator->validated();
 
+        if (empty($data['email'])) {
+            $data['email'] = 'guest_' . time() . '_' . \Illuminate\Support\Str::random(4) . '@noemail.com';
+        }
+
         $currentUser = \Illuminate\Support\Facades\Auth::user();
 
         // ── Customer Identity Layer ─────────────────────────────────────
         if (!$currentUser || $currentUser->phone !== $data['phone']) {
             $existingUser = null;
-            \Illuminate\Support\Facades\DB::transaction(function () use ($data, &$existingUser) {
-                $existingUser = \App\Models\User::where('phone', $data['phone'])
-                    ->lockForUpdate()
-                    ->first();
-
-                if (!$existingUser && !empty($data['email'])) {
-                    $existingUser = \App\Models\User::where('email', $data['email'])
+            try {
+                \Illuminate\Support\Facades\DB::transaction(function () use ($data, &$existingUser) {
+                    $existingUser = \App\Models\User::where('phone', $data['phone'])
                         ->lockForUpdate()
                         ->first();
-                }
 
-                if (!$existingUser) {
-                    $existingUser = \App\Models\User::create([
-                        'name' => $data['customer_name'],
-                        'phone' => $data['phone'],
-                        'email' => !empty($data['email']) ? $data['email'] : null,
-                        'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(12)),
-                    ]);
-                }
-            });
+                    if (!$existingUser) {
+                        $existingUser = \App\Models\User::where('email', $data['email'])
+                            ->lockForUpdate()
+                            ->first();
+                    }
 
-            \Illuminate\Support\Facades\Auth::login($existingUser);
-            $this->cart->mergeOnLogin($existingUser);
+                    if (!$existingUser) {
+                        $existingUser = \App\Models\User::create([
+                            'name' => $data['customer_name'] ?? 'Guest',
+                            'phone' => $data['phone'],
+                            'email' => $data['email'],
+                            'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(12)),
+                        ]);
+                    }
+                });
+
+                if ($existingUser) {
+                    \Illuminate\Support\Facades\Auth::login($existingUser);
+                    $this->cart->mergeOnLogin($existingUser);
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning("Customer Identity Layer failed, proceeding as pure guest checkout: " . $e->getMessage());
+                // Don't throw, allow the checkout to proceed without a registered user
+            }
         }
         // ────────────────────────────────────────────────────────────────
 
