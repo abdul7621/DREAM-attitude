@@ -31,11 +31,18 @@
         <p class="sf-pdp-desc" style="margin-bottom: 24px;">{{ $product->short_description }}</p>
     @endif
 
+    @php
+        $defaultVar = $product->variants->where('is_active', true)->first();
+        $defPrice = $defaultVar ? ((float) ($variantPrices[$defaultVar->id]['display'] ?? $defaultVar->price_retail)) : 0;
+        $defCompare = $defaultVar ? ((float) ($variantPrices[$defaultVar->id]['compare'] ?? $defaultVar->compare_at_price)) : 0;
+        $defSavings = $defCompare > $defPrice ? ($defCompare - $defPrice) : 0;
+    @endphp
+
     {{-- Price --}}
     <div class="price-block" style="margin-bottom: 16px;">
-        <span id="priceLabel" class="price">₹0</span>
-        <span class="mrp" id="compareLabel" style="display:none;"></span>
-        <span id="savingsBadge" style="display:none;font-size:11px;color:var(--color-success);background:rgba(39, 103, 73, 0.1);padding:4px 8px;border-radius:var(--radius-sm);"><i class="bi bi-tag-fill"></i> Save <span id="savingsAmount"></span></span>
+        <span id="priceLabel" class="price">₹{{ number_format($defPrice) }}</span>
+        <span class="mrp" id="compareLabel" style="display:{{ $defCompare > $defPrice ? 'inline' : 'none' }};">₹{{ number_format($defCompare) }}</span>
+        <span id="savingsBadge" style="display:{{ $defSavings > 0 ? 'inline' : 'none' }};font-size:11px;color:var(--color-success);background:rgba(39, 103, 73, 0.1);padding:4px 8px;border-radius:var(--radius-sm);"><i class="bi bi-tag-fill"></i> Save <span id="savingsAmount">₹{{ number_format($defSavings) }}</span></span>
     </div>
 
     @php

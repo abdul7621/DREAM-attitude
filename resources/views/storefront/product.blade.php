@@ -103,14 +103,19 @@
 
 {{-- ── Sticky Mobile Cart Bar ─────────────────────────────── --}}
 <div class="sf-mobile-sticky">
+    @php
+        $defVarSticky = $product->variants->where('is_active', true)->first();
+        $stickyPrice = $defVarSticky ? ((float) ($variantPrices[$defVarSticky->id]['display'] ?? $defVarSticky->price_retail)) : 0;
+        $stickyCompare = $defVarSticky ? ((float) ($variantPrices[$defVarSticky->id]['compare'] ?? $defVarSticky->compare_at_price)) : 0;
+    @endphp
     <div style="flex: 1; display: flex; align-items: center; gap: 12px;">
         @if($product->primaryImage())
             <img src="{{ asset('storage/'.$product->primaryImage()->path) }}" style="width: 40px; height: 40px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
         @endif
         <div style="display: flex; flex-direction: column; overflow: hidden;">
             <div style="display: flex; align-items: baseline; gap: 8px;">
-                <span style="color: var(--color-gold); font-weight: 600; font-size: 14px;" id="stickyPrice">₹0</span>
-                <span style="color: var(--color-text-muted); text-decoration: line-through; font-size: 11px;" id="stickyCompare" style="display:none;"></span>
+                <span style="color: var(--color-gold); font-weight: 600; font-size: 14px;" id="stickyPrice">₹{{ number_format($stickyPrice) }}</span>
+                <span style="color: var(--color-text-muted); text-decoration: line-through; font-size: 11px;" id="stickyCompare" style="display:{{ $stickyCompare > $stickyPrice ? 'inline' : 'none' }};">₹{{ number_format($stickyCompare) }}</span>
             </div>
             <div style="color: var(--color-text-secondary); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $product->name }} <span id="stickyVariant"></span></div>
         </div>
