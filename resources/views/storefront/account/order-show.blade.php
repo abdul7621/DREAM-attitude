@@ -1,7 +1,7 @@
 @extends('layouts.account')
 @section('title', 'Order '.$order->order_number)
 @section('account-content')
-<h1 style="color:white;font-size:20px;font-weight:500;text-transform:uppercase;letter-spacing:1px;margin-bottom:24px;display:flex;align-items:center;gap:8px;">
+<h1 style="color:var(--color-text-primary);font-size:20px;font-weight:500;text-transform:uppercase;letter-spacing:1px;margin-bottom:24px;display:flex;align-items:center;gap:8px;">
     <i class="bi bi-receipt" style="color:var(--color-gold);"></i>Order {{ Str::limit($order->order_number, 20) }}
 </h1>
 
@@ -9,7 +9,7 @@
 
     {{-- Order Items --}}
     <div class="sf-account-card" style="padding:0;overflow:hidden;">
-        <div style="padding:14px 20px;border-bottom:1px solid var(--color-border);color:white;font-weight:600;font-size:14px;">Order Items</div>
+        <div style="padding:14px 20px;border-bottom:1px solid var(--color-border);color:var(--color-text-primary);font-weight:600;font-size:14px;">Order Items</div>
         <div style="overflow-x:auto;">
             <table style="width:100%;border-collapse:collapse;">
                 <thead>
@@ -23,7 +23,7 @@
                 <tbody>
                 @foreach ($order->orderItems as $item)
                     <tr style="border-bottom:1px solid var(--color-border);">
-                        <td style="padding:12px 20px;color:white;font-size:13px;">{{ $item->product_name_snapshot }}</td>
+                        <td style="padding:12px 20px;color:var(--color-text-primary);font-size:13px;">{{ $item->product_name_snapshot }}</td>
                         <td style="padding:12px 20px;color:var(--color-text-secondary);font-size:13px;">
                             @if($item->variant_title_snapshot && !in_array(strtolower(trim($item->variant_title_snapshot)), ['default', 'default title', '']))
                                 {{ $item->variant_title_snapshot }}
@@ -32,7 +32,7 @@
                             @endif
                         </td>
                         <td style="padding:12px 20px;text-align:right;color:var(--color-text-secondary);font-size:13px;">{{ $item->qty }}</td>
-                        <td style="padding:12px 20px;text-align:right;color:white;font-size:13px;font-weight:500;">₹{{ number_format($item->line_total, 2) }}</td>
+                        <td style="padding:12px 20px;text-align:right;color:var(--color-text-primary);font-size:13px;font-weight:500;">₹{{ number_format($item->line_total, 2) }}</td>
                     </tr>
                 @endforeach
                 </tbody>
@@ -42,7 +42,7 @@
 
     {{-- Order Summary --}}
     <div class="sf-account-card">
-        <div style="font-weight:600;color:white;font-size:14px;margin-bottom:16px;">Summary</div>
+        <div style="font-weight:600;color:var(--color-text-primary);font-size:14px;margin-bottom:16px;">Summary</div>
         <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
             <span style="color:var(--color-text-secondary);font-size:13px;">Status</span>
             <span class="sf-badge {{ strtolower($order->order_status) }}">{{ \App\Models\Order::STATUS_LABELS[$order->order_status]['label'] ?? $order->order_status }}</span>
@@ -53,7 +53,7 @@
         </div>
         <div style="border-top:1px solid var(--color-border);padding-top:12px;">
             <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--color-text-secondary);margin-bottom:6px;">
-                <span>Subtotal</span><span style="color:white;">₹{{ number_format($order->subtotal, 2) }}</span>
+                <span>Subtotal</span><span style="color:var(--color-text-primary);">₹{{ number_format($order->subtotal, 2) }}</span>
             </div>
             @if ($order->discount_total > 0)
             <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;">
@@ -61,7 +61,7 @@
             </div>
             @endif
             <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--color-text-secondary);margin-bottom:6px;">
-                <span>Shipping</span><span style="color:white;">₹{{ number_format($order->shipping_total, 2) }}</span>
+                <span>Shipping</span><span style="color:var(--color-text-primary);">₹{{ number_format($order->shipping_total, 2) }}</span>
             </div>
             <div style="display:flex;justify-content:space-between;border-top:1px solid var(--color-border-gold);padding-top:10px;margin-top:10px;">
                 <span style="color:var(--color-gold);font-weight:600;font-size:16px;">Total</span>
@@ -74,10 +74,10 @@
     @if ($order->shipments->isNotEmpty())
     @php $ship = $order->shipments->first(); @endphp
     <div class="sf-account-card">
-        <div style="font-weight:600;color:white;font-size:14px;margin-bottom:12px;">Shipment</div>
-        <p style="color:var(--color-text-secondary);font-size:13px;margin-bottom:8px;">Status: <strong style="color:white;">{{ $ship->status }}</strong></p>
+        <div style="font-weight:600;color:var(--color-text-primary);font-size:14px;margin-bottom:12px;">Shipment</div>
+        <p style="color:var(--color-text-secondary);font-size:13px;margin-bottom:8px;">Status: <strong style="color:var(--color-text-primary);">{{ $ship->status }}</strong></p>
         @if ($ship->awb)
-            <p style="color:var(--color-text-secondary);font-size:13px;margin-bottom:8px;">AWB: <strong style="color:white;">{{ $ship->awb }}</strong></p>
+            <p style="color:var(--color-text-secondary);font-size:13px;margin-bottom:8px;">AWB: <strong style="color:var(--color-text-primary);">{{ $ship->awb }}</strong></p>
         @endif
         @if ($ship->tracking_url)
             <a href="{{ $ship->tracking_url }}" target="_blank" style="color:var(--color-gold);font-size:12px;text-transform:uppercase;letter-spacing:1px;text-decoration:none;border:1px solid var(--color-gold);padding:8px 16px;border-radius:var(--radius-sm);display:inline-block;">Track Package →</a>
@@ -102,7 +102,7 @@
         @php $ret = $order->returnRequests->first(); @endphp
         <div class="sf-account-card" style="display:flex;align-items:center;gap:8px;color:var(--color-text-secondary);font-size:13px;">
             <i class="bi bi-info-circle" style="color:var(--color-gold);"></i>
-            Return request submitted — Status: <strong style="color:white;">{{ $ret->status }}</strong>
+            Return request submitted — Status: <strong style="color:var(--color-text-primary);">{{ $ret->status }}</strong>
         </div>
     @endif
 

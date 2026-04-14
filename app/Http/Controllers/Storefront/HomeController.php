@@ -17,6 +17,8 @@ class HomeController extends Controller
             ->where('status', Product::STATUS_ACTIVE)
             ->where('is_featured', true)
             ->with(['variants', 'images'])
+            ->withCount('reviews')
+            ->withAvg('reviews', 'rating')
             ->latest()
             ->take(8)
             ->get());
@@ -25,6 +27,8 @@ class HomeController extends Controller
             ->where('status', Product::STATUS_ACTIVE)
             ->where('is_bestseller', true)
             ->with(['variants', 'images'])
+            ->withCount('reviews')
+            ->withAvg('reviews', 'rating')
             ->orderByDesc('sales_count')
             ->take(8)
             ->get());
@@ -32,6 +36,8 @@ class HomeController extends Controller
         $latest = Cache::remember('home_latest', 300, fn () => Product::query()
             ->where('status', Product::STATUS_ACTIVE)
             ->with(['variants', 'images'])
+            ->withCount('reviews')
+            ->withAvg('reviews', 'rating')
             ->latest()
             ->take(12)
             ->get());

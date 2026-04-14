@@ -140,7 +140,7 @@
 <div id="sfSocialProof" style="position: fixed; bottom: 80px; left: 16px; background: var(--color-bg-elevated); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 12px 16px; display: flex; align-items: center; gap: 12px; transform: translateY(100px); opacity: 0; transition: all 0.3s ease; z-index: 1050; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
     <i class="bi bi-check-circle-fill" style="color: var(--color-success); font-size: 20px;"></i>
     <div>
-        <div style="color: white; font-size: 13px; font-weight: 500;" id="spText">Someone just bought this!</div>
+        <div style="color: var(--color-text-primary); font-size: 13px; font-weight: 500;" id="spText">Someone just bought this!</div>
         <div style="color: var(--color-text-muted); font-size: 11px;"><span id="spTime">2</span> minutes ago</div>
     </div>
 </div>

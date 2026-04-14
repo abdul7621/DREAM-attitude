@@ -5,7 +5,7 @@
 <div class="sf-container">
 <div class="sf-auth-card">
   <div class="logo">{{ config('app.name') }}</div>
-  <h1 style="color:white;font-size:18px;text-align:center;
+  <h1 style="color:var(--color-text-primary);font-size:18px;text-align:center;
     margin-bottom:24px;text-transform:uppercase;">
     Create Account</h1>
   @if($errors->any())

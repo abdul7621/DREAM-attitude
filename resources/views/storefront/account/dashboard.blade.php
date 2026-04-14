@@ -1,7 +1,7 @@
 @extends('layouts.account')
 @section('title', 'My Account')
 @section('account-content')
-    <h1 style="color:white;font-size:20px;font-weight:500;text-transform:uppercase;letter-spacing:1px;margin-bottom:24px;display:flex;align-items:center;gap:8px;">
+    <h1 style="color:var(--color-text-primary);font-size:20px;font-weight:500;text-transform:uppercase;letter-spacing:1px;margin-bottom:24px;display:flex;align-items:center;gap:8px;">
         <i class="bi bi-grid" style="color:var(--color-gold);"></i>Dashboard
     </h1>
 
@@ -23,7 +23,7 @@
 
     {{-- Recent Orders --}}
     <div class="sf-account-card" style="padding:0;overflow:hidden;">
-        <div style="padding:16px 20px;border-bottom:1px solid var(--color-border);font-weight:600;color:white;font-size:14px;">Recent Orders</div>
+        <div style="padding:16px 20px;border-bottom:1px solid var(--color-border);font-weight:600;color:var(--color-text-primary);font-size:14px;">Recent Orders</div>
         @if ($recentOrders->isEmpty())
             <div style="text-align:center;padding:48px 20px;color:var(--color-text-muted);">
                 <i class="bi bi-bag" style="font-size:32px;display:block;margin-bottom:12px;color:var(--color-gold);"></i>
@@ -44,9 +44,9 @@
                     <tbody>
                     @foreach ($recentOrders as $order)
                         <tr style="border-bottom:1px solid var(--color-border);transition:background 0.2s;" onmouseenter="this.style.background='rgba(255,255,255,0.02)'" onmouseleave="this.style.background='transparent'">
-                            <td style="padding:12px 20px;color:white;font-weight:600;font-size:13px;">{{ Str::limit($order->order_number, 16) }}</td>
+                            <td style="padding:12px 20px;color:var(--color-text-primary);font-weight:600;font-size:13px;">{{ Str::limit($order->order_number, 16) }}</td>
                             <td style="padding:12px 20px;color:var(--color-text-muted);font-size:13px;">{{ $order->placed_at?->format('d M Y') ?? '—' }}</td>
-                            <td style="padding:12px 20px;color:white;font-size:13px;">₹{{ number_format($order->grand_total, 2) }}</td>
+                            <td style="padding:12px 20px;color:var(--color-text-primary);font-size:13px;">₹{{ number_format($order->grand_total, 2) }}</td>
                             <td style="padding:12px 20px;"><span class="sf-badge {{ strtolower($order->order_status) }}">{{ \App\Models\Order::STATUS_LABELS[$order->order_status]['label'] ?? $order->order_status }}</span></td>
                             <td style="padding:12px 20px;text-align:right;">
                                 <a href="{{ route('account.orders.show', $order) }}" style="text-decoration:none;color:var(--color-gold);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">View</a>

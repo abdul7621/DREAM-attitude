@@ -6,7 +6,7 @@
 <div class="sf-container" style="text-align:center;">
   <div style="font-size:96px;font-weight:500;
     color:var(--color-gold);line-height:1;">404</div>
-  <h1 style="color:white;font-size:22px;
+  <h1 style="color:var(--color-text-primary);font-size:22px;
     margin-top:16px;font-weight:500;">
     Page not found</h1>
   <p style="color:var(--color-text-muted);

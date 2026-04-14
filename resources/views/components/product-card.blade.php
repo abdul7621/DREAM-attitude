@@ -30,7 +30,9 @@
             title="Wishlist">
             <i class="bi bi-heart"></i>
         </button>
-        @if ($product->is_bestseller)
+        @if ($compare && $compare > $price)
+            <span class="badge">SAVE ₹{{ number_format($compare - $price, 0) }}</span>
+        @elseif ($product->is_bestseller)
             <span class="badge">Bestseller</span>
         @elseif ($product->is_featured)
             <span class="badge" style="background:#2563eb;color:white;">Featured</span>
@@ -39,6 +41,14 @@
     
     <div class="card-body">
         <a href="{{ route('product.show', $product) }}" class="product-name">{{ $product->name }}</a>
+        @if (isset($product->reviews_count) && $product->reviews_count > 0)
+            <div style="display:flex;align-items:center;gap:4px;margin-bottom:4px;">
+                @for ($i = 1; $i <= 5; $i++)
+                    <i class="bi bi-star{{ $i <= round($product->reviews_avg_rating ?? 0) ? '-fill' : '' }}" style="color:var(--color-gold);font-size:11px;"></i>
+                @endfor
+                <span style="font-size:10px;color:var(--color-text-muted);">({{ $product->reviews_count }})</span>
+            </div>
+        @endif
         @if ($variant)
             <div class="price-row">
                 <span class="sale-price">₹{{ number_format($price, 0) }}</span>

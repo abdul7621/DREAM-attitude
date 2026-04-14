@@ -31,7 +31,7 @@
             {{-- ── Right: Order Summary ────────────────────────────────── --}}
             <div style="direction: ltr;">
                 <div class="sf-cart-summary" style="position: sticky; top: 20px;">
-                    <div style="font-weight: 600; font-size: 16px; margin-bottom: 24px; color: white;"><i class="bi bi-bag-check me-2"></i> Order Summary</div>
+                    <div style="font-weight: 600; font-size: 16px; margin-bottom: 24px; color: var(--color-text-primary);"><i class="bi bi-bag-check me-2"></i> Order Summary</div>
                     <div>
                         <ul style="list-style: none; padding: 0; margin: 0 0 24px 0; font-size: 13px;">
                             @foreach ($lines as $row)
@@ -41,7 +41,7 @@
                                             <img src="{{ $row['product']->primaryImage() ? asset('storage/'.$row['product']->primaryImage()->path) : 'https://placehold.co/50' }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
                                             <span style="position: absolute; top: -8px; right: -8px; background: var(--color-gold); color: #0a0a0a; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 12px;">{{ $row['item']->qty }}</span>
                                         </div>
-                                        <span style="font-weight: 500; color: white;">{{ $row['product']->name }} <span style="display: block; color: var(--color-text-muted); font-size: 11px; margin-top: 4px;">{{ Str::limit($row['variant']->title, 20) }}</span></span>
+                                        <span style="font-weight: 500; color: var(--color-text-primary);">{{ $row['product']->name }} <span style="display: block; color: var(--color-text-muted); font-size: 11px; margin-top: 4px;">{{ Str::limit($row['variant']->title, 20) }}</span></span>
                                     </div>
                                     <span style="font-weight: 600; color: var(--color-gold);">₹{{ number_format((float) $row['line_total'], 2) }}</span>
                                 </li>
@@ -100,7 +100,7 @@
                     
                     {{-- Contact Info --}}
                     <div style="background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); margin-bottom: 24px; padding: 24px;">
-                        <div style="font-weight: 600; font-size: 16px; margin-bottom: 24px; color: white;"><i class="bi bi-person-circle me-2"></i> Contact Information</div>
+                        <div style="font-weight: 600; font-size: 16px; margin-bottom: 24px; color: var(--color-text-primary);"><i class="bi bi-person-circle me-2"></i> Contact Information</div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                             <div style="grid-column: 1 / -1;">
                                 <label class="sf-label">Full Name *</label>
@@ -120,7 +120,7 @@
 
                     {{-- Shipping Info --}}
                     <div style="background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); margin-bottom: 24px; padding: 24px;">
-                        <div style="font-weight: 600; font-size: 16px; margin-bottom: 24px; color: white;"><i class="bi bi-truck me-2"></i> Shipping Address</div>
+                        <div style="font-weight: 600; font-size: 16px; margin-bottom: 24px; color: var(--color-text-primary);"><i class="bi bi-truck me-2"></i> Shipping Address</div>
                         @auth
                         <div style="margin-bottom: 24px;" id="saved-addr-wrap">
                             <label class="sf-label">Saved Addresses</label>
@@ -162,7 +162,7 @@
 
                     {{-- Billing Toggle --}}
                     <div style="background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); margin-bottom: 24px; padding: 24px;">
-                        <div style="font-weight: 600; font-size: 16px; margin-bottom: 24px; color: white;"><i class="bi bi-receipt me-2"></i> Billing Address</div>
+                        <div style="font-weight: 600; font-size: 16px; margin-bottom: 24px; color: var(--color-text-primary);"><i class="bi bi-receipt me-2"></i> Billing Address</div>
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <div class="form-check form-switch mb-2">
                                 <input class="form-check-input" type="checkbox" id="sameAsShipping" value="1" checked style="cursor: pointer; width: 2.5em; height: 1.25em;">
@@ -198,7 +198,7 @@
                         $copy = app(\App\Services\SettingsService::class)->get('conversion_copy.checkout', config('commerce.conversion_copy.checkout'));
                     @endphp
                     <div style="background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); margin-bottom: 24px; padding: 24px;">
-                        <div style="font-weight: 600; font-size: 16px; margin-bottom: 24px; color: white;"><i class="bi bi-credit-card me-2"></i> Payment Method</div>
+                        <div style="font-weight: 600; font-size: 16px; margin-bottom: 24px; color: var(--color-text-primary);"><i class="bi bi-credit-card me-2"></i> Payment Method</div>
                         <div>
                             @php
                                 $onlineGateways = collect($activeGateways ?? [])->where('name', '!=', 'cod');
@@ -212,7 +212,7 @@
                                             <input class="sf-checkout-radio" type="radio" name="payment_method" value="{{ $gw->name }}" @checked(old('payment_method', ($gw->is_default ? $gw->name : '')) === $gw->name) style="margin-top: 4px;">
                                             <div style="flex: 1;">
                                                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                                                    <span style="font-weight: 600; color: white;">{{ $gw->label }}</span>
+                                                    <span style="font-weight: 600; color: var(--color-text-primary);">{{ $gw->label }}</span>
                                                     @if($gw->is_default)
                                                         <span style="font-size: 10px; font-weight: 600; color: var(--color-gold); background: rgba(201,168,76,0.1); padding: 4px 8px; border-radius: 12px; text-transform: uppercase;">Recommended</span>
                                                     @endif
@@ -230,7 +230,7 @@
                                         <input class="sf-checkout-radio" type="radio" name="payment_method" value="cod" @checked(old('payment_method', ($codGateway->is_default ? 'cod' : '')) === 'cod') style="margin-top: 4px;">
                                         <div style="flex: 1;">
                                             <div style="display: flex; justify-content: space-between; align-items: center;">
-                                                <span style="font-weight: 600; color: white;">{{ $codGateway->label ?: 'Cash on Delivery (COD)' }}</span>
+                                                <span style="font-weight: 600; color: var(--color-text-primary);">{{ $codGateway->label ?: 'Cash on Delivery (COD)' }}</span>
                                                 <span style="font-size: 11px; font-weight: 600; color: var(--color-text-muted);">{{ $copy['cod_fee_message'] ?: '₹0 Additional Fee' }}</span>
                                             </div>
                                             <p style="color: var(--color-text-muted); font-size: 12px; margin: 4px 0 0 0;">{{ $copy['cod_message'] ?: 'Pay when your order is delivered to you.' }}</p>

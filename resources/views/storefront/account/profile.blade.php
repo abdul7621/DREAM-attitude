@@ -1,13 +1,13 @@
 @extends('layouts.account')
 @section('title', 'Profile')
 @section('account-content')
-<h1 style="color:white;font-size:20px;font-weight:500;text-transform:uppercase;letter-spacing:1px;margin-bottom:24px;display:flex;align-items:center;gap:8px;">
+<h1 style="color:var(--color-text-primary);font-size:20px;font-weight:500;text-transform:uppercase;letter-spacing:1px;margin-bottom:24px;display:flex;align-items:center;gap:8px;">
     <i class="bi bi-person" style="color:var(--color-gold);"></i>Profile
 </h1>
 
 {{-- Personal Information --}}
 <div class="sf-account-card">
-    <div style="font-weight:600;color:white;font-size:14px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--color-border);">Personal Information</div>
+    <div style="font-weight:600;color:var(--color-text-primary);font-size:14px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--color-border);">Personal Information</div>
     <form action="{{ route('account.profile.update') }}" method="post">
         @csrf
         @method('PUT')
@@ -36,7 +36,7 @@
 
 {{-- Change Password --}}
 <div class="sf-account-card">
-    <div style="font-weight:600;color:white;font-size:14px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--color-border);">Change Password</div>
+    <div style="font-weight:600;color:var(--color-text-primary);font-size:14px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--color-border);">Change Password</div>
     <form action="{{ route('account.password.update') }}" method="post">
         @csrf
         @method('PUT')

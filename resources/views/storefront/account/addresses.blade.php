@@ -2,7 +2,7 @@
 @section('title', 'My Addresses')
 @section('account-content')
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
-    <h1 style="color:white;font-size:20px;font-weight:500;text-transform:uppercase;letter-spacing:1px;margin:0;display:flex;align-items:center;gap:8px;">
+    <h1 style="color:var(--color-text-primary);font-size:20px;font-weight:500;text-transform:uppercase;letter-spacing:1px;margin:0;display:flex;align-items:center;gap:8px;">
         <i class="bi bi-geo-alt" style="color:var(--color-gold);"></i>Addresses
     </h1>
     @if ($addresses->count() < 5)
@@ -33,13 +33,13 @@
                             <i class="bi bi-three-dots-vertical"></i>
                         </button>
                         <div class="sf-address-dropdown" style="display:none;position:absolute;right:0;top:100%;background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md);min-width:150px;z-index:10;overflow:hidden;">
-                            <a href="{{ route('account.addresses.edit', $address) }}" style="display:block;padding:10px 16px;font-size:12px;color:white;text-decoration:none;transition:background 0.2s;" onmouseenter="this.style.background='rgba(255,255,255,0.05)'" onmouseleave="this.style.background='transparent'">
+                            <a href="{{ route('account.addresses.edit', $address) }}" style="display:block;padding:10px 16px;font-size:12px;color:var(--color-text-primary);text-decoration:none;transition:background 0.2s;" onmouseenter="this.style.background='rgba(255,255,255,0.05)'" onmouseleave="this.style.background='transparent'">
                                 <i class="bi bi-pencil" style="margin-right:6px;color:var(--color-gold);"></i>Edit
                             </a>
                             @if (!$address->is_default)
                                 <form action="{{ route('account.addresses.default', $address) }}" method="post">
                                     @csrf
-                                    <button type="submit" style="display:block;width:100%;padding:10px 16px;font-size:12px;color:white;background:none;border:none;text-align:left;cursor:pointer;transition:background 0.2s;" onmouseenter="this.style.background='rgba(255,255,255,0.05)'" onmouseleave="this.style.background='transparent'">
+                                    <button type="submit" style="display:block;width:100%;padding:10px 16px;font-size:12px;color:var(--color-text-primary);background:none;border:none;text-align:left;cursor:pointer;transition:background 0.2s;" onmouseenter="this.style.background='rgba(255,255,255,0.05)'" onmouseleave="this.style.background='transparent'">
                                         <i class="bi bi-star" style="margin-right:6px;color:var(--color-gold);"></i>Set Default
                                     </button>
                                 </form>
@@ -55,7 +55,7 @@
                         </div>
                     </div>
                 </div>
-                <p style="color:white;font-weight:500;font-size:14px;margin-bottom:6px;">{{ $address->name }}</p>
+                <p style="color:var(--color-text-primary);font-weight:500;font-size:14px;margin-bottom:6px;">{{ $address->name }}</p>
                 <p style="color:var(--color-text-muted);font-size:13px;margin-bottom:4px;">{{ $address->address_line1 }}@if($address->address_line2), {{ $address->address_line2 }}@endif</p>
                 <p style="color:var(--color-text-muted);font-size:13px;margin-bottom:4px;">{{ $address->city }}, {{ $address->state }} — {{ $address->postal_code }}</p>
                 <p style="color:var(--color-text-muted);font-size:13px;margin:0;"><i class="bi bi-telephone" style="color:var(--color-gold);font-size:11px;margin-right:4px;"></i>{{ $address->phone }}</p>

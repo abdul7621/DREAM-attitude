@@ -15,7 +15,7 @@
                         </div>
                         <span style="position:absolute;top:-8px;right:-8px;background:var(--color-gold);color:#0a0a0a;font-size:9px;padding:3px 6px;border-radius:var(--radius-sm);font-weight:600;text-transform:uppercase;z-index:2;">This Item</span>
                     </div>
-                    <div style="font-size:12px;font-weight:500;margin-top:8px;color:white;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ $product->name }}">{{ $product->name }}</div>
+                    <div style="font-size:12px;font-weight:500;margin-top:8px;color:var(--color-text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ $product->name }}">{{ $product->name }}</div>
                 </div>
 
                 @foreach ($frequentlyBought as $fb)
@@ -26,7 +26,7 @@
                                 <img src="{{ $fb->primaryImage() ? asset('storage/'.$fb->primaryImage()->path) : '' }}"
                                      style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;"
                                      alt="{{ $fb->name }}">
-                            <div style="font-size:12px;font-weight:500;margin-top:8px;color:white;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ $fb->name }}">{{ $fb->name }}</div>
+                            <div style="font-size:12px;font-weight:500;margin-top:8px;color:var(--color-text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ $fb->name }}">{{ $fb->name }}</div>
                             <div style="font-size:13px;font-weight:600;color:var(--color-gold);">₹{{ $fb->variants->where('is_active', true)->sortBy('price_retail')->first()?->price_retail ?? 0 }}</div>
                         </a>
                     </div>

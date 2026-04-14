@@ -51,8 +51,8 @@ fbq('track', 'Purchase', {
             <div style="width:80px;height:80px;border-radius:50%;background:rgba(39,103,73,0.15);display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;">
                 <i class="bi bi-check-circle-fill" style="font-size:2.5rem;color:var(--color-success);"></i>
             </div>
-            <h1 style="color:white;font-size:28px;font-weight:500;margin-bottom:8px;text-transform:uppercase;letter-spacing:2px;">Order Confirmed!</h1>
-            <p style="color:var(--color-text-secondary);font-size:14px;margin-bottom:4px;">Thank you for your order, <strong style="color:white;">{{ $order->customer_name }}</strong></p>
+            <h1 style="color:var(--color-text-primary);font-size:28px;font-weight:500;margin-bottom:8px;text-transform:uppercase;letter-spacing:2px;">Order Confirmed!</h1>
+            <p style="color:var(--color-text-secondary);font-size:14px;margin-bottom:4px;">Thank you for your order, <strong style="color:var(--color-text-primary);">{{ $order->customer_name }}</strong></p>
             <p style="color:var(--color-gold);font-size:14px;letter-spacing:1px;">Order <strong>#{{ $order->order_number }}</strong></p>
         </div>
 
@@ -77,7 +77,7 @@ fbq('track', 'Purchase', {
             <div style="display:grid;grid-template-columns:1fr 1fr;">
                 <div style="padding:16px;text-align:center;border-right:1px solid var(--color-border);">
                     <div style="color:var(--color-text-muted);font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Payment Method</div>
-                    <div style="color:white;font-weight:600;font-size:14px;">{{ strtoupper($order->payment_method) }}</div>
+                    <div style="color:var(--color-text-primary);font-weight:600;font-size:14px;">{{ strtoupper($order->payment_method) }}</div>
                 </div>
                 <div style="padding:16px;text-align:center;">
                     <div style="color:var(--color-text-muted);font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Payment Status</div>
@@ -91,7 +91,7 @@ fbq('track', 'Purchase', {
         <div class="sf-account-card" style="padding:0;overflow:hidden;margin-bottom:16px;">
             <div style="padding:14px 20px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:8px;">
                 <i class="bi bi-bag" style="color:var(--color-gold);"></i>
-                <span style="color:white;font-weight:600;font-size:14px;">Items Ordered</span>
+                <span style="color:var(--color-text-primary);font-weight:600;font-size:14px;">Items Ordered</span>
             </div>
             <div style="overflow-x:auto;">
                 <table style="width:100%;border-collapse:collapse;">
@@ -105,14 +105,14 @@ fbq('track', 'Purchase', {
                     <tbody>
                     @foreach ($order->orderItems as $oi)
                         <tr style="border-bottom:1px solid var(--color-border);">
-                            <td style="padding:12px 20px;color:white;font-size:13px;">
+                            <td style="padding:12px 20px;color:var(--color-text-primary);font-size:13px;">
                                 {{ $oi->product_name_snapshot }}
                                 @if ($oi->variant_title_snapshot && !in_array(strtolower(trim($oi->variant_title_snapshot)), ['default', 'default title', '']))
                                     <span style="color:var(--color-text-muted);"> — {{ $oi->variant_title_snapshot }}</span>
                                 @endif
                             </td>
                             <td style="padding:12px 20px;text-align:right;color:var(--color-text-secondary);font-size:13px;">{{ $oi->qty }}</td>
-                            <td style="padding:12px 20px;text-align:right;color:white;font-size:13px;font-weight:500;">₹{{ number_format((float) $oi->line_total, 2) }}</td>
+                            <td style="padding:12px 20px;text-align:right;color:var(--color-text-primary);font-size:13px;font-weight:500;">₹{{ number_format((float) $oi->line_total, 2) }}</td>
                         </tr>
                     @endforeach
                     </tbody>
@@ -121,12 +121,12 @@ fbq('track', 'Purchase', {
             <div style="padding:16px 20px;border-top:1px solid var(--color-border);">
                 <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--color-text-secondary);margin-bottom:6px;">
                     <span>Subtotal</span>
-                    <span style="color:white;">₹{{ number_format((float) $order->subtotal, 2) }}</span>
+                    <span style="color:var(--color-text-primary);">₹{{ number_format((float) $order->subtotal, 2) }}</span>
                 </div>
                 @if((float)$order->shipping_total > 0)
                 <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--color-text-secondary);margin-bottom:6px;">
                     <span>Shipping</span>
-                    <span style="color:white;">₹{{ number_format((float) $order->shipping_total, 2) }}</span>
+                    <span style="color:var(--color-text-primary);">₹{{ number_format((float) $order->shipping_total, 2) }}</span>
                 </div>
                 @endif
                 @if((float)$order->discount_total > 0)
@@ -147,10 +147,10 @@ fbq('track', 'Purchase', {
         <div class="sf-account-card" style="padding:0;overflow:hidden;margin-bottom:32px;">
             <div style="padding:14px 20px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:8px;">
                 <i class="bi bi-geo-alt" style="color:var(--color-gold);"></i>
-                <span style="color:white;font-weight:600;font-size:14px;">Shipping Address</span>
+                <span style="color:var(--color-text-primary);font-weight:600;font-size:14px;">Shipping Address</span>
             </div>
             <div style="padding:16px 20px;font-size:13px;line-height:1.8;">
-                <strong style="color:white;">{{ $order->customer_name }}</strong><br>
+                <strong style="color:var(--color-text-primary);">{{ $order->customer_name }}</strong><br>
                 <span style="color:var(--color-text-secondary);">{{ $order->address_line1 }}<br>
                 @if($order->address_line2){{ $order->address_line2 }}<br>@endif
                 {{ $order->city }}, {{ $order->state }} {{ $order->postal_code }}<br>

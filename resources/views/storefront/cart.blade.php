@@ -52,7 +52,7 @@
                 
                 <div>
                     <div class="sf-cart-summary">
-                        <h2 style="color: white; font-size: 16px; margin-bottom: 24px; text-transform: uppercase;">Order Summary</h2>
+                        <h2 style="color: var(--color-text-primary); font-size: 16px; margin-bottom: 24px; text-transform: uppercase;">Order Summary</h2>
                         
                         <div style="margin-bottom: 24px;">
                             @if ($errors->has('coupon'))

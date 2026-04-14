@@ -31,7 +31,7 @@
                                         <i class="bi bi-star{{ $i <= $review->rating ? '-fill' : '' }}"></i>
                                     @endfor
                                 </div>
-                                <span style="color:white;font-size:13px;font-weight:500;">{{ $review->reviewer_name }}</span>
+                                <span style="color:var(--color-text-primary);font-size:13px;font-weight:500;">{{ $review->reviewer_name }}</span>
                                 @if ($review->verified_purchase)
                                     <span style="color:var(--color-success);font-size:11px;margin-left:8px;"><i class="bi bi-patch-check-fill"></i> Verified</span>
                                 @endif
@@ -51,7 +51,7 @@
 
         {{-- Write a Review Form --}}
         <div style="background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:24px;">
-            <h3 style="color:white;font-size:16px;font-weight:500;text-transform:uppercase;letter-spacing:1px;margin-bottom:20px;">
+            <h3 style="color:var(--color-text-primary);font-size:16px;font-weight:500;text-transform:uppercase;letter-spacing:1px;margin-bottom:20px;">
                 <i class="bi bi-pencil-square" style="color:var(--color-gold);margin-right:8px;"></i>Write a Review
             </h3>
 

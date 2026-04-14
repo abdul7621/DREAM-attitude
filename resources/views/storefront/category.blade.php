@@ -33,6 +33,15 @@
                 <h4 style="color: var(--color-text-muted);">No products found in this category.</h4>
             </div>
         @else
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+                <span style="font-size:13px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:1px;">{{ $products->total() }} Products</span>
+                <select onchange="window.location=this.value" class="sf-input" style="width:auto;min-width:180px;padding:8px 12px;">
+                    <option value="?sort=newest" {{ request('sort','newest')=='newest'?'selected':'' }}>Newest First</option>
+                    <option value="?sort=price_asc" {{ request('sort')=='price_asc'?'selected':'' }}>Price: Low → High</option>
+                    <option value="?sort=price_desc" {{ request('sort')=='price_desc'?'selected':'' }}>Price: High → Low</option>
+                    <option value="?sort=bestseller" {{ request('sort')=='bestseller'?'selected':'' }}>Bestsellers</option>
+                </select>
+            </div>
             <div class="sf-product-grid">
                 @foreach ($products as $product)
                     <x-product-card :product="$product" />

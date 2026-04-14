@@ -1,6 +1,6 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "ikhlas/d2c-commerce",
+    "name": "dreamattitude/d2c-commerce",
     "type": "project",
     "description": "White-label Indian D2C e-commerce (Laravel 11).",
     "keywords": ["laravel", "framework"],

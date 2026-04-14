@@ -210,7 +210,7 @@
                             </div>
                             <p style="color: var(--color-text-secondary); font-size: 13px; line-height: 1.6; font-style: italic; flex: 1;">"{{ \Illuminate\Support\Str::limit($review->body, 120) }}"</p>
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 16px;">
-                                <div style="font-size: 13px; font-weight: 600; color: white;">{{ $review->reviewer_name }}</div>
+                                <div style="font-size: 13px; font-weight: 600; color: var(--color-text-primary);">{{ $review->reviewer_name }}</div>
                                 @if ($review->verified_purchase)
                                     <span style="color: var(--color-success); font-size: 11px; font-weight: 600;"><i class="bi bi-patch-check-fill"></i> Verified</span>
                                 @endif

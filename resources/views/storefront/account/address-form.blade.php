@@ -1,7 +1,7 @@
 @extends('layouts.account')
 @section('title', $address ? 'Edit Address' : 'Add Address')
 @section('account-content')
-<h1 style="color:white;font-size:20px;font-weight:500;text-transform:uppercase;letter-spacing:1px;margin-bottom:24px;display:flex;align-items:center;gap:8px;">
+<h1 style="color:var(--color-text-primary);font-size:20px;font-weight:500;text-transform:uppercase;letter-spacing:1px;margin-bottom:24px;display:flex;align-items:center;gap:8px;">
     <i class="bi bi-geo-alt" style="color:var(--color-gold);"></i>{{ $address ? 'Edit Address' : 'Add Address' }}
 </h1>
 
