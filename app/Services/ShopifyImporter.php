@@ -101,6 +101,15 @@ class ShopifyImporter
                     }
                 }
 
+                $expectedCount = count($product['variants']);
+                $actualCount = $p->variants()->count();
+                if ($actualCount < $expectedCount) {
+                    $counts['errors'][] = [
+                        'message' => "Product {$handle}: Variant count mismatch. Expected at least {$expectedCount}, found {$actualCount}.",
+                        'raw'     => $product['raw_rows'],
+                    ];
+                }
+
                 foreach ($product['images'] as $imgUrl) {
                     if (! $imgUrl) {
                         continue;
@@ -469,6 +478,9 @@ class ShopifyImporter
 
             // Deterministic SKU computation
             $skuRaw = trim($row['Variant SKU'] ?? '');
+            $skuRaw = str_replace(["'", '"'], '', $skuRaw);
+            $skuRaw = trim($skuRaw);
+
             if (!$skuRaw) {
                 $optVal = Str::slug($varTitle ?: 'default');
                 // Use handle as base + options slug
