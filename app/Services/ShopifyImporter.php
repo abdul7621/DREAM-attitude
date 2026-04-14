@@ -78,12 +78,33 @@ class ShopifyImporter
                 $variantImageMap = [];
                 foreach ($product['variants'] as $v) {
                     if (empty($v['price']) || $v['price'] <= 0) {
-                        $counts['errors'][] = "Product {$handle}: Variant '{$v['title']}' skipped — price is 0 or empty";
+                        $counts['errors'][] = [
+                            'message' => "Product {$handle}: Variant '{$v['title']}' skipped — price is 0 or empty",
+                            'raw'     => $product['raw_rows']
+                        ];
                         continue;
                     }
 
+                    $testSku = $v['sku'];
+                    
+                    // [STEP 4] SKU SYSTEM (FINAL FIX) - Global Uniqueness Check
+                    $conflict = ProductVariant::query()
+                        ->where('sku', $testSku)
+                        ->where('product_id', '!=', $p->id)
+                        ->exists();
+
+                    if ($conflict) {
+                        $optSlug = Str::slug($v['title'] ?: 'default');
+                        $baseConf = $handle . '-' . $optSlug;
+                        $idx = 1;
+                        $testSku = $baseConf . '-' . $idx;
+                        while(ProductVariant::query()->where('sku', $testSku)->where('product_id', '!=', $p->id)->exists()) {
+                            $testSku = $baseConf . '-' . (++$idx);
+                        }
+                    }
+
                     $variant = ProductVariant::query()->updateOrCreate(
-                        ['product_id' => $p->id, 'sku' => $v['sku']],
+                        ['product_id' => $p->id, 'sku' => $testSku],
                         [
                             'title'            => $v['title'],
                             'price_retail'     => $v['price'],
@@ -103,9 +124,9 @@ class ShopifyImporter
 
                 $expectedCount = count($product['variants']);
                 $actualCount = $p->variants()->count();
-                if ($actualCount < $expectedCount) {
+                if ($actualCount !== $expectedCount) {
                     $counts['errors'][] = [
-                        'message' => "Product {$handle}: Variant count mismatch. Expected at least {$expectedCount}, found {$actualCount}.",
+                        'message' => "Warning: Product {$handle} variant count mismatch. Expected {$expectedCount}, found {$actualCount}.",
                         'raw'     => $product['raw_rows'],
                     ];
                 }
@@ -453,13 +474,27 @@ class ShopifyImporter
                 $totalImages++;
             }
 
+            // [STEP 1] CSV ROW TYPE DETECTION & [STEP 3] IMAGE HANDLING
+            $rawPrice = trim($row['Variant Price'] ?? '');
+            $rawSku   = trim($row['Variant SKU'] ?? '');
+
+            // If it has NO variant properties but HAS an image, it's just an Image Row, SKIP variant processing.
+            // DO NOT create variant.
+            if ($rawPrice === '' && $rawSku === '' && $imgSrc !== '') {
+                continue;
+            }
+
+            // Guard against completely empty ghost-rows
+            if ($rawPrice === '' && $rawSku === '') {
+                continue;
+            }
+
             $varTitle = collect([
                 $row['Option1 Value'] ?? '',
                 $row['Option2 Value'] ?? '',
                 $row['Option3 Value'] ?? '',
             ])->filter()->implode(' / ');
 
-            $rawPrice     = trim($row['Variant Price'] ?? '');
             $rawCompareAt = trim($row['Variant Compare At Price'] ?? '');
             $rawGrams     = trim($row['Variant Grams'] ?? '');
 
