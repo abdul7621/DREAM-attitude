@@ -25,11 +25,28 @@
     <link rel="canonical" href="{{ url()->current() }}">
     @stack('meta')
     @include('partials.tracking-head')
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"></noscript>
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="{{ asset('css/storefront.css') }}?v={{ filemtime(public_path('css/storefront.css')) }}" rel="stylesheet">
+    @php
+        // Preload hero image for homepage
+        $__heroPreload = null;
+        if (request()->routeIs('home')) {
+            $__ss = app(\App\Services\SettingsService::class);
+            $__heroSlides = $__ss->get('theme.hero_slides');
+            if (is_array($__heroSlides) && !empty($__heroSlides)) {
+                $__heroPreload = asset('storage/' . $__heroSlides[0]['image']);
+            } elseif ($__ss->get('theme.hero_image')) {
+                $__heroPreload = asset('storage/' . $__ss->get('theme.hero_image'));
+            }
+        }
+    @endphp
+    @if($__heroPreload)
+    <link rel="preload" as="image" href="{{ $__heroPreload }}">
+    @endif
     
     @stack('styles')
     
@@ -47,7 +64,7 @@
             on(event, callback) { document.addEventListener(event, (e) => callback(e.detail)); }
         };
     </script>
-    <script src="{{ asset('js/store.js') }}"></script>
+    <script defer src="{{ asset('js/store.js') }}?v={{ filemtime(public_path('js/store.js')) }}"></script>
 </head>
 <body>
 @include('partials.tracking-body')
@@ -72,7 +89,7 @@
 <header class="sf-header">
     @if($ss->get('theme.logo'))
         <a class="logo" href="{{ route('home') }}">
-            <img src="{{ asset('storage/' . $ss->get('theme.logo')) }}" alt="{{ config('app.name') }}" style="max-height: 40px;">
+            <img src="{{ asset('storage/' . $ss->get('theme.logo')) }}" alt="{{ config('app.name') }}" style="max-height: 40px;" loading="eager" width="120" height="40">
         </a>
     @elseif(file_exists(public_path('images/logo.png')))
         <a class="logo" href="{{ route('home') }}">

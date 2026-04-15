@@ -6,7 +6,7 @@
 <section class="sf-hero" style="height: 300px;">
     <div class="sf-hero-img-wrap" style="height: 100%;">
         @if($category->image_path)
-            <img src="{{ asset('storage/' . $category->image_path) }}" alt="{{ $category->name }}" class="sf-hero-img">
+            <img src="{{ asset('storage/' . $category->image_path) }}" alt="{{ $category->name }}" class="sf-hero-img" loading="eager">
         @else
             <div style="background:var(--color-bg-elevated);width:100%;height:100%;"></div>
         @endif

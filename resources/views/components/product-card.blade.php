@@ -19,7 +19,7 @@
     <div class="img-wrap">
         <a href="{{ route('product.show', $product) }}">
             @if ($img)
-                <img src="{{ asset('storage/'.$img->path) }}" alt="{{ $img->alt_text ?? $product->name }}" loading="lazy">
+                <img src="{{ asset('storage/'.$img->path) }}" alt="{{ $img->alt_text ?? $product->name }}" loading="lazy" width="400" height="400">
             @else
                 <div style="background:var(--color-bg-elevated);width:100%;position:relative;padding-top:100%;"></div>
             @endif

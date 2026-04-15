@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Services\SlugService;
+use App\Services\ImageOptimizerService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -48,6 +49,7 @@ class CategoryController extends Controller
         $imagePath = null;
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('categories', 'public');
+            $imagePath = app(ImageOptimizerService::class)->optimize($imagePath, ImageOptimizerService::MAX_CATEGORY);
         }
 
         Category::query()->create([
@@ -101,6 +103,7 @@ class CategoryController extends Controller
 
         if ($request->hasFile('image')) {
             $updateData['image_path'] = $request->file('image')->store('categories', 'public');
+            $updateData['image_path'] = app(ImageOptimizerService::class)->optimize($updateData['image_path'], ImageOptimizerService::MAX_CATEGORY);
         }
 
         $category->update($updateData);

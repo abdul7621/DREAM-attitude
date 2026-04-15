@@ -29,6 +29,9 @@ class ImageFetchPipeline
                 if ($response->successful()) {
                     Storage::disk('public')->put($name, $response->body());
 
+                    // Auto-optimize imported images
+                    $name = app(ImageOptimizerService::class)->optimize($name, ImageOptimizerService::MAX_PRODUCT);
+
                     return $name;
                 }
             } catch (\Throwable $e) {

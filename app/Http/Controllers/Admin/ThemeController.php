@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use App\Services\ImageOptimizerService;
 use Illuminate\View\View;
 
 class ThemeController extends Controller
@@ -134,6 +135,7 @@ class ThemeController extends Controller
 
                 if ($request->hasFile('theme_hero_image')) {
                     $path = $request->file('theme_hero_image')->store('theme', 'public');
+                    $path = app(ImageOptimizerService::class)->optimize($path, ImageOptimizerService::MAX_HERO);
                     Setting::updateOrCreate(['key' => 'theme.hero_image'], ['value' => $path]);
                 }
 
@@ -148,6 +150,7 @@ class ThemeController extends Controller
                         $file = $request->file("slide_images.$i");
                         if ($file->isValid()) {
                             $imagePath = $file->store('theme', 'public');
+                            $imagePath = app(ImageOptimizerService::class)->optimize($imagePath, ImageOptimizerService::MAX_HERO);
                         }
                     }
                     if (!$imagePath && !empty($slideExisting[$i])) {
@@ -168,6 +171,7 @@ class ThemeController extends Controller
 
                 if ($request->hasFile('theme_offers_banner_image')) {
                     $path = $request->file('theme_offers_banner_image')->store('theme', 'public');
+                    $path = app(ImageOptimizerService::class)->optimize($path, ImageOptimizerService::MAX_HERO);
                     Setting::updateOrCreate(['key' => 'theme.offers_banner_image'], ['value' => $path]);
                 }
 

@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
 use App\Services\SlugService;
+use App\Services\ImageOptimizerService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -124,6 +125,7 @@ class ProductController extends Controller
                     continue;
                 }
                 $path = $file->store('products', 'public');
+                $path = app(ImageOptimizerService::class)->optimize($path, ImageOptimizerService::MAX_PRODUCT);
                 $product->images()->create([
                     'path' => $path,
                     'alt_text' => $data['name'],
@@ -292,6 +294,7 @@ class ProductController extends Controller
                     continue;
                 }
                 $path = $file->store('products', 'public');
+                $path = app(ImageOptimizerService::class)->optimize($path, ImageOptimizerService::MAX_PRODUCT);
                 $product->images()->create([
                     'path' => $path,
                     'alt_text' => $data['name'],
