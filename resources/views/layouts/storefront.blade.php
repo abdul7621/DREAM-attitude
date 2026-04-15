@@ -102,7 +102,18 @@
     <nav class="sf-header-nav nav-links" id="desktopNav">
         @if (isset($globalMenus['header']) && $globalMenus['header']->parentItems->isNotEmpty())
             @foreach ($globalMenus['header']->parentItems as $item)
+                @if($item->children->isNotEmpty())
+                <div class="sf-nav-dropdown">
+                    <a href="{{ $item->link ?: '#' }}" class="sf-nav-parent" @if($item->is_external) target="_blank" @endif>{{ $item->label }} <i class="bi bi-chevron-down sf-nav-chevron"></i></a>
+                    <div class="sf-nav-dropdown-menu">
+                        @foreach($item->children as $child)
+                            <a href="{{ $child->link ?: '#' }}" @if($child->is_external) target="_blank" @endif>{{ $child->label }}</a>
+                        @endforeach
+                    </div>
+                </div>
+                @else
                 <a href="{{ $item->link ?: '#' }}" @if($item->is_external) target="_blank" @endif>{{ $item->label }}</a>
+                @endif
             @endforeach
         @endif
     </nav>
@@ -145,8 +156,22 @@
             <a href="{{ route('home') }}" style="display:block;margin-bottom:20px;color:var(--color-gold);font-weight:600;font-size:16px;text-transform:uppercase;letter-spacing:2px;text-decoration:none;">{{ config('app.name') }}</a>
         @endif
         @if (isset($globalMenus['header']) && $globalMenus['header']->parentItems->isNotEmpty())
-            @foreach ($globalMenus['header']->parentItems as $item)
-                <a href="{{ $item->link ?: '#' }}" @if($item->is_external) target="_blank" @endif>{{ $item->label }}</a>
+            @foreach ($globalMenus['header']->parentItems as $mItem)
+                @if($mItem->children->isNotEmpty())
+                <div class="sf-drawer-group">
+                    <div class="sf-drawer-parent">
+                        <a href="{{ $mItem->link ?: '#' }}" @if($mItem->is_external) target="_blank" @endif>{{ $mItem->label }}</a>
+                        <button type="button" class="sf-drawer-toggle" onclick="this.parentElement.parentElement.classList.toggle('open')" aria-label="Expand"><i class="bi bi-chevron-down"></i></button>
+                    </div>
+                    <div class="sf-drawer-children">
+                        @foreach($mItem->children as $mChild)
+                            <a href="{{ $mChild->link ?: '#' }}" @if($mChild->is_external) target="_blank" @endif>{{ $mChild->label }}</a>
+                        @endforeach
+                    </div>
+                </div>
+                @else
+                <a href="{{ $mItem->link ?: '#' }}" @if($mItem->is_external) target="_blank" @endif>{{ $mItem->label }}</a>
+                @endif
             @endforeach
         @endif
         <hr style="border-color: var(--color-border); margin: 16px 0;">
