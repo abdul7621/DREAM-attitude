@@ -51,6 +51,7 @@ Route::get('/search', [SearchController::class, 'index'])->name('search');
 Route::get('/api/search/suggest', [SearchController::class, 'suggest'])->name('search.suggest');
 
 Route::get('/pages/{page:slug}', [PageController::class, 'show'])->name('page.show');
+Route::get('/policies/{type}', [\App\Http\Controllers\Storefront\PolicyController::class, 'show'])->name('policy.show');
 
 Route::get('/c/{category:slug}', [CategoryController::class, 'show'])->name('category.show');
 Route::get('/p/{product:slug}', [ProductController::class, 'show'])->name('product.show');

@@ -279,10 +279,17 @@
                             <a href="{{ $item->link ?: '#' }}" @if($item->is_external) target="_blank" @endif>{{ $item->label }}</a>
                         @endforeach
                     @else
-                        @foreach (['privacy-policy','return-policy','shipping-policy','terms-conditions'] as $slug)
-                            @php $pg = \App\Models\Page::where('slug', $slug)->where('is_active', true)->first(); @endphp
-                            @if ($pg)
-                                <a href="{{ route('page.show', $pg) }}">{{ $pg->title }}</a>
+                        @php
+                            $policyKeys = [
+                                'privacy_policy' => 'Privacy Policy', 
+                                'return_policy' => 'Return & Refund Policy', 
+                                'shipping_policy' => 'Shipping Policy', 
+                                'terms_conditions' => 'Terms & Conditions'
+                            ];
+                        @endphp
+                        @foreach ($policyKeys as $key => $title)
+                            @if ($ss->get('policies.' . $key))
+                                <a href="{{ route('policy.show', str_replace('_', '-', $key)) }}">{{ $title }}</a>
                             @endif
                         @endforeach
                     @endif

@@ -33,12 +33,20 @@
             <div class="sf-hero-track">
                 @foreach($heroSlides as $idx => $slide)
                 <div class="sf-hero-slide" data-link="{{ $slide['link'] ?? '' }}">
+                    @if(!empty($slide['link']))
+                    <a href="{{ $slide['link'] }}" class="sf-hero-img-wrap" style="display:block; width:100%; height:100%;">
+                    @else
                     <div class="sf-hero-img-wrap">
+                    @endif
                         <img src="{{ asset('storage/' . $slide['image']) }}"
                              alt="{{ $slide['alt'] ?? '' }}"
                              class="sf-hero-img"
                              loading="{{ $idx === 0 ? 'eager' : 'lazy' }}">
+                    @if(!empty($slide['link']))
+                    </a>
+                    @else
                     </div>
+                    @endif
                 </div>
                 @endforeach
             </div>
