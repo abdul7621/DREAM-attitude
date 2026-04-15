@@ -18,25 +18,54 @@
     @if (!$isEnabled) @continue @endif
 
     @if ($sectionKey === 'hero')
-        {{-- ── Hero Banner ───────────────────────────────────────── --}}
-        <section class="sf-hero">
-            <div class="sf-hero-img-wrap">
-            @if($ss->get('theme.hero_image'))
-                <img src="{{ asset('storage/' . $ss->get('theme.hero_image')) }}" alt="{{ $ss->get('theme.hero_title', config('app.name')) }}" class="sf-hero-img">
-            @endif
+        {{-- ── Hero Slider ──────────────────────────────────────── --}}
+        @php
+            $heroSlides = $ss->get('theme.hero_slides');
+            $heroSlides = is_array($heroSlides) ? $heroSlides : [];
+            // Backward compatibility: fallback to single hero_image
+            if (empty($heroSlides) && $ss->get('theme.hero_image')) {
+                $heroSlides = [['image' => $ss->get('theme.hero_image'), 'link' => $ss->get('theme.hero_cta_link', '/search'), 'alt' => $ss->get('theme.hero_title', config('app.name'))]];
+            }
+            $slideCount = count($heroSlides);
+        @endphp
+        @if($slideCount > 0)
+        <section class="sf-hero" id="heroSlider">
+            <div class="sf-hero-track">
+                @foreach($heroSlides as $idx => $slide)
+                <div class="sf-hero-slide" data-link="{{ $slide['link'] ?? '' }}">
+                    <div class="sf-hero-img-wrap">
+                        <img src="{{ asset('storage/' . $slide['image']) }}"
+                             alt="{{ $slide['alt'] ?? '' }}"
+                             class="sf-hero-img"
+                             loading="{{ $idx === 0 ? 'eager' : 'lazy' }}">
+                    </div>
+                </div>
+                @endforeach
             </div>
+            @if($slideCount > 1)
+            <div class="sf-hero-dots">
+                @for($i = 0; $i < $slideCount; $i++)
+                <button type="button" class="sf-hero-dot{{ $i === 0 ? ' active' : '' }}" data-slide="{{ $i }}"></button>
+                @endfor
+            </div>
+            <button type="button" class="sf-hero-arrow sf-hero-prev" aria-label="Previous"><i class="bi bi-chevron-left"></i></button>
+            <button type="button" class="sf-hero-arrow sf-hero-next" aria-label="Next"><i class="bi bi-chevron-right"></i></button>
+            @endif
+            @if($ss->get('theme.hero_title'))
             <div class="sf-hero-overlay"></div>
             <div class="sf-hero-content">
                 <div class="sf-hero-tag">Welcome</div>
-                <h1 class="sf-hero-title">{{ $ss->get('theme.hero_title', 'Discover Premium Quality Products') }}</h1>
-                <p class="sf-hero-sub">{{ $ss->get('theme.hero_subtitle', 'Handpicked collection of authentic products. Fast delivery across India with easy returns.') }}</p>
+                <h1 class="sf-hero-title">{{ $ss->get('theme.hero_title', '') }}</h1>
+                @if($ss->get('theme.hero_subtitle'))
+                <p class="sf-hero-sub">{{ $ss->get('theme.hero_subtitle') }}</p>
+                @endif
                 @if($ss->get('theme.hero_cta_text'))
-                    <a href="{{ $ss->get('theme.hero_cta_link', '/search') }}" class="sf-hero-cta">
-                        {{ $ss->get('theme.hero_cta_text', 'Shop Now') }}
-                    </a>
+                <a href="{{ $ss->get('theme.hero_cta_link', '/search') }}" class="sf-hero-cta">{{ $ss->get('theme.hero_cta_text') }}</a>
                 @endif
             </div>
+            @endif
         </section>
+        @endif
     @endif
 
     @if ($sectionKey === 'trust')
@@ -228,3 +257,93 @@
 @endforeach
 
 @endsection
+
+@push('scripts')
+<script>
+(function() {
+    var slider = document.getElementById('heroSlider');
+    if (!slider) return;
+
+    var track = slider.querySelector('.sf-hero-track');
+    var slides = slider.querySelectorAll('.sf-hero-slide');
+    var dots = slider.querySelectorAll('.sf-hero-dot');
+    var total = slides.length;
+
+    if (total <= 1) {
+        // Single slide — just make it clickable
+        if (total === 1 && slides[0].dataset.link) {
+            slides[0].style.cursor = 'pointer';
+            slides[0].addEventListener('click', function() {
+                if (this.dataset.link) window.location.href = this.dataset.link;
+            });
+        }
+        return;
+    }
+
+    var current = 0;
+    var interval = null;
+    var DELAY = 4000;
+
+    function goTo(i) {
+        current = ((i % total) + total) % total;
+        track.style.transform = 'translateX(-' + (current * 100) + '%)';
+        for (var d = 0; d < dots.length; d++) {
+            if (d === current) { dots[d].classList.add('active'); }
+            else { dots[d].classList.remove('active'); }
+        }
+    }
+
+    function next() { goTo(current + 1); }
+    function prev() { goTo(current - 1); }
+
+    function startAuto() { stopAuto(); interval = setInterval(next, DELAY); }
+    function stopAuto() { if (interval) { clearInterval(interval); interval = null; } }
+
+    // Arrows
+    var prevBtn = slider.querySelector('.sf-hero-prev');
+    var nextBtn = slider.querySelector('.sf-hero-next');
+    if (prevBtn) prevBtn.addEventListener('click', function(e) { e.stopPropagation(); prev(); startAuto(); });
+    if (nextBtn) nextBtn.addEventListener('click', function(e) { e.stopPropagation(); next(); startAuto(); });
+
+    // Dots
+    for (var d = 0; d < dots.length; d++) {
+        (function(idx) {
+            dots[idx].addEventListener('click', function() { goTo(idx); startAuto(); });
+        })(d);
+    }
+
+    // Slide click → navigate
+    for (var s = 0; s < slides.length; s++) {
+        (function(slide) {
+            slide.style.cursor = slide.dataset.link ? 'pointer' : 'default';
+            slide.addEventListener('click', function() {
+                if (this.dataset.link) window.location.href = this.dataset.link;
+            });
+        })(slides[s]);
+    }
+
+    // Pause on hover
+    slider.addEventListener('mouseenter', stopAuto);
+    slider.addEventListener('mouseleave', startAuto);
+
+    // Touch swipe
+    var startX = 0, startY = 0;
+    slider.addEventListener('touchstart', function(e) {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        stopAuto();
+    }, { passive: true });
+    slider.addEventListener('touchend', function(e) {
+        var dx = startX - e.changedTouches[0].clientX;
+        var dy = startY - e.changedTouches[0].clientY;
+        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+            if (dx > 0) next(); else prev();
+        }
+        startAuto();
+    }, { passive: true });
+
+    // Start autoplay
+    startAuto();
+})();
+</script>
+@endpush

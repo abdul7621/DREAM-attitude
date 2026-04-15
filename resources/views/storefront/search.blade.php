@@ -22,7 +22,7 @@
                 @endforeach
             </div>
             <div class="mt-4">
-                {{ $products->links() }}
+                {{ $products->links('vendor.pagination.storefront') }}
             </div>
         @endif
     </div>

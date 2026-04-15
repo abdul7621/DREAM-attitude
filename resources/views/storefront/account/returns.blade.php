@@ -48,6 +48,6 @@
         </table>
     </div>
 </div>
-<div style="margin-top:16px;">{{ $returns->links() }}</div>
+<div style="margin-top:16px;">{{ $returns->links('vendor.pagination.storefront') }}</div>
 @endif
 @endsection

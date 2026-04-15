@@ -42,6 +42,6 @@
         </table>
     </div>
 </div>
-<div style="margin-top:16px;">{{ $orders->links() }}</div>
+<div style="margin-top:16px;">{{ $orders->links('vendor.pagination.storefront') }}</div>
 @endif
 @endsection

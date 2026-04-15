@@ -180,8 +180,45 @@
         </div>
 
         <div class="card mb-4">
-            <div class="card-header bg-white"><i class="bi bi-image me-2"></i> Hero Banner setup</div>
+            <div class="card-header bg-white"><i class="bi bi-images me-2"></i> Hero Slides</div>
             <div class="card-body">
+                <p class="text-muted small mb-3">Add banner slides with individual links. Design your banners with text baked into the image. <strong>Recommended: 1920×700px</strong></p>
+                <div id="slidesContainer">
+                @php $heroSlides = is_array($theme['theme.hero_slides'] ?? null) ? $theme['theme.hero_slides'] : []; @endphp
+                @foreach($heroSlides as $i => $slide)
+                    <div class="slide-row border rounded p-3 mb-3 position-relative bg-light">
+                        <button type="button" class="btn btn-sm btn-outline-danger position-absolute" style="top:8px;right:8px;z-index:2;" onclick="this.closest('.slide-row').remove()"><i class="bi bi-trash"></i></button>
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-3 text-center">
+                                @if(!empty($slide['image']))
+                                <img src="{{ asset('storage/' . $slide['image']) }}" class="img-fluid rounded border mb-1" style="max-height:70px;">
+                                <input type="hidden" name="slide_existing[{{ $i }}]" value="{{ $slide['image'] }}">
+                                @endif
+                                <input type="file" name="slide_images[{{ $i }}]" class="form-control form-control-sm" accept="image/*">
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label small mb-1">Link URL</label>
+                                <input type="text" name="slide_links[{{ $i }}]" class="form-control form-control-sm" value="{{ $slide['link'] ?? '' }}" placeholder="/category/hair-care">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small mb-1">Alt Text</label>
+                                <input type="text" name="slide_alts[{{ $i }}]" class="form-control form-control-sm" value="{{ $slide['alt'] ?? '' }}" placeholder="Banner description">
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+                </div>
+                <button type="button" class="btn btn-outline-primary btn-sm" id="addSlideBtn">
+                    <i class="bi bi-plus-lg me-1"></i> Add Slide
+                </button>
+                <span class="text-muted small ms-2">(Max 10)</span>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-white"><i class="bi bi-type me-2"></i> Hero Text Overlay <span class="badge bg-secondary ms-1">Optional</span></div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">Shows on top of slides. Leave empty if your banner images already have text.</p>
                 <div class="row g-3">
                     <div class="col-12">
                         <label class="form-label">Hero Title</label>
@@ -244,15 +281,10 @@
     </div>
 
     <div class="col-lg-4">
-        <div class="card mb-4">
-            <div class="card-header bg-white">Hero Image</div>
+        <div class="card mb-4 border-info">
             <div class="card-body">
-                @if(!empty($theme['theme.hero_image']))
-                    <div class="mb-3 text-center">
-                        <img src="{{ asset('storage/' . $theme['theme.hero_image']) }}" alt="Hero" class="img-fluid rounded border">
-                    </div>
-                @endif
-                <input type="file" name="theme_hero_image" class="form-control" accept="image/*">
+                <h6 class="card-title text-info"><i class="bi bi-info-circle me-1"></i> Hero Slides</h6>
+                <p class="small text-muted mb-0">Manage hero slides in the left panel. Upload banner images (1920×700px) with text baked in. Each slide can link to a different page.</p>
             </div>
         </div>
         <div class="card mb-4">
@@ -279,4 +311,30 @@
 
 </div>
 </form>
+@if ($tab === 'homepage')
+<script>
+var slideIndex = {{ count($heroSlides ?? []) }};
+document.getElementById('addSlideBtn').addEventListener('click', function() {
+    if (slideIndex >= 10) { alert('Maximum 10 slides allowed'); return; }
+    var c = document.getElementById('slidesContainer');
+    var html = '<div class="slide-row border rounded p-3 mb-3 position-relative bg-light">' +
+        '<button type="button" class="btn btn-sm btn-outline-danger position-absolute" style="top:8px;right:8px;z-index:2;" onclick="this.closest(\'.slide-row\').remove()"><i class="bi bi-trash"></i></button>' +
+        '<div class="row g-2 align-items-center">' +
+        '<div class="col-md-3 text-center">' +
+        '<input type="file" name="slide_images[' + slideIndex + ']" class="form-control form-control-sm" accept="image/*" required>' +
+        '</div>' +
+        '<div class="col-md-5">' +
+        '<label class="form-label small mb-1">Link URL</label>' +
+        '<input type="text" name="slide_links[' + slideIndex + ']" class="form-control form-control-sm" placeholder="/category/hair-care">' +
+        '</div>' +
+        '<div class="col-md-4">' +
+        '<label class="form-label small mb-1">Alt Text</label>' +
+        '<input type="text" name="slide_alts[' + slideIndex + ']" class="form-control form-control-sm" placeholder="Banner description">' +
+        '</div>' +
+        '</div></div>';
+    c.insertAdjacentHTML('beforeend', html);
+    slideIndex++;
+});
+</script>
+@endif
 @endsection

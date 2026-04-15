@@ -50,7 +50,7 @@
         @endif
 
         <div style="margin-top: 40px;">
-            {{ $products->links() }}
+            {{ $products->links('vendor.pagination.storefront') }}
         </div>
     </div>
 </section>

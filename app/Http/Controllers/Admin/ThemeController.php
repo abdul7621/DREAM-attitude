@@ -33,6 +33,7 @@ class ThemeController extends Controller
             'theme.hero_cta_text' => 'Shop Now',
             'theme.hero_cta_link' => '/search',
             'theme.hero_image' => '',
+            'theme.hero_slides' => [],
             'theme.trust_text' => 'Authentic | Secure Checkout | Easy Returns',
             'theme.announcement_active' => '0',
             'theme.announcement_text' => '',
@@ -79,6 +80,14 @@ class ThemeController extends Controller
                     'theme_offers_banner_text' => ['nullable', 'string', 'max:255'],
                     'theme_offers_banner_link' => ['nullable', 'string', 'max:255'],
                     'theme_offers_banner_image' => ['nullable', 'image', 'max:4096'],
+                    'slide_links' => ['nullable', 'array', 'max:10'],
+                    'slide_links.*' => ['nullable', 'string', 'max:255'],
+                    'slide_alts' => ['nullable', 'array', 'max:10'],
+                    'slide_alts.*' => ['nullable', 'string', 'max:255'],
+                    'slide_existing' => ['nullable', 'array', 'max:10'],
+                    'slide_existing.*' => ['nullable', 'string', 'max:255'],
+                    'slide_images' => ['nullable', 'array', 'max:10'],
+                    'slide_images.*' => ['nullable', 'image', 'max:4096'],
                 ]);
 
                 // Normalize sections
@@ -127,6 +136,36 @@ class ThemeController extends Controller
                     $path = $request->file('theme_hero_image')->store('theme', 'public');
                     Setting::updateOrCreate(['key' => 'theme.hero_image'], ['value' => $path]);
                 }
+
+                // ── Process Hero Slides ──────────────────────────────
+                $slideLinks = $request->input('slide_links', []);
+                $slideExisting = $request->input('slide_existing', []);
+                $slideAlts = $request->input('slide_alts', []);
+                $slides = [];
+                foreach ($slideLinks as $i => $link) {
+                    $imagePath = null;
+                    if ($request->hasFile("slide_images.$i")) {
+                        $file = $request->file("slide_images.$i");
+                        if ($file->isValid()) {
+                            $imagePath = $file->store('theme', 'public');
+                        }
+                    }
+                    if (!$imagePath && !empty($slideExisting[$i])) {
+                        $imagePath = $slideExisting[$i];
+                    }
+                    if ($imagePath) {
+                        $slides[] = [
+                            'image' => $imagePath,
+                            'link' => $link ?: '',
+                            'alt' => $slideAlts[$i] ?? '',
+                        ];
+                    }
+                }
+                Setting::updateOrCreate(
+                    ['key' => 'theme.hero_slides'],
+                    ['value' => $slides]
+                );
+
                 if ($request->hasFile('theme_offers_banner_image')) {
                     $path = $request->file('theme_offers_banner_image')->store('theme', 'public');
                     Setting::updateOrCreate(['key' => 'theme.offers_banner_image'], ['value' => $path]);
