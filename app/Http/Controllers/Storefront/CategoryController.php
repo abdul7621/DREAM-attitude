@@ -13,8 +13,15 @@ class CategoryController extends Controller
     {
         abort_unless($category->is_active, 404);
 
+        // Collect this category + all child category IDs
+        $categoryIds = collect([$category->id]);
+        $childIds = $category->children()->where('is_active', true)->pluck('id');
+        if ($childIds->isNotEmpty()) {
+            $categoryIds = $categoryIds->merge($childIds);
+        }
+
         $query = Product::query()
-            ->where('category_id', $category->id)
+            ->whereIn('category_id', $categoryIds)
             ->where('status', Product::STATUS_ACTIVE)
             ->with(['variants', 'images'])
             ->withCount('reviews')
