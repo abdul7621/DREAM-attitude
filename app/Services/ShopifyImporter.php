@@ -161,6 +161,122 @@ class ShopifyImporter
         return $counts;
     }
 
+    /**
+     * Import a chunk of products (offset-based).
+     * Processes $limit products starting from $offset in the aggregated handles list.
+     */
+    public function importChunk(string $filePath, int $offset, int $limit): array
+    {
+        $rows   = $this->readCsv($filePath);
+        $data   = $this->aggregate($rows);
+        $allHandles = array_keys($data['products']);
+        $totalParents = count($allHandles);
+
+        $counts = ['products' => 0, 'variants' => 0, 'images' => 0, 'errors' => [], 'total_parents' => $totalParents, 'processed_parents' => 0, 'done' => false];
+
+        if ($offset >= $totalParents) {
+            $counts['done'] = true;
+            return $counts;
+        }
+
+        $chunkHandles = array_slice($allHandles, $offset, $limit);
+        $counts['processed_parents'] = count($chunkHandles);
+
+        foreach ($chunkHandles as $handle) {
+            $product = $data['products'][$handle];
+            try {
+                $category = $this->resolveCategory($product['category']);
+                $slug = Str::slug($handle);
+                $existing = Product::withTrashed()->where('slug', $slug)->first();
+                $bodyHtml = $this->cleanHtml($product['body']);
+
+                if ($existing) {
+                    if ($existing->trashed()) $existing->restore();
+                    $existing->update([
+                        'name'        => $product['title'],
+                        'description' => $bodyHtml,
+                        'status'      => $product['published'] ? Product::STATUS_ACTIVE : 'draft',
+                        'category_id' => $category?->id,
+                    ]);
+                    $p = $existing;
+                } else {
+                    $p = Product::query()->create([
+                        'name'          => $product['title'],
+                        'slug'          => $this->uniqueSlug($handle),
+                        'description'   => $bodyHtml,
+                        'status'        => $product['published'] ? Product::STATUS_ACTIVE : 'draft',
+                        'category_id'   => $category?->id,
+                        'is_bestseller' => false,
+                    ]);
+                }
+                $counts['products']++;
+
+                $variantImageMap = [];
+                foreach ($product['variants'] as $v) {
+                    if (empty($v['price']) || $v['price'] <= 0) {
+                        $counts['errors'][] = "Product {$handle}: Variant '{$v['title']}' skipped — price is 0 or empty";
+                        continue;
+                    }
+
+                    $testSku = $v['sku'];
+                    $conflict = ProductVariant::query()->where('sku', $testSku)->where('product_id', '!=', $p->id)->exists();
+                    if ($conflict) {
+                        $optSlug = Str::slug($v['title'] ?: 'default');
+                        $baseConf = $handle . '-' . $optSlug;
+                        $idx = 1;
+                        $testSku = $baseConf . '-' . $idx;
+                        while(ProductVariant::query()->where('sku', $testSku)->where('product_id', '!=', $p->id)->exists()) {
+                            $testSku = $baseConf . '-' . (++$idx);
+                        }
+                    }
+
+                    $variant = ProductVariant::query()->updateOrCreate(
+                        ['product_id' => $p->id, 'sku' => $testSku],
+                        [
+                            'title'            => $v['title'],
+                            'price_retail'     => $v['price'],
+                            'compare_at_price' => $v['compare_at'] ?: null,
+                            'weight_grams'     => $v['grams'],
+                            'stock_qty'        => max(0, (int) $v['stock']),
+                            'track_inventory'  => $v['track'] ?? true,
+                            'is_active'        => true,
+                        ]
+                    );
+                    $counts['variants']++;
+
+                    if ($v['image']) {
+                        $variantImageMap[$v['image']] = $variant->id;
+                    }
+                }
+
+                foreach ($product['images'] as $imgUrl) {
+                    if (!$imgUrl) continue;
+                    try {
+                        $path = $this->images->fetch($imgUrl);
+                        if ($path) {
+                            $varId = $variantImageMap[$imgUrl] ?? null;
+                            ProductImage::query()->firstOrCreate(
+                                ['product_id' => $p->id, 'path' => $path],
+                                ['alt_text' => $product['title'], 'sort_order' => 0, 'variant_id' => $varId]
+                            );
+                            $counts['images']++;
+                        }
+                    } catch (\Throwable $e) {
+                        $counts['errors'][] = "Image failed ({$imgUrl}): ".$e->getMessage();
+                    }
+                }
+            } catch (\Throwable $e) {
+                $counts['errors'][] = "Product {$handle}: ".$e->getMessage();
+            }
+        }
+
+        if ($offset + $counts['processed_parents'] >= $totalParents) {
+            $counts['done'] = true;
+        }
+
+        return $counts;
+    }
+
     // ─── Customer Import ──────────────────────────────────────────────────────
 
     /** Dry run for customer CSV */
