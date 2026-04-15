@@ -61,6 +61,7 @@
                             </span>
                         </td>
                         <td class="text-end">
+                            <a class="btn btn-sm btn-outline-info" href="{{ route('product.show', $p->slug) }}" target="_blank">View</a>
                             <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.products.edit', $p) }}">Edit</a>
                             
                             @if(!$p->trashed())

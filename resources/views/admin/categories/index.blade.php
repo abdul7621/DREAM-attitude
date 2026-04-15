@@ -17,6 +17,7 @@
                     <td>{{ $c->slug }}</td>
                     <td>{{ $c->is_active ? 'Yes' : 'No' }}</td>
                     <td class="text-end">
+                        <a class="btn btn-sm btn-outline-info" href="{{ route('category.show', $c->slug) }}" target="_blank">View</a>
                         <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.categories.edit', $c) }}">Edit</a>
                         <form action="{{ route('admin.categories.destroy', $c) }}" method="post" class="d-inline" onsubmit="return confirm('Delete?');">@csrf @method('DELETE')
                             <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>

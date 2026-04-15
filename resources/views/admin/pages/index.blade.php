@@ -21,6 +21,7 @@
                         </span>
                     </td>
                     <td class="text-end">
+                        <a class="btn btn-sm btn-outline-info" href="{{ route('page.show', $p->slug) }}" target="_blank">View</a>
                         <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.pages.edit', $p) }}">Edit</a>
                         <form action="{{ route('admin.pages.destroy', $p) }}" method="post" class="d-inline" onsubmit="return confirm('Delete page?');">
                             @csrf @method('DELETE')
