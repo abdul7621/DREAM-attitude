@@ -52,15 +52,15 @@
             <button type="button" class="sf-hero-arrow sf-hero-next" aria-label="Next"><i class="bi bi-chevron-right"></i></button>
             @endif
             @if($ss->get('theme.hero_title'))
-            <div class="sf-hero-overlay"></div>
-            <div class="sf-hero-content">
+            <div class="sf-hero-overlay" style="pointer-events: none;"></div>
+            <div class="sf-hero-content" style="pointer-events: none;">
                 <div class="sf-hero-tag">Welcome</div>
                 <h1 class="sf-hero-title">{{ $ss->get('theme.hero_title', '') }}</h1>
                 @if($ss->get('theme.hero_subtitle'))
                 <p class="sf-hero-sub">{{ $ss->get('theme.hero_subtitle') }}</p>
                 @endif
                 @if($ss->get('theme.hero_cta_text'))
-                <a href="{{ $ss->get('theme.hero_cta_link', '/search') }}" class="sf-hero-cta">{{ $ss->get('theme.hero_cta_text') }}</a>
+                <a href="{{ $heroSlides[0]['link'] ?? $ss->get('theme.hero_cta_link', '/search') }}" class="sf-hero-cta" id="heroCtaBtn" style="pointer-events: auto;">{{ $ss->get('theme.hero_cta_text') }}</a>
                 @endif
             </div>
             @endif
@@ -267,7 +267,20 @@
     var track = slider.querySelector('.sf-hero-track');
     var slides = slider.querySelectorAll('.sf-hero-slide');
     var dots = slider.querySelectorAll('.sf-hero-dot');
+    var ctaBtn = document.getElementById('heroCtaBtn');
     var total = slides.length;
+
+    // Sync CTA button href with current slide's link
+    function syncCta(index) {
+        if (!ctaBtn) return;
+        var link = slides[index] ? slides[index].dataset.link : '';
+        if (link) {
+            ctaBtn.href = link;
+            ctaBtn.style.display = '';
+        } else {
+            ctaBtn.style.display = 'none';
+        }
+    }
 
     if (total <= 1) {
         // Single slide — just make it clickable
@@ -277,6 +290,7 @@
                 if (this.dataset.link) window.location.href = this.dataset.link;
             });
         }
+        syncCta(0);
         return;
     }
 
@@ -291,6 +305,7 @@
             if (d === current) { dots[d].classList.add('active'); }
             else { dots[d].classList.remove('active'); }
         }
+        syncCta(current);
     }
 
     function next() { goTo(current + 1); }
@@ -341,6 +356,9 @@
         }
         startAuto();
     }, { passive: true });
+
+    // Initial CTA sync
+    syncCta(0);
 
     // Start autoplay
     startAuto();
