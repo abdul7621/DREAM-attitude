@@ -9,6 +9,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @php $ss = app(\App\Services\SettingsService::class); @endphp
     <title>{{ $pageTitle ?? $storeSettings['store_name'] ?? config('app.name') }}</title>
+    @if($ss->get('theme.favicon'))
+        <link rel="icon" href="{{ asset('storage/' . $ss->get('theme.favicon')) }}">
+        <link rel="apple-touch-icon" href="{{ asset('storage/' . $ss->get('theme.favicon')) }}">
+    @elseif(file_exists(public_path('favicon.ico')))
+        <link rel="icon" href="{{ asset('favicon.ico') }}">
+    @endif
     <meta name="description" content="{{ $pageDescription ?? $storeSettings['meta_description'] ?? '' }}">
     <meta property="og:title" content="{{ $pageTitle ?? $storeSettings['store_name'] ?? config('app.name') }}">
     <meta property="og:description" content="{{ $pageDescription ?? $storeSettings['meta_description'] ?? '' }}">
