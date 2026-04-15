@@ -89,7 +89,7 @@
 <header class="sf-header">
     @if($ss->get('theme.logo'))
         <a class="logo" href="{{ route('home') }}">
-            <img src="{{ asset('storage/' . $ss->get('theme.logo')) }}" alt="{{ config('app.name') }}" style="max-height: 40px;" loading="eager" width="120" height="40">
+            <img src="{{ asset('storage/' . $ss->get('theme.logo')) }}" alt="{{ config('app.name') }}" style="max-height: 40px;" loading="eager">
         </a>
     @elseif(file_exists(public_path('images/logo.png')))
         <a class="logo" href="{{ route('home') }}">
