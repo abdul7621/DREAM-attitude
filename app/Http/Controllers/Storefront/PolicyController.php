@@ -9,7 +9,7 @@ class PolicyController extends Controller
 {
     public function show(string $type, SettingsService $settings)
     {
-        $allowed = ['privacy_policy', 'return_policy', 'shipping_policy', 'terms_conditions'];
+        $allowed = ['privacy', 'returns', 'shipping', 'terms'];
         $key = str_replace('-', '_', $type);
         
         abort_unless(in_array($key, $allowed), 404);
@@ -23,10 +23,10 @@ class PolicyController extends Controller
         }
 
         $titles = [
-            'privacy_policy' => 'Privacy Policy',
-            'return_policy' => 'Return Policy',
-            'shipping_policy' => 'Shipping Policy',
-            'terms_conditions' => 'Terms & Conditions',
+            'privacy' => 'Privacy Policy',
+            'returns' => 'Return Policy',
+            'shipping' => 'Shipping Policy',
+            'terms' => 'Terms & Conditions',
         ];
 
         return view('storefront.policy', [

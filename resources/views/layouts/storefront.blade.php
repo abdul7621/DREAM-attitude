@@ -281,10 +281,10 @@
                     @else
                         @php
                             $policyKeys = [
-                                'privacy_policy' => 'Privacy Policy', 
-                                'return_policy' => 'Return & Refund Policy', 
-                                'shipping_policy' => 'Shipping Policy', 
-                                'terms_conditions' => 'Terms & Conditions'
+                                'privacy' => 'Privacy Policy', 
+                                'returns' => 'Return & Refund Policy', 
+                                'shipping' => 'Shipping Policy', 
+                                'terms' => 'Terms & Conditions'
                             ];
                         @endphp
                         @foreach ($policyKeys as $key => $title)
