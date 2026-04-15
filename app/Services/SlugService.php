@@ -24,6 +24,14 @@ class SlugService
             ->exists());
     }
 
+    public function unique(string $title, string $table, ?int $ignoreId = null): string
+    {
+        return $this->uniqueSlug($title, fn (string $slug) => \Illuminate\Support\Facades\DB::table($table)
+            ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
+            ->where('slug', $slug)
+            ->exists());
+    }
+
     private function uniqueSlug(string $title, callable $exists): string
     {
         $base = Str::slug($title) ?: 'item';
