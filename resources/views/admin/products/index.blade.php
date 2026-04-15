@@ -3,25 +3,34 @@
 @section('title', 'Products')
 
 @section('content')
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+        <div class="d-flex align-items-center" style="gap: 16px;">
+            <h1 class="h4 mb-0">Products</h1>
+            <!-- Search Form -->
+            <form action="{{ route('admin.products.index') }}" method="GET" class="d-flex mb-0">
+                <input type="text" name="search" class="form-control form-control-sm" placeholder="Search by name or SKU..." value="{{ request('search') }}" style="min-width: 250px;">
+                <button type="submit" class="btn btn-sm btn-outline-secondary ms-1"><i class="bi bi-search"></i></button>
+                @if(request()->has('search'))
+                    <a href="{{ route('admin.products.index') }}" class="btn btn-sm btn-outline-danger ms-1" title="Clear Search"><i class="bi bi-x-lg"></i></a>
+                @endif
+            </form>
+        </div>
+        <div>
+            <span id="selected-count" class="badge bg-secondary me-2 d-none">0 Selected</span>
+            <select name="action" form="bulk-form" class="form-select form-select-sm d-inline-block w-auto me-2" id="bulk-action" disabled>
+                <option value="">Bulk Actions</option>
+                <option value="status_active">Mark Active</option>
+                <option value="status_draft">Mark Draft</option>
+                <option value="delete">Delete (Soft)</option>
+                <option value="force_delete">Permanent Delete</option>
+            </select>
+            <button type="submit" form="bulk-form" class="btn btn-sm btn-outline-primary me-3" id="bulk-submit" disabled>Apply</button>
+            <a class="btn btn-sm btn-primary" href="{{ route('admin.products.create') }}">Add product</a>
+        </div>
+    </div>
+
     <form action="{{ route('admin.products.bulk') }}" method="POST" id="bulk-form">
         @csrf
-        
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h1 class="h4 mb-0">Products</h1>
-            <div>
-                <span id="selected-count" class="badge bg-secondary me-2 d-none">0 Selected</span>
-                <select name="action" class="form-select form-select-sm d-inline-block w-auto me-2" id="bulk-action" disabled>
-                    <option value="">Bulk Actions</option>
-                    <option value="status_active">Mark Active</option>
-                    <option value="status_draft">Mark Draft</option>
-                    <option value="delete">Delete (Soft)</option>
-                    <option value="force_delete">Permanent Delete</option>
-                </select>
-                <button type="submit" class="btn btn-sm btn-outline-primary me-3" id="bulk-submit" disabled>Apply</button>
-                <a class="btn btn-sm btn-primary" href="{{ route('admin.products.create') }}">Add product</a>
-            </div>
-        </div>
-
         <div class="table-responsive bg-white shadow-sm rounded">
             <table class="table table-striped mb-0 align-middle">
                 <thead>

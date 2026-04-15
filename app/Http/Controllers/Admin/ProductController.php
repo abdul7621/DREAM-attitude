@@ -22,9 +22,18 @@ class ProductController extends Controller
         private readonly SlugService $slugs
     ) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $products = Product::withTrashed()->with('category')->latest()->paginate(30);
+        $query = Product::withTrashed()->with('category')->latest();
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('sku', 'like', "%{$search}%");
+            });
+        }
+
+        $products = $query->paginate(30)->withQueryString();
 
         return view('admin.products.index', compact('products'));
     }
