@@ -237,7 +237,14 @@
                                     <i class="bi bi-star{{ $i <= $review->rating ? '-fill' : '' }}"></i>
                                 @endfor
                             </div>
-                            <p style="color: var(--color-text-secondary); font-size: 13px; line-height: 1.6; font-style: italic; flex: 1;">"{{ \Illuminate\Support\Str::limit($review->body, 120) }}"</p>
+                            <p style="color: var(--color-text-secondary); font-size: 13px; line-height: 1.6; font-style: italic; flex: 1; margin-bottom: 0;">
+                                "{{ \Illuminate\Support\Str::limit($review->body, 120, '') }}"@if(strlen($review->body) > 120)...
+                                <br>
+                                @if($review->product)
+                                    <a href="{{ route('product.show', $review->product->slug) }}#reviews" style="color: var(--color-gold); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-style: normal; display: inline-block; margin-top: 6px; text-decoration: none;">Read more <i class="bi bi-chevron-right" style="font-size: 9px;"></i></a>
+                                @endif
+                                @endif
+                            </p>
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 16px;">
                                 <div style="font-size: 13px; font-weight: 600; color: var(--color-text-primary);">{{ $review->reviewer_name }}</div>
                                 @if ($review->verified_purchase)
@@ -245,7 +252,9 @@
                                 @endif
                             </div>
                             @if($review->product)
-                                <div style="color: var(--color-text-muted); font-size: 11px; margin-top: 8px;">on {{ $review->product->name }}</div>
+                                <div style="color: var(--color-text-muted); font-size: 11px; margin-top: 8px;">
+                                    on <a href="{{ route('product.show', $review->product->slug) }}#reviews" style="color: inherit; text-decoration: underline; transition: color 0.2s;" onmouseover="this.style.color='var(--color-gold)'" onmouseout="this.style.color='inherit'">{{ $review->product->name }}</a>
+                                </div>
                             @endif
                         </div>
                     @endforeach
