@@ -98,6 +98,11 @@ class ImportController extends Controller
         };
 
         try {
+            // Prevent web-server timeout on large imports
+            set_time_limit(0);
+            ignore_user_abort(true);
+            ini_set('memory_limit', '512M');
+
             if ($importer) {
                 $filePath = Storage::disk('local')->path($importJob->filename);
 

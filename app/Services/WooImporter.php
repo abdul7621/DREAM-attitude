@@ -46,6 +46,10 @@ class WooImporter
 
     public function import(string $filePath): array
     {
+        // Prevent timeout on large imports (400+ products)
+        set_time_limit(0);
+        ini_set('memory_limit', '512M');
+
         $rows = $this->readCsv($filePath);
         [$parents, $variations] = $this->split($rows);
         $counts = ['products' => 0, 'variants' => 0, 'images' => 0, 'errors' => []];
