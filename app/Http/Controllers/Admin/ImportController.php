@@ -83,11 +83,23 @@ class ImportController extends Controller
         return view('admin.import.preview', compact('importJob'));
     }
 
-    public function confirm(Request $request, ImportJob $importJob): RedirectResponse
+    public function confirmPage(ImportJob $importJob): RedirectResponse|View
     {
-        if ($importJob->status !== 'previewed') {
+        if (!in_array($importJob->status, ['previewed', 'processing'])) {
             return redirect()->route('admin.import.index')->with('error', 'Preview this import first.');
         }
+
+        $stats = $importJob->stats ?? [];
+        return view('admin.import.confirm', compact('importJob', 'stats'));
+    }
+
+    public function chunk(Request $request, ImportJob $importJob): \Illuminate\Http\JsonResponse
+    {
+        set_time_limit(120);
+        ini_set('memory_limit', '256M');
+
+        $offset = (int) $request->input('offset', 0);
+        $limit  = (int) $request->input('limit', 5);
 
         [$source, $type] = explode('_', $importJob->source, 2);
 
@@ -97,41 +109,55 @@ class ImportController extends Controller
             default   => null,
         };
 
+        if (!$importer || $type !== 'products') {
+            return response()->json(['error' => 'Unsupported import type for chunked processing'], 400);
+        }
+
         try {
-            // Prevent web-server timeout on large imports
-            set_time_limit(0);
-            ignore_user_abort(true);
-            ini_set('memory_limit', '512M');
+            $filePath = Storage::disk('local')->path($importJob->filename);
+            $result = $importer->importChunk($filePath, $offset, $limit);
 
-            if ($importer) {
-                $filePath = Storage::disk('local')->path($importJob->filename);
+            // Merge running totals into job stats
+            $stats = (array) $importJob->stats;
+            $stats['products']  = ($stats['products_done'] ?? 0) + ($result['products'] ?? 0);
+            $stats['products_done'] = $stats['products'];
+            $stats['variants']  = ($stats['variants_done'] ?? 0) + ($result['variants'] ?? 0);
+            $stats['variants_done'] = $stats['variants'];
+            $stats['images']    = ($stats['images_done'] ?? 0) + ($result['images'] ?? 0);
+            $stats['images_done'] = $stats['images'];
 
-                $stats = match ($type) {
-                    'products'  => $importer->import($filePath),
-                    'customers' => method_exists($importer, 'importCustomers')
-                                   ? $importer->importCustomers($filePath)
-                                   : throw new \RuntimeException('Customer import not supported for this platform.'),
-                    'orders'    => method_exists($importer, 'importOrders')
-                                   ? $importer->importOrders($filePath)
-                                   : throw new \RuntimeException('Order import not supported for this platform.'),
-                    default     => throw new \RuntimeException('Unknown import type.'),
-                };
+            // Accumulate errors
+            $existingErrors = $stats['errors'] ?? [];
+            if (!is_array($existingErrors)) $existingErrors = [];
+            $stats['errors'] = array_merge($existingErrors, $result['errors'] ?? []);
 
-                $importJob->update([
-                    'status' => 'completed',
-                    'stats'  => array_merge((array) $importJob->stats, $stats),
-                ]);
-            }
+            $done = $result['done'] ?? false;
+            $stats['status'] = $done ? 'completed' : 'processing';
+
+            $importJob->update([
+                'status' => $done ? 'completed' : 'processing',
+                'stats'  => $stats,
+            ]);
+
+            return response()->json([
+                'done'      => $done,
+                'offset'    => $offset + $result['processed_parents'],
+                'processed' => $stats['products_done'],
+                'total'     => $result['total_parents'],
+                'products'  => $stats['products_done'],
+                'variants'  => $stats['variants_done'],
+                'images'    => $stats['images_done'],
+                'errors'    => count($stats['errors']),
+                'chunk_errors' => $result['errors'] ?? [],
+            ]);
         } catch (\Throwable $e) {
             $importJob->update([
                 'status'    => 'failed',
                 'error_log' => $e->getMessage(),
             ]);
 
-            return redirect()->route('admin.import.index')->with('error', 'Import failed: '.$e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
         }
-
-        return redirect()->route('admin.import.index')->with('success', 'Import completed successfully.');
     }
 
     public function exportErrors(ImportJob $importJob)

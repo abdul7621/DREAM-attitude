@@ -199,7 +199,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('import', [AdminImportController::class, 'index'])->name('import.index');
     Route::post('import/upload', [AdminImportController::class, 'upload'])->name('import.upload');
     Route::get('import/{importJob}/preview', [AdminImportController::class, 'preview'])->name('import.preview');
-    Route::post('import/{importJob}/confirm', [AdminImportController::class, 'confirm'])->name('import.confirm');
+    Route::get('import/{importJob}/confirm', [AdminImportController::class, 'confirmPage'])->name('import.confirm');
+    Route::post('import/{importJob}/chunk', [AdminImportController::class, 'chunk'])->name('import.chunk');
     Route::get('import/{importJob}/details', [AdminImportController::class, 'show'])->name('import.show');
     Route::get('import/{importJob}/export-errors', [AdminImportController::class, 'exportErrors'])->name('import.exportErrors');
 });

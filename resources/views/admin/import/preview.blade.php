@@ -71,12 +71,9 @@
 </div>
 
 <div class="d-flex gap-2">
-    <form action="{{ route('admin.import.confirm', $importJob) }}" method="post">
-        @csrf
-        <button type="submit" class="btn btn-success" onclick="return confirm('Start real import? This will write to your database.')">
-            <i class="bi bi-check-circle me-1"></i> Confirm & Import
-        </button>
-    </form>
+    <a href="{{ route('admin.import.confirm', $importJob) }}" class="btn btn-success" onclick="return confirm('Start real import? This will write to your database.')">
+        <i class="bi bi-check-circle me-1"></i> Confirm & Import
+    </a>
     <a href="{{ route('admin.import.index') }}" class="btn btn-outline-secondary">← Cancel</a>
 </div>
 @endsection
