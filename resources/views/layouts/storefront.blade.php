@@ -67,6 +67,10 @@
         <a class="logo" href="{{ route('home') }}">
             <img src="{{ asset('storage/' . $ss->get('theme.logo')) }}" alt="{{ config('app.name') }}" style="max-height: 40px;">
         </a>
+    @elseif(file_exists(public_path('images/logo.png')))
+        <a class="logo" href="{{ route('home') }}">
+            <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }}" style="max-height: 40px;">
+        </a>
     @else
         <a class="logo" href="{{ route('home') }}">{{ config('app.name') }}</a>
     @endif
@@ -104,6 +108,18 @@
 <div class="sf-mobile-drawer" id="mobileDrawer">
     <button class="close-drawer" onclick="document.getElementById('mobileDrawer').classList.remove('open'); document.getElementById('drawerOverlay').classList.remove('open');"><i class="bi bi-x"></i></button>
     <div style="margin-top: 40px;">
+        {{-- Drawer Logo --}}
+        @if($ss->get('theme.logo'))
+            <a href="{{ route('home') }}" style="display:block;margin-bottom:20px;">
+                <img src="{{ asset('storage/' . $ss->get('theme.logo')) }}" alt="{{ config('app.name') }}" style="max-height:36px;">
+            </a>
+        @elseif(file_exists(public_path('images/logo.png')))
+            <a href="{{ route('home') }}" style="display:block;margin-bottom:20px;">
+                <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }}" style="max-height:36px;">
+            </a>
+        @else
+            <a href="{{ route('home') }}" style="display:block;margin-bottom:20px;color:var(--color-gold);font-weight:600;font-size:16px;text-transform:uppercase;letter-spacing:2px;text-decoration:none;">{{ config('app.name') }}</a>
+        @endif
         @if (isset($globalMenus['header']) && $globalMenus['header']->parentItems->isNotEmpty())
             @foreach ($globalMenus['header']->parentItems as $item)
                 <a href="{{ $item->link ?: '#' }}" @if($item->is_external) target="_blank" @endif>{{ $item->label }}</a>
@@ -172,7 +188,17 @@
     <div class="sf-container">
         <div class="sf-footer-grid">
             <div>
-                <div class="brand">{{ config('app.name') }}</div>
+                @if($ss->get('theme.logo'))
+                    <a href="{{ route('home') }}" style="display:inline-block;margin-bottom:12px;">
+                        <img src="{{ asset('storage/' . $ss->get('theme.logo')) }}" alt="{{ config('app.name') }}" style="max-height:60px;">
+                    </a>
+                @elseif(file_exists(public_path('images/logo.png')))
+                    <a href="{{ route('home') }}" style="display:inline-block;margin-bottom:12px;">
+                        <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }}" style="max-height:60px;">
+                    </a>
+                @else
+                    <div class="brand">{{ config('app.name') }}</div>
+                @endif
                 <div class="tagline">{{ $ss->get('store.footer_text', 'Premium quality products delivered to your doorstep.') }}</div>
                 <div class="social-icons">
                     @if($ss->get('store.instagram'))

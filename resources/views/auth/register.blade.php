@@ -4,7 +4,14 @@
 <section class="sf-section">
 <div class="sf-container">
 <div class="sf-auth-card">
-  <div class="logo">{{ config('app.name') }}</div>
+  @php $ss = app(\App\Services\SettingsService::class); @endphp
+  @if($ss->get('theme.logo'))
+      <div class="logo"><a href="{{ route('home') }}"><img src="{{ asset('storage/' . $ss->get('theme.logo')) }}" alt="{{ config('app.name') }}" style="max-height:48px;"></a></div>
+  @elseif(file_exists(public_path('images/logo.png')))
+      <div class="logo"><a href="{{ route('home') }}"><img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }}" style="max-height:48px;"></a></div>
+  @else
+      <div class="logo">{{ config('app.name') }}</div>
+  @endif
   <h1 style="color:var(--color-text-primary);font-size:18px;text-align:center;
     margin-bottom:24px;text-transform:uppercase;">
     Create Account</h1>
