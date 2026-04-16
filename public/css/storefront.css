@@ -1,20 +1,36 @@
 :root {
-  --color-bg-primary: #FAF7F2; /* Cream core background */
-  --color-bg-surface: #ffffff;
-  --color-bg-elevated: #F0E8E0;
-  --color-gold: #C9963A;      /* Premium Gold */
-  --color-gold-light: #E8C97A;
-  --color-gold-dark: #A07830;
-  --color-plum: #3D1A24;      /* Deep Plum */
-  --color-warm: #8B4A3C;      /* Warm Rust/Badge */
-  --color-dark: #1C1210;      /* Near Black / Cocoa */
-  --color-text-primary: #1C1210;
-  --color-text-secondary: #3D1A24;
-  --color-text-muted: #7A6A62;
-  --color-border: #E8DDD5;
-  --color-border-gold: rgba(201,150,58,0.25);
-  --color-error: #c53030;
+  /* ── Brand Core ─────────────────────── */
+  --color-bg-primary:   #FFFFFF;          /* Pure White — main background */
+  --color-bg-surface:   #F8F8F6;          /* Warm off-white — card/section bg */
+  --color-bg-elevated:  #F0F0EE;          /* Light grey — hover/elevated */
+  --color-bg-dark:      #0A0A0A;          /* Rich Black — hero/award sections */
+  --color-bg-dark-soft: #141414;          /* Soft Black — dark card bg */
+
+  /* ── Gold Shades ────────────────────── */
+  --color-gold:         #C9963A;          /* Primary Gold */
+  --color-gold-light:   #E8C97A;          /* Light Gold — hover/highlights */
+  --color-gold-dark:    #A07830;          /* Dark Gold — text on white */
+  --color-gold-muted:   rgba(201,150,58,0.12); /* Gold tint — subtle fills */
+
+  /* ── Aliases used by components ─────── */
+  --color-plum:         #0A0A0A;          /* Now maps to Rich Black (hero bg) */
+  --color-warm:         #C9963A;          /* Maps to Gold (badge/sale color) */
+  --color-dark:         #0A0A0A;          /* Rich Black for text/sections */
+
+  /* ── Typography ─────────────────────── */
+  --color-text-primary:   #0A0A0A;        /* Near Black body text */
+  --color-text-secondary: #3A3A3A;        /* Dark grey secondary text */
+  --color-text-muted:     #888888;        /* Mid grey captions/hints */
+
+  /* ── Borders ────────────────────────── */
+  --color-border:       #E4E4E0;          /* Neutral light border */
+  --color-border-gold:  rgba(201,150,58,0.25); /* Gold border accent */
+
+  /* ── Status ─────────────────────────── */
+  --color-error:   #c53030;
   --color-success: #276749;
+
+  /* ── Layout ──────────────────────────── */
   --radius-sm: 2px;
   --radius-md: 4px;
   --radius-lg: 8px;
