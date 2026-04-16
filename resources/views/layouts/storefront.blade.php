@@ -29,7 +29,7 @@
     <noscript><link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"></noscript>
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <link href="{{ asset('css/storefront.css') }}?v={{ filemtime(public_path('css/storefront.css')) }}" rel="stylesheet">
     @php
         // Preload hero image for homepage
@@ -263,8 +263,10 @@
             </div>
             
             <div>
-                <h4>Shop</h4>
-                <div class="links">
+                <button class="sf-footer-col-toggle" onclick="this.classList.toggle('open'); this.nextElementSibling.classList.toggle('open');">
+                    <span>Shop</span><i class="bi bi-chevron-down"></i>
+                </button>
+                <div class="sf-footer-col-links links">
                     <a href="{{ route('home') }}">Home</a>
                     <a href="{{ route('search') }}">All Products</a>
                     <a href="{{ route('cart.index') }}">Cart</a>
@@ -272,8 +274,10 @@
             </div>
             
             <div>
-                <h4>Policies</h4>
-                <div class="links">
+                <button class="sf-footer-col-toggle" onclick="this.classList.toggle('open'); this.nextElementSibling.classList.toggle('open');">
+                    <span>Policies</span><i class="bi bi-chevron-down"></i>
+                </button>
+                <div class="sf-footer-col-links links">
                     @if(isset($globalMenus['footer']) && $globalMenus['footer']->parentItems->isNotEmpty())
                         @foreach($globalMenus['footer']->parentItems as $item)
                             <a href="{{ $item->link ?: '#' }}" @if($item->is_external) target="_blank" @endif>{{ $item->label }}</a>
@@ -297,8 +301,10 @@
             </div>
             
             <div>
-                <h4>Contact</h4>
-                <div class="links">
+                <button class="sf-footer-col-toggle" onclick="this.classList.toggle('open'); this.nextElementSibling.classList.toggle('open');">
+                    <span>Contact</span><i class="bi bi-chevron-down"></i>
+                </button>
+                <div class="sf-footer-col-links links">
                     @if ($ss->get('store.email'))
                         <a href="mailto:{{ $ss->get('store.email') }}"><i class="bi bi-envelope"></i> {{ $ss->get('store.email') }}</a>
                     @endif
