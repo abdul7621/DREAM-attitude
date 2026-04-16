@@ -101,8 +101,14 @@
     @if ($sectionKey === 'trust_strip')
         {{-- ══ TRUST STRIP ══════════════════════════════════════════════════════== --}}
         @php
-            $trustItems = $ss->get('theme.trust_strip_items');
-            $trustItems = is_array($trustItems) ? $trustItems : [];
+            $trustRaw = $ss->get('theme.trust_strip_items', '');
+            if (is_array($trustRaw)) {
+                $trustItems = $trustRaw;
+            } elseif (is_string($trustRaw) && !empty($trustRaw)) {
+                $trustItems = json_decode($trustRaw, true) ?: [];
+            } else {
+                $trustItems = [];
+            }
             if (empty($trustItems)) {
                 $trustItems = [
                     ['val' => '400+', 'label' => 'Premium Products'],
@@ -167,8 +173,14 @@
     @if ($sectionKey === 'usp_strip')
         {{-- ══ USP STRIP ═════════════════════════════════════════════════════════ --}}
         @php
-            $uspItems = $ss->get('theme.usp_strip_items');
-            $uspItems = is_array($uspItems) ? $uspItems : [];
+            $uspRaw = $ss->get('theme.usp_strip_items', '');
+            if (is_array($uspRaw)) {
+                $uspItems = $uspRaw;
+            } elseif (is_string($uspRaw) && !empty($uspRaw)) {
+                $uspItems = json_decode($uspRaw, true) ?: [];
+            } else {
+                $uspItems = [];
+            }
             if (empty($uspItems)) {
                 $uspItems = [
                     ['icon' => 'bi-stars', 'title' => 'No Paraben, No SLS, No Silicones', 'desc' => 'Clean formulas you can trust on your skin and hair daily'],
@@ -280,15 +292,34 @@
         @php
             $awardTitle  = $ss->get('theme.brand_story_title', "India's Most Promising Beauty Brand");
             $awardText   = $ss->get('theme.brand_story_text', 'Recognized at the Asian Excellence Awards 2021, Dream Attitude brings you a legacy of trust and innovation across hair care, skin care, fragrances, and professional salon essentials. Trusted by salons, wholesalers, and customers across India.');
-            $awardLink   = $ss->get('theme.brand_story_link', '#');
-            $awardImages = $ss->get('theme.award_images', []);
-            $awardImages = is_array($awardImages) ? $awardImages : [];
-            $awardStats  = $ss->get('theme.award_stats');
-            $awardStats  = is_array($awardStats) ? $awardStats : [
-                ['num' => '400+', 'label' => 'Products'],
-                ['num' => '2021', 'label' => 'Award Year'],
-                ['num' => 'PAN India', 'label' => 'Delivery'],
-            ];
+            $awardLink   = $ss->get('theme.brand_story_link', '');
+
+            // Decode award images (stored as JSON string in DB)
+            $awardImagesRaw = $ss->get('theme.award_images', '');
+            if (is_array($awardImagesRaw)) {
+                $awardImages = $awardImagesRaw;
+            } elseif (is_string($awardImagesRaw) && !empty($awardImagesRaw)) {
+                $awardImages = json_decode($awardImagesRaw, true) ?: [];
+            } else {
+                $awardImages = [];
+            }
+
+            // Decode award stats (stored as JSON string in DB)
+            $awardStatsRaw = $ss->get('theme.award_stats', '');
+            if (is_array($awardStatsRaw)) {
+                $awardStats = $awardStatsRaw;
+            } elseif (is_string($awardStatsRaw) && !empty($awardStatsRaw)) {
+                $awardStats = json_decode($awardStatsRaw, true) ?: [];
+            } else {
+                $awardStats = [];
+            }
+            if (empty($awardStats)) {
+                $awardStats = [
+                    ['num' => '400+', 'label' => 'Products'],
+                    ['num' => '2021', 'label' => 'Award Year'],
+                    ['num' => 'PAN India', 'label' => 'Delivery'],
+                ];
+            }
         @endphp
         <div class="sf-award-section">
             <div class="sf-award-inner">

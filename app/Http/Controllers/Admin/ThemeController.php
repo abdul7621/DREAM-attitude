@@ -106,6 +106,11 @@ class ThemeController extends Controller
                     'award_stats'                  => ['nullable', 'array', 'max:3'],
                     'award_stats.*.num'            => ['nullable', 'string', 'max:50'],
                     'award_stats.*.label'          => ['nullable', 'string', 'max:50'],
+                    'award_images'                 => ['nullable', 'array', 'max:4'],
+                    'award_images.*'               => ['nullable', 'image', 'max:3072'],
+                    'award_images_existing'        => ['nullable', 'array', 'max:4'],
+                    'award_images_existing.*'      => ['nullable', 'string', 'max:255'],
+                    'award_images_remove'          => ['nullable', 'array', 'max:4'],
                 ]);
 
                 // Normalize sections
@@ -236,6 +241,35 @@ class ThemeController extends Controller
                         ['value' => json_encode(array_values($awardStats))]
                     );
                 }
+
+                // ── Process Award Section Images (4 slots) ──────────────
+                $awardImagesExisting = $request->input('award_images_existing', []);
+                $awardImagesRemove   = $request->input('award_images_remove', []);
+                $finalAwardImages    = [];
+                for ($ai = 0; $ai < 4; $ai++) {
+                    // If admin checked "Remove" for this slot, skip it
+                    if (!empty($awardImagesRemove[$ai])) {
+                        continue;
+                    }
+                    // New upload takes priority
+                    if ($request->hasFile("award_images.$ai")) {
+                        $file = $request->file("award_images.$ai");
+                        if ($file->isValid()) {
+                            $path = $file->store('theme/award', 'public');
+                            $path = app(ImageOptimizerService::class)->optimize($path, 800);
+                            $finalAwardImages[] = $path;
+                            continue;
+                        }
+                    }
+                    // Keep existing if no new upload
+                    if (!empty($awardImagesExisting[$ai])) {
+                        $finalAwardImages[] = $awardImagesExisting[$ai];
+                    }
+                }
+                Setting::updateOrCreate(
+                    ['key' => 'theme.award_images'],
+                    ['value' => json_encode($finalAwardImages)]
+                );
 
                 Cache::forget('commerce.settings.array');
                 return redirect()->route('admin.theme.index', ['tab' => 'homepage'])->with('success', 'Homepage configured successfully.');

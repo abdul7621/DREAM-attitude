@@ -348,6 +348,40 @@
                         </div>
                         <div class="form-text">Number on top, label below. Example: 400+ / Products</div>
                     </div>
+
+                    {{-- ── Award Section Images (4 slots) ── --}}
+                    <div class="col-12 mt-3">
+                        <label class="form-label fw-semibold">Section Images <span class="badge bg-warning text-dark">4 Images</span></label>
+                        <p class="text-muted small mb-2">Ye 4 images right side pe grid mein dikhti hain. <strong>Recommended: 800×800px square</strong>. Agar koi image nahi lagayi toh bestseller products dikhenge.</p>
+                        @php
+                            $awardImages = is_array($theme['theme.award_images'] ?? null) ? $theme['theme.award_images'] : [];
+                        @endphp
+                        <div class="row g-3">
+                            @for($ai = 0; $ai < 4; $ai++)
+                            <div class="col-6 col-md-3">
+                                <div class="border rounded p-2 text-center bg-light" style="min-height: 130px; position: relative;">
+                                    <div class="fw-semibold small mb-2 text-muted">Image {{ $ai + 1 }}</div>
+                                    @if(!empty($awardImages[$ai]))
+                                        <img src="{{ asset('storage/' . $awardImages[$ai]) }}"
+                                             alt="Award Image {{ $ai + 1 }}"
+                                             class="img-fluid rounded mb-2"
+                                             style="height: 80px; width: 100%; object-fit: cover;">
+                                        <input type="hidden" name="award_images_existing[{{ $ai }}]" value="{{ $awardImages[$ai] }}">
+                                        <div class="form-check form-switch mt-1">
+                                            <input class="form-check-input" type="checkbox" name="award_images_remove[{{ $ai }}]" value="1" id="rm_award_{{ $ai }}">
+                                            <label class="form-check-label small text-danger" for="rm_award_{{ $ai }}">Remove</label>
+                                        </div>
+                                    @else
+                                        <div style="height:80px; display:flex; align-items:center; justify-content:center; color:#bbb;">
+                                            <i class="bi bi-image" style="font-size:2rem;"></i>
+                                        </div>
+                                    @endif
+                                    <input type="file" name="award_images[{{ $ai }}]" class="form-control form-control-sm mt-1" accept="image/*">
+                                </div>
+                            </div>
+                            @endfor
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
