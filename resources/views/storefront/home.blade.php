@@ -15,7 +15,9 @@
         $sTitle = is_array($section) ? ($section['title'] ?? null) : null;
         $sSubtitle = is_array($section) ? ($section['subtitle'] ?? null) : null;
     @endphp
-    @if (!$isEnabled) @continue @endif
+    @if (!$isEnabled)
+        @continue
+    @endif
 
     @if ($sectionKey === 'hero')
         {{-- ══ HERO SPLIT — Premium DNA ═══════════════════════════════════════════ --}}
@@ -337,13 +339,18 @@
         @if($storyTitle || $storyText)
         <section class="sf-section sf-section-cream">
             <div class="sf-container">
-                <div style="display:grid;gap:32px;grid-template-columns:@if($storyImage)repeat(auto-fit,minmax(300px,1fr))@else 1fr@endif;align-items:center;">
+                @php $gridCols = $storyImage ? 'repeat(auto-fit, minmax(300px, 1fr))' : '1fr'; @endphp
+                <div style="display:grid;gap:32px;grid-template-columns:{{ $gridCols }};align-items:center;">
                     @if($storyImage)
-                    <div><img src="{{ asset('storage/' . $storyImage) }}" alt="{{ $storyTitle }}" style="width:100%;border-radius:var(--radius-md);" loading="lazy"></div>
+                    <div><img src="{{ asset('storage/' . $storyImage) }}" alt="{{ $storyTitle ?? '' }}" style="width:100%;border-radius:var(--radius-md);" loading="lazy"></div>
                     @endif
                     <div>
-                        @if($storyTitle)<h2 class="sf-section-title" style="margin-bottom:16px;">{{ $storyTitle }}</h2>@endif
-                        @if($storyText)<p style="color:var(--color-text-secondary);font-size:14px;line-height:1.7;">{{ $storyText }}</p>@endif
+                        @if($storyTitle)
+                        <h2 class="sf-section-title" style="margin-bottom:16px;">{{ $storyTitle }}</h2>
+                        @endif
+                        @if($storyText)
+                        <p style="color:var(--color-text-secondary);font-size:14px;line-height:1.7;">{{ $storyText }}</p>
+                        @endif
                     </div>
                 </div>
             </div>
