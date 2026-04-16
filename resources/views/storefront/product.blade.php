@@ -302,7 +302,6 @@ dataLayer.push({
         }]
     }
 });
-@if (config('commerce.meta.pixel_id'))
 if (typeof fbq === 'function') {
     fbq('track', 'ViewContent', {
         content_ids: [{!! json_encode($v0?->sku ?: 'p'.$product->id) !!}],
@@ -311,7 +310,6 @@ if (typeof fbq === 'function') {
         currency: '{{ config('commerce.currency', 'INR') }}'
     });
 }
-@endif
 
 @if($spEnabled)
 (function() {

@@ -116,7 +116,6 @@ dataLayer.push({
         items: @json($a['items'])
     }
 });
-@if (config('commerce.meta.pixel_id'))
 if (typeof fbq === 'function') {
     fbq('track', 'AddToCart', {
         value: {{ $a['value'] }},
@@ -125,7 +124,6 @@ if (typeof fbq === 'function') {
         content_type: 'product'
     });
 }
-@endif
 </script>
 @endpush
 @endif

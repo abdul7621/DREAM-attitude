@@ -27,18 +27,18 @@ dataLayer.push({
         ]
     }
 });
-@if (config('commerce.meta.pixel_id'))
-fbq('track', 'Purchase', {
-    value: {{ (float) $order->grand_total }},
-    currency: @json($order->currency),
-    contents: [
-        @foreach ($order->orderItems as $oi)
-        { id: @json($oi->sku_snapshot ?: 'v'.$oi->product_variant_id), quantity: {{ (int) $oi->qty }} }@if(! $loop->last),@endif
-        @endforeach
-    ],
-    content_type: 'product'
-});
-@endif
+if (typeof fbq === 'function') {
+    fbq('track', 'Purchase', {
+        value: {{ (float) $order->grand_total }},
+        currency: @json($order->currency),
+        contents: [
+            @foreach ($order->orderItems as $oi)
+            { id: @json($oi->sku_snapshot ?: 'v'.$oi->product_variant_id), quantity: {{ (int) $oi->qty }} }@if(! $loop->last),@endif
+            @endforeach
+        ],
+        content_type: 'product'
+    });
+}
 </script>
 @endpush
 

@@ -1,7 +1,8 @@
 @php
-    $gtm = config('commerce.gtm.container_id');
-    $ga4 = config('commerce.google.analytics_id');
-    $pixel = config('commerce.meta.pixel_id');
+    $ssInstance = app(\App\Services\SettingsService::class);
+    $gtm = $ssInstance->get('tracking.gtm_id', config('commerce.gtm.container_id'));
+    $ga4 = $ssInstance->get('tracking.ga4_id', config('commerce.google.analytics_id'));
+    $pixel = $ssInstance->get('tracking.pixel_id', config('commerce.meta.pixel_id'));
 @endphp
 <script>
 window.dataLayer = window.dataLayer || [];
