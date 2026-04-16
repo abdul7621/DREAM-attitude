@@ -149,7 +149,20 @@
                 <p class="text-muted small mb-3">Check the sections you want to display and drag them or input order to arrange. Currently implemented as a simple Ordered List.</p>
                 <div class="list-group mb-3">
                     @php
-                        $available = ['hero' => 'Hero Banner', 'categories' => 'Category Grid', 'featured' => 'Featured Products', 'bestsellers' => 'Bestsellers', 'latest' => 'New Arrivals', 'offers_banner' => 'Offers Banner', 'trust' => 'Trust Bar', 'reviews' => 'Testimonials'];
+                        $available = [
+                            'hero'          => '🖼️ Hero Banner (Split)',
+                            'trust_strip'   => '✅ Trust Strip (Dark Bar)',
+                            'categories'    => '🗂️ Category Grid',
+                            'usp_strip'     => '⭐ USP Strip (4 Features)',
+                            'bestsellers'   => '🔥 Bestsellers',
+                            'offers_banner' => '🏷️ Offers Banner',
+                            'featured'      => '🆕 Featured / New Arrivals',
+                            'latest'        => '📦 Latest Products',
+                            'award_section' => '🏆 Award / Brand Story',
+                            'reviews'       => '💬 Customer Reviews',
+                            'trust'         => '🔒 Trust Bar (Legacy)',
+                            'text_with_image' => '📖 Brand Story Block (Legacy)',
+                        ];
                         $active = $theme['theme.home_sections'] ?? [];
                     @endphp
                     @foreach($active as $key)
@@ -222,19 +235,38 @@
                 <div class="row g-3">
                     <div class="col-12">
                         <label class="form-label">Hero Title</label>
-                        <input type="text" name="theme_hero_title" class="form-control" value="{{ $theme['theme.hero_title'] ?? '' }}">
+                        <input type="text" name="theme_hero_title" class="form-control" value="{{ $theme['theme.hero_title'] ?? '' }}" placeholder="Salon Quality">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Hero Eyebrow <span class="badge bg-secondary">NEW</span></label>
+                        <input type="text" name="theme_hero_eyebrow" class="form-control" value="{{ $theme['theme.hero_eyebrow'] ?? '' }}" placeholder="Professional Beauty, Delivered">
+                        <div class="form-text">Small text above the main title.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Award Badge Text <span class="badge bg-secondary">NEW</span></label>
+                        <input type="text" name="theme_hero_award_text" class="form-control" value="{{ $theme['theme.hero_award_text'] ?? '' }}" placeholder="★ India's Most Promising Brand 2021">
+                        <div class="form-text">Gold badge shown above title.</div>
                     </div>
                     <div class="col-12">
                         <label class="form-label">Hero Subtitle</label>
                         <input type="text" name="theme_hero_subtitle" class="form-control" value="{{ $theme['theme.hero_subtitle'] ?? '' }}">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">CTA Button Text</label>
-                        <input type="text" name="theme_hero_cta_text" class="form-control" value="{{ $theme['theme.hero_cta_text'] ?? '' }}">
+                        <label class="form-label">Primary CTA Text</label>
+                        <input type="text" name="theme_hero_cta_text" class="form-control" value="{{ $theme['theme.hero_cta_text'] ?? '' }}" placeholder="Shop Now">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">CTA Button Link</label>
-                        <input type="text" name="theme_hero_cta_link" class="form-control" value="{{ $theme['theme.hero_cta_link'] ?? '' }}">
+                        <label class="form-label">Primary CTA Link</label>
+                        <input type="text" name="theme_hero_cta_link" class="form-control" value="{{ $theme['theme.hero_cta_link'] ?? '' }}" placeholder="/search">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Secondary CTA Text <span class="badge bg-secondary">NEW</span></label>
+                        <input type="text" name="theme_hero_cta2_text" class="form-control" value="{{ $theme['theme.hero_cta2_text'] ?? '' }}" placeholder="Explore Categories">
+                        <div class="form-text">Leave blank to hide the outline button.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Secondary CTA Link</label>
+                        <input type="text" name="theme_hero_cta2_link" class="form-control" value="{{ $theme['theme.hero_cta2_link'] ?? '' }}" placeholder="/categories">
                     </div>
                 </div>
             </div>
@@ -276,6 +308,105 @@
                         <input type="text" name="theme_offers_banner_link" class="form-control" value="{{ $theme['theme.offers_banner_link'] ?? '' }}">
                     </div>
                 </div>
+            </div>
+        </div>
+
+        {{-- ── Brand Story / Award Section ─── --}}
+        <div class="card mb-4">
+            <div class="card-header bg-white"><i class="bi bi-award me-2"></i> Award / Brand Story Section <span class="badge bg-success">NEW</span></div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">Controls the plum-coloured award section on the homepage. Images are pulled from <strong>Hero Slides</strong> (up to 4), or you can upload specific award images below.</p>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label">Section Title</label>
+                        <input type="text" name="theme_brand_story_title" class="form-control" value="{{ $theme['theme.brand_story_title'] ?? '' }}" placeholder="India's Most Promising Beauty Brand">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Section Description</label>
+                        <textarea name="theme_brand_story_text" class="form-control" rows="3" placeholder="Recognized at the Asian Excellence Awards 2021...">{{ $theme['theme.brand_story_text'] ?? '' }}</textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Read Story Link</label>
+                        <input type="text" name="theme_brand_story_link" class="form-control" value="{{ $theme['theme.brand_story_link'] ?? '' }}" placeholder="Leave blank to hide">
+                    </div>
+                    <div class="col-12 mt-2">
+                        <label class="form-label fw-semibold">Stats (3 entries shown)</label>
+                        <div class="row g-2">
+                            @php
+                                $awardStats = is_array($theme['theme.award_stats'] ?? null) ? $theme['theme.award_stats'] : [
+                                    ['num' => '400+', 'label' => 'Products'],
+                                    ['num' => '2021', 'label' => 'Award Year'],
+                                    ['num' => 'PAN India', 'label' => 'Delivery'],
+                                ];
+                            @endphp
+                            @foreach(array_slice($awardStats, 0, 3) as $si => $stat)
+                            <div class="col-md-4">
+                                <input type="text" name="award_stats[{{ $si }}][num]" class="form-control mb-1" value="{{ $stat['num'] ?? '' }}" placeholder="400+">
+                                <input type="text" name="award_stats[{{ $si }}][label]" class="form-control" value="{{ $stat['label'] ?? '' }}" placeholder="Products">
+                            </div>
+                            @endforeach
+                        </div>
+                        <div class="form-text">Number on top, label below. Example: 400+ / Products</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── Trust Strip ─── --}}
+        <div class="card mb-4">
+            <div class="card-header bg-white"><i class="bi bi-check2-all me-2"></i> Trust Strip (Dark Bar) <span class="badge bg-success">NEW</span></div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">The 4-item dark bar shown just below the hero. Edit value and label for each item.</p>
+                @php
+                    $trustItems = is_array($theme['theme.trust_strip_items'] ?? null) ? $theme['theme.trust_strip_items'] : [
+                        ['val' => '400+', 'label' => 'Premium Products'],
+                        ['val' => 'No Paraben · No SLS', 'label' => 'Clean Formulations'],
+                        ['val' => 'Cruelty Free', 'label' => 'Ethically Crafted'],
+                        ['val' => '60-Day Returns', 'label' => 'Hassle-Free Policy'],
+                    ];
+                @endphp
+                <div class="row g-3">
+                    @foreach($trustItems as $ti => $tItem)
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-light">
+                            <label class="form-label small fw-semibold">Item {{ $ti + 1 }}</label>
+                            <input type="text" name="trust_strip[{{ $ti }}][val]" class="form-control form-control-sm mb-1" value="{{ $tItem['val'] ?? '' }}" placeholder="Value (e.g. 400+)">
+                            <input type="text" name="trust_strip[{{ $ti }}][label]" class="form-control form-control-sm" value="{{ $tItem['label'] ?? '' }}" placeholder="Label (e.g. Premium Products)">
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+
+        {{-- ── USP Strip ─── --}}
+        <div class="card mb-4">
+            <div class="card-header bg-white"><i class="bi bi-stars me-2"></i> USP Strip (4 Features) <span class="badge bg-success">NEW</span></div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">The 4-column feature strip (No Paraben, Cruelty Free, etc). Use Bootstrap icon names.</p>
+                @php
+                    $uspItems = is_array($theme['theme.usp_strip_items'] ?? null) ? $theme['theme.usp_strip_items'] : [
+                        ['icon' => 'bi-stars', 'title' => 'No Paraben, No SLS, No Silicones', 'desc' => 'Clean formulas you can trust daily'],
+                        ['icon' => 'bi-heart', 'title' => 'Cruelty Free Always', 'desc' => 'Never tested on animals'],
+                        ['icon' => 'bi-droplet', 'title' => 'Non-Alcoholic Fragrances', 'desc' => 'Attars and perfumes for everyone'],
+                        ['icon' => 'bi-shop', 'title' => 'Trusted by Salons Across India', 'desc' => 'Professional-grade for home and salon'],
+                    ];
+                @endphp
+                <div class="row g-3">
+                    @foreach($uspItems as $ui => $uItem)
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-light">
+                            <label class="form-label small fw-semibold">Feature {{ $ui + 1 }}</label>
+                            <input type="text" name="usp_strip[{{ $ui }}][icon]" class="form-control form-control-sm mb-1" value="{{ $uItem['icon'] ?? 'bi-stars' }}" placeholder="Bootstrap icon class (e.g. bi-stars)">
+                            <input type="text" name="usp_strip[{{ $ui }}][title]" class="form-control form-control-sm mb-1" value="{{ $uItem['title'] ?? '' }}" placeholder="Feature Title">
+                            <input type="text" name="usp_strip[{{ $ui }}][desc]" class="form-control form-control-sm" value="{{ $uItem['desc'] ?? '' }}" placeholder="Short description">
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                <div class="form-text mt-2">Bootstrap icons: bi-stars, bi-heart, bi-droplet, bi-shield-check, bi-truck, bi-shop, bi-patch-check</div>
+            </div>
+        </div>
             </div>
         </div>
     </div>

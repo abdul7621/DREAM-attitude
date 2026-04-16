@@ -69,26 +69,43 @@ class ThemeController extends Controller
                 \Illuminate\Support\Facades\Log::info('Theme Save Request Data', $request->all());
 
                 $data = $request->validate([
-                    'home_sections' => ['nullable', 'array'],
-                    'theme_hero_title' => ['nullable', 'string', 'max:255'],
-                    'theme_hero_subtitle' => ['nullable', 'string', 'max:255'],
-                    'theme_hero_cta_text' => ['nullable', 'string', 'max:100'],
-                    'theme_hero_cta_link' => ['nullable', 'string', 'max:255'],
-                    'theme_hero_image' => ['nullable', 'image', 'max:4096'],
-                    'theme_trust_text' => ['nullable', 'string', 'max:255'],
-                    'theme_announcement_active' => ['nullable', 'boolean'],
-                    'theme_announcement_text' => ['nullable', 'string', 'max:255'],
-                    'theme_offers_banner_text' => ['nullable', 'string', 'max:255'],
-                    'theme_offers_banner_link' => ['nullable', 'string', 'max:255'],
-                    'theme_offers_banner_image' => ['nullable', 'image', 'max:4096'],
-                    'slide_links' => ['nullable', 'array', 'max:10'],
-                    'slide_links.*' => ['nullable', 'string', 'max:255'],
-                    'slide_alts' => ['nullable', 'array', 'max:10'],
-                    'slide_alts.*' => ['nullable', 'string', 'max:255'],
-                    'slide_existing' => ['nullable', 'array', 'max:10'],
-                    'slide_existing.*' => ['nullable', 'string', 'max:255'],
-                    'slide_images' => ['nullable', 'array', 'max:10'],
-                    'slide_images.*' => ['nullable', 'image', 'max:4096'],
+                    'home_sections'                => ['nullable', 'array'],
+                    'theme_hero_title'             => ['nullable', 'string', 'max:255'],
+                    'theme_hero_eyebrow'           => ['nullable', 'string', 'max:255'],
+                    'theme_hero_award_text'        => ['nullable', 'string', 'max:255'],
+                    'theme_hero_subtitle'          => ['nullable', 'string', 'max:500'],
+                    'theme_hero_cta_text'          => ['nullable', 'string', 'max:100'],
+                    'theme_hero_cta_link'          => ['nullable', 'string', 'max:255'],
+                    'theme_hero_cta2_text'         => ['nullable', 'string', 'max:100'],
+                    'theme_hero_cta2_link'         => ['nullable', 'string', 'max:255'],
+                    'theme_hero_image'             => ['nullable', 'image', 'max:4096'],
+                    'theme_trust_text'             => ['nullable', 'string', 'max:255'],
+                    'theme_brand_story_title'      => ['nullable', 'string', 'max:255'],
+                    'theme_brand_story_text'       => ['nullable', 'string', 'max:2000'],
+                    'theme_brand_story_link'       => ['nullable', 'string', 'max:255'],
+                    'theme_announcement_active'    => ['nullable', 'boolean'],
+                    'theme_announcement_text'      => ['nullable', 'string', 'max:255'],
+                    'theme_offers_banner_text'     => ['nullable', 'string', 'max:255'],
+                    'theme_offers_banner_link'     => ['nullable', 'string', 'max:255'],
+                    'theme_offers_banner_image'    => ['nullable', 'image', 'max:4096'],
+                    'slide_links'                  => ['nullable', 'array', 'max:10'],
+                    'slide_links.*'                => ['nullable', 'string', 'max:255'],
+                    'slide_alts'                   => ['nullable', 'array', 'max:10'],
+                    'slide_alts.*'                 => ['nullable', 'string', 'max:255'],
+                    'slide_existing'               => ['nullable', 'array', 'max:10'],
+                    'slide_existing.*'             => ['nullable', 'string', 'max:255'],
+                    'slide_images'                 => ['nullable', 'array', 'max:10'],
+                    'slide_images.*'               => ['nullable', 'image', 'max:4096'],
+                    'trust_strip'                  => ['nullable', 'array', 'max:8'],
+                    'trust_strip.*.val'            => ['nullable', 'string', 'max:100'],
+                    'trust_strip.*.label'          => ['nullable', 'string', 'max:100'],
+                    'usp_strip'                    => ['nullable', 'array', 'max:8'],
+                    'usp_strip.*.icon'             => ['nullable', 'string', 'max:50'],
+                    'usp_strip.*.title'            => ['nullable', 'string', 'max:150'],
+                    'usp_strip.*.desc'             => ['nullable', 'string', 'max:255'],
+                    'award_stats'                  => ['nullable', 'array', 'max:3'],
+                    'award_stats.*.num'            => ['nullable', 'string', 'max:50'],
+                    'award_stats.*.label'          => ['nullable', 'string', 'max:50'],
                 ]);
 
                 // Normalize sections
@@ -175,7 +192,15 @@ class ThemeController extends Controller
                     Setting::updateOrCreate(['key' => 'theme.offers_banner_image'], ['value' => $path]);
                 }
 
-                $keys = ['theme_hero_title', 'theme_hero_subtitle', 'theme_hero_cta_text', 'theme_hero_cta_link', 'theme_trust_text', 'theme_announcement_text', 'theme_offers_banner_text', 'theme_offers_banner_link'];
+                // Save all simple string settings
+                $keys = [
+                    'theme_hero_title', 'theme_hero_eyebrow', 'theme_hero_award_text',
+                    'theme_hero_subtitle', 'theme_hero_cta_text', 'theme_hero_cta_link',
+                    'theme_hero_cta2_text', 'theme_hero_cta2_link',
+                    'theme_trust_text', 'theme_announcement_text',
+                    'theme_brand_story_title', 'theme_brand_story_text', 'theme_brand_story_link',
+                    'theme_offers_banner_text', 'theme_offers_banner_link',
+                ];
                 foreach ($keys as $key) {
                     if (array_key_exists($key, $data)) {
                         $val = $data[$key];
@@ -184,6 +209,33 @@ class ThemeController extends Controller
                     }
                 }
                 Setting::updateOrCreate(['key' => 'theme.announcement_active'], ['value' => $request->boolean('theme_announcement_active') ? '1' : '0']);
+
+                // Save Trust Strip items (array)
+                $trustStrip = $request->input('trust_strip', []);
+                if (!empty($trustStrip)) {
+                    Setting::updateOrCreate(
+                        ['key' => 'theme.trust_strip_items'],
+                        ['value' => json_encode(array_values($trustStrip))]
+                    );
+                }
+
+                // Save USP Strip items (array)
+                $uspStrip = $request->input('usp_strip', []);
+                if (!empty($uspStrip)) {
+                    Setting::updateOrCreate(
+                        ['key' => 'theme.usp_strip_items'],
+                        ['value' => json_encode(array_values($uspStrip))]
+                    );
+                }
+
+                // Save Award Stats (array)
+                $awardStats = $request->input('award_stats', []);
+                if (!empty($awardStats)) {
+                    Setting::updateOrCreate(
+                        ['key' => 'theme.award_stats'],
+                        ['value' => json_encode(array_values($awardStats))]
+                    );
+                }
 
                 Cache::forget('commerce.settings.array');
                 return redirect()->route('admin.theme.index', ['tab' => 'homepage'])->with('success', 'Homepage configured successfully.');
