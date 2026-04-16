@@ -3,6 +3,7 @@
 @section('title', 'Order Confirmed — ' . $order->order_number)
 
 @push('scripts')
+@if($isFirstVisit)
 <script>
 window.dataLayer = window.dataLayer || [];
 dataLayer.push({ ecommerce: null });
@@ -40,6 +41,7 @@ if (typeof fbq === 'function') {
     });
 }
 </script>
+@endif
 @endpush
 
 @section('content')

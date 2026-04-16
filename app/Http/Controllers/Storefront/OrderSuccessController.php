@@ -16,8 +16,14 @@ class OrderSuccessController extends Controller
     public function show(string $orderNumber): View
     {
         $order = Order::query()->where('order_number', $orderNumber)->with('orderItems')->firstOrFail();
-        // Meta CAPI is now handled robustly on the backend via OrderPlaced event.
+        
+        // Fix for multiple purchase events firing on refresh
+        $sessionKey = 'tracked_order_' . $order->id;
+        $isFirstVisit = !session()->has($sessionKey);
+        if ($isFirstVisit) {
+            session()->put($sessionKey, true);
+        }
 
-        return view('storefront.order-success', compact('order'));
+        return view('storefront.order-success', compact('order', 'isFirstVisit'));
     }
 }
