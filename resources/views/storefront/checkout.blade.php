@@ -27,9 +27,9 @@
     </div>
 
     <div class="sf-container">
-        <div class="sf-cart-layout" style="direction: rtl;">
+        <div class="sf-cart-layout">
             {{-- ── Right: Order Summary ────────────────────────────────── --}}
-            <div style="direction: ltr;">
+            <div style="order: 2;">
                 <div class="sf-cart-summary" style="position: sticky; top: 20px;">
                     <div style="font-weight: 600; font-size: 16px; margin-bottom: 24px; color: var(--color-text-primary);"><i class="bi bi-bag-check me-2"></i> Order Summary</div>
                     <div>
@@ -83,7 +83,7 @@
             </div>
 
             {{-- ── Left: Checkout Form ─────────────────────────────────── --}}
-            <div style="direction: ltr;">
+            <div style="order: 1;">
                 <form id="checkout-form" action="{{ route('checkout.store') }}" method="post" novalidate>
                     @csrf
 
@@ -450,6 +450,8 @@
                         cityInput.value = info.District;
                         stateInput.value = info.State;
                         
+                        cityInput.readOnly = true;
+                        stateInput.readOnly = true;
                         cityInput.setAttribute('readonly', 'true');
                         stateInput.setAttribute('readonly', 'true');
                         
@@ -459,28 +461,58 @@
 
                         if (window.Store) {
                             Store.emit('pincode:resolved', { city: info.District, state: info.State, pincode: pinInput.value });
-                            Store.emit('toast', {type:'success', message: 'Delivering to ' + info.District + ', ' + info.State});
                         }
-                    } else {
+                    } else if (data && data[0] && data[0].Status === 'Error') {
+                        // Invalid PIN Case 3
                         cityInput.value = '';
                         stateInput.value = '';
+                        cityInput.readOnly = true;
+                        stateInput.readOnly = true;
+                        cityInput.setAttribute('readonly', 'true');
+                        stateInput.setAttribute('readonly', 'true');
+
                         pinInput.classList.add('is-invalid');
                         pinInput.classList.remove('is-valid');
                         if (errEl) {
                             errEl.textContent = 'Invalid PIN code. Please check.';
                             errEl.classList.remove('d-none');
                         }
-                        if (window.Store) Store.emit('toast', {type:'error', message: 'Invalid PIN code.'});
+                    } else {
+                        // Valid PIN but API format unexpectedly changed / failed
+                        cityInput.readOnly = false;
+                        stateInput.readOnly = false;
+                        cityInput.removeAttribute('readonly');
+                        stateInput.removeAttribute('readonly');
+                        
+                        if (errEl) {
+                            errEl.textContent = 'Auto-fill failed, please enter manually.';
+                            errEl.classList.remove('d-none');
+                        }
                     }
                     processEnd();
                 })
                 .catch(function(err) {
                     console.error("Postal API error: ", err);
+                    // API Fail Case 2
+                    cityInput.readOnly = false;
+                    stateInput.readOnly = false;
+                    cityInput.removeAttribute('readonly');
+                    stateInput.removeAttribute('readonly');
+                    
+                    if (errEl) {
+                        errEl.textContent = 'Auto-fill failed, please enter manually.';
+                        errEl.classList.remove('d-none');
+                    }
                     processEnd();
                 });
             } else if (this.value.length > 0 && this.value.length < 6) {
+                // Keep readonly if less than 6 digits
                 cityInput.value = '';
                 stateInput.value = '';
+                cityInput.readOnly = true;
+                stateInput.readOnly = true;
+                cityInput.setAttribute('readonly', 'true');
+                stateInput.setAttribute('readonly', 'true');
                 this.classList.remove('is-valid');
             }
         });

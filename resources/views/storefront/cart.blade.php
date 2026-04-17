@@ -11,7 +11,47 @@
                 <p style="color: var(--color-text-muted); margin-bottom: 24px;">Your cart is empty.</p>
                 <a href="{{ route('home') }}" class="sf-hero-cta" style="display: inline-block;">Continue shopping</a>
             </div>
+            
+            {{-- Empty Cart: Best Collections --}}
+            @php
+                $emptyCartUpsells = \App\Models\Product::where('is_active', true)->where('is_featured', true)->take(4)->get();
+            @endphp
+            @if($emptyCartUpsells->isNotEmpty())
+                <div style="margin-top: 60px;">
+                    <h3 style="font-size: 18px; margin-bottom: 24px; text-transform: uppercase;">Discover Our Bestsellers</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px;">
+                        @foreach($emptyCartUpsells as $upsell)
+                            <a href="{{ route('product.show', $upsell->slug) }}" style="display: block; text-decoration: none; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 12px; background: var(--color-bg-surface);">
+                                <img src="{{ $upsell->primaryImage() ? asset('storage/'.$upsell->primaryImage()->path) : 'https://placehold.co/150' }}" style="width: 100%; height: 150px; object-fit: cover; border-radius: var(--radius-sm); margin-bottom: 12px;">
+                                <div style="color: var(--color-text-primary); font-size: 13px; font-weight: 600;">{{ Str::limit($upsell->name, 35) }}</div>
+                                <div style="color: var(--color-gold); font-size: 13px; font-weight: 500; margin-top: 4px;">{{ config('commerce.currency_symbol', '₹') }}{{ number_format($upsell->price ?? 0, 0) }}</div>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
         @else
+            @php
+                $threshold = (float) app(\App\Services\SettingsService::class)->get('shipping.free_threshold', 499);
+                $subtotal = (float) $totals['subtotal'];
+                $percentage = $threshold > 0 ? min(100, ($subtotal / $threshold) * 100) : 100;
+                $remaining = max(0, $threshold - $subtotal);
+            @endphp
+            <div style="background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 24px;">
+                @if($remaining > 0)
+                    <div style="font-weight: 600; font-size: 14px; color: var(--color-text-primary); margin-bottom: 12px; text-align: center;">
+                        You are <span style="color: var(--color-gold);">{{ config('commerce.currency_symbol', '₹') }}{{ number_format($remaining, 0) }}</span> away from <strong style="color: var(--color-success);">FREE Shipping</strong>!
+                    </div>
+                @else
+                    <div style="font-weight: 600; font-size: 14px; color: var(--color-success); margin-bottom: 12px; text-align: center;">
+                        <i class="bi bi-truck"></i> Congratulations! You unlocked <strong>FREE Shipping</strong> 🎉
+                    </div>
+                @endif
+                <div style="background: var(--color-bg-elevated); height: 8px; border-radius: 4px; overflow: hidden; width: 100%;">
+                    <div style="height: 100%; background: var(--color-success); width: {{ $percentage }}%; transition: width 0.5s ease-in-out;"></div>
+                </div>
+            </div>
+
             <div class="sf-cart-layout">
                 <div>
                     @foreach ($lines as $row)
@@ -48,6 +88,49 @@
                             </form>
                         </div>
                     @endforeach
+                    
+                    {{-- Frequently Bought Together (Same Category Logic) --}}
+                    @php
+                        $cartProductIds = $lines->pluck('product.id')->toArray();
+                        $categoryIds = $lines->pluck('product.category_id')->filter()->unique()->toArray();
+                        $upsells = collect();
+                        if (!empty($categoryIds)) {
+                            $upsells = \App\Models\Product::whereIn('category_id', $categoryIds)
+                                                          ->whereNotIn('id', $cartProductIds)
+                                                          ->where('is_active', true)
+                                                          ->inRandomOrder()
+                                                          ->take(3)
+                                                          ->get();
+                        }
+                    @endphp
+                    @if($upsells->isNotEmpty())
+                        <div style="margin-top: 40px; padding-top: 32px; border-top: 1px solid var(--color-border);">
+                            <h3 style="font-size: 16px; margin-bottom: 20px; text-transform: uppercase;">Frequently Bought Together</h3>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 16px;">
+                                @foreach($upsells as $upsell)
+                                    <div style="border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 12px; background: var(--color-bg-surface); display: flex; flex-direction: column;">
+                                        <a href="{{ route('product.show', $upsell->slug) }}" style="display: block; text-decoration: none; flex: 1;">
+                                            <img src="{{ $upsell->primaryImage() ? asset('storage/'.$upsell->primaryImage()->path) : 'https://placehold.co/150' }}" style="width: 100%; height: 120px; object-fit: cover; border-radius: var(--radius-sm); margin-bottom: 8px;">
+                                            <div style="color: var(--color-text-primary); font-size: 12px; font-weight: 500; line-height: 1.4;">{{ Str::limit($upsell->name, 30) }}</div>
+                                        </a>
+                                        <form action="{{ route('cart.items.store') }}" method="post" style="margin-top: 12px;">
+                                            @csrf
+                                            <input type="hidden" name="product_id" value="{{ $upsell->id }}">
+                                            @php $defaultVariant = $upsell->variants()->first(); @endphp
+                                            @if($defaultVariant)
+                                                <input type="hidden" name="variant_id" value="{{ $defaultVariant->id }}">
+                                                <input type="hidden" name="qty" value="1">
+                                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                    <span style="color: var(--color-gold); font-size: 13px; font-weight: 600;">{{ config('commerce.currency_symbol', '₹') }}{{ number_format((float)$defaultVariant->price, 0) }}</span>
+                                                    <button type="submit" style="background: none; border: none; color: var(--color-gold); font-size: 18px; padding: 0; cursor: pointer;"><i class="bi bi-plus-circle-fill"></i></button>
+                                                </div>
+                                            @endif
+                                        </form>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                 </div>
                 
                 <div>

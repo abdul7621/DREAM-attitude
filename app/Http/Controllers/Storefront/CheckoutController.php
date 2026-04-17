@@ -88,6 +88,17 @@ class CheckoutController extends Controller
                             'email' => $data['email'],
                             'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(12)),
                         ]);
+                        
+                        if (!str_contains($data['email'], '@noemail.com')) {
+                            session()->flash('account_created_email', $data['email']);
+                            try {
+                                \Illuminate\Support\Facades\Password::sendResetLink(['email' => $data['email']]);
+                            } catch (\Exception $e) {
+                                \Illuminate\Support\Facades\Log::warning("Could not send password reset to new guest user: " . $e->getMessage());
+                            }
+                        } else {
+                            session()->flash('account_created_phone', $data['phone']);
+                        }
                     }
                 });
 

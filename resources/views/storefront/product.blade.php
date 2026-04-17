@@ -82,6 +82,30 @@
                                 'product' => $product,
                                 'selectedVariant' => $selectedVariant
                             ])
+
+                            {{-- CRO Boost: Hook & Promise (After Title/Price) --}}
+                            @if($section['key'] === 'title_price')
+                                @if(!empty($product->meta['problem_hook']) || !empty($product->meta['result_promise']))
+                                    <div style="background: var(--color-bg-elevated); border-left: 4px solid var(--color-gold); padding: 16px; margin: 24px 0; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;">
+                                        @if(!empty($product->meta['problem_hook']))
+                                            <p style="color: var(--color-text-secondary); font-size: 14px; font-style: italic; margin-bottom: 8px; line-height: 1.5;">{{ $product->meta['problem_hook'] }}</p>
+                                        @endif
+                                        @if(!empty($product->meta['result_promise']))
+                                            <p style="color: var(--color-text-primary); font-size: 15px; font-weight: 600; margin: 0;"><i class="bi bi-magic" style="color: var(--color-gold); margin-right: 6px;"></i> {{ $product->meta['result_promise'] }}</p>
+                                        @endif
+                                    </div>
+                                @endif
+                            @endif
+
+                            {{-- CRO Boost: Trust Proof (After Buy Buttons) --}}
+                            @if($section['key'] === 'buy_buttons')
+                                @if(!empty($product->meta['trust_proof']))
+                                    <div style="margin: 24px 0; padding: 16px; border: 1px dashed var(--color-border); border-radius: var(--radius-md); background: rgba(39,103,73,0.03); text-align: center;">
+                                        <div style="font-weight: 700; color: var(--color-success); font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;"><i class="bi bi-shield-check me-1"></i> Trust Proof</div>
+                                        <p style="color: var(--color-text-secondary); font-size: 14px; margin: 0; line-height: 1.5;">{!! nl2br(e($product->meta['trust_proof'])) !!}</p>
+                                    </div>
+                                @endif
+                            @endif
                         @endif
                     @endforeach
                 </form>
@@ -103,30 +127,27 @@
 </section>
 
 {{-- ── Sticky Mobile Cart Bar ─────────────────────────────── --}}
-<div class="sf-mobile-sticky">
+<div class="sf-mobile-sticky" style="display: flex; gap: 8px; align-items: center; padding: 12px; background: var(--color-bg-elevated); border-top: 1px solid var(--color-border); z-index: 1040;">
     @php
         $defVarSticky = $product->variants->where('is_active', true)->first();
         $stickyPrice = $defVarSticky ? ((float) ($variantPrices[$defVarSticky->id]['display'] ?? $defVarSticky->price_retail)) : 0;
         $stickyCompare = $defVarSticky ? ((float) ($variantPrices[$defVarSticky->id]['compare'] ?? $defVarSticky->compare_at_price)) : 0;
     @endphp
-    <div style="flex: 1; display: flex; align-items: center; gap: 12px;">
-        @if($product->primaryImage())
-            <img src="{{ asset('storage/'.$product->primaryImage()->path) }}" style="width: 40px; height: 40px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
-        @endif
-        <div style="display: flex; flex-direction: column; overflow: hidden;">
-            <div style="display: flex; align-items: baseline; gap: 8px;">
-                <span style="color: var(--color-gold); font-weight: 600; font-size: 14px;" id="stickyPrice">₹{{ number_format($stickyPrice) }}</span>
-                <span style="color: var(--color-text-muted); text-decoration: line-through; font-size: 11px;" id="stickyCompare" style="display:{{ $stickyCompare > $stickyPrice ? 'inline' : 'none' }};">₹{{ number_format($stickyCompare) }}</span>
-            </div>
-            <div style="color: var(--color-text-secondary); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $product->name }} <span id="stickyVariant"></span></div>
+    
+    <div style="display: flex; flex-direction: column; justify-content: center; min-width: 80px;">
+        <div style="color: var(--color-text-secondary); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">Total Price</div>
+        <div style="display: flex; align-items: baseline; gap: 4px;">
+            <span style="color: var(--color-gold); font-weight: 700; font-size: 16px;" id="stickyPrice">₹{{ number_format($stickyPrice) }}</span>
+            <span style="color: var(--color-text-muted); text-decoration: line-through; font-size: 11px;" id="stickyCompare" style="display:{{ $stickyCompare > $stickyPrice ? 'inline' : 'none' }};">₹{{ number_format($stickyCompare) }}</span>
         </div>
     </div>
-    <button onclick="document.getElementById('redirectInput').value='checkout'; document.getElementById('productForm').submit();" style="background: var(--color-gold); color: #0a0a0a; border: none; height: 40px; padding: 0 20px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+    
+    <button onclick="document.getElementById('redirectInput').value='checkout'; document.getElementById('productForm').submit();" style="flex: 1; background: var(--color-gold); color: #000; border: none; height: 48px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 12px rgba(201,168,76,0.2);">
         Buy Now
     </button>
-    {{-- Fix #10: Add to Cart icon button in sticky bar --}}
-    <button id="stickyAddToCartBtn" onclick="document.getElementById('redirectInput').value=''; document.getElementById('productForm').submit();" style="background: transparent; border: 1px solid var(--color-gold); color: var(--color-gold); width: 40px; height: 40px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer;" title="Add to Cart">
-        <i class="bi bi-bag-plus" style="font-size: 16px;"></i>
+    
+    <button id="stickyAddToCartBtn" onclick="document.getElementById('redirectInput').value=''; document.getElementById('productForm').submit();" style="background: transparent; border: 1px solid var(--color-border-gold); color: var(--color-gold); width: 48px; height: 48px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer;" title="Add to Cart">
+        <i class="bi bi-cart-plus" style="font-size: 20px;"></i>
     </button>
 </div>
 

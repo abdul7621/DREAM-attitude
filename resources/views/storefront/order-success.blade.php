@@ -60,6 +60,20 @@ if (typeof fbq === 'function') {
             <p style="color:var(--color-gold);font-size:14px;letter-spacing:1px;">Order <strong>#{{ $order->order_number }}</strong></p>
         </div>
 
+        @if(session('account_created_email'))
+            <div style="background: rgba(39,103,73,0.1); border: 1px solid var(--color-success); border-radius: var(--radius-md); padding: 16px; margin-bottom: 32px; text-align: center;">
+                <i class="bi bi-person-check" style="color: var(--color-success); font-size: 20px; margin-bottom: 8px; display: block;"></i>
+                <h4 style="color: var(--color-success); font-size: 16px; margin-bottom: 4px;">Account Created Successfully!</h4>
+                <p style="color: var(--color-text-secondary); font-size: 13px; margin: 0;">We've sent a password reset link to <strong>{{ session('account_created_email') }}</strong> so you can track your orders easily.</p>
+            </div>
+        @elseif(session('account_created_phone'))
+            <div style="background: rgba(201,168,76,0.1); border: 1px solid var(--color-gold); border-radius: var(--radius-md); padding: 16px; margin-bottom: 32px; text-align: center;">
+                <i class="bi bi-person-check" style="color: var(--color-gold); font-size: 20px; margin-bottom: 8px; display: block;"></i>
+                <h4 style="color: var(--color-text-primary); font-size: 16px; margin-bottom: 4px;">Account Created Successfully!</h4>
+                <p style="color: var(--color-text-secondary); font-size: 13px; margin: 0;">An account was created for you using <strong>{{ session('account_created_phone') }}</strong>. You can use it to track your orders!</p>
+            </div>
+        @endif
+
         {{-- Trust / Reassurance Bar --}}
         <div style="display:flex;justify-content:center;gap:32px;margin-bottom:32px;flex-wrap:wrap;">
             <div style="display:flex;align-items:center;gap:8px;">
