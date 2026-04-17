@@ -91,6 +91,7 @@ class Order extends Model
         'utm_term',
         'gclid',
         'fbclid',
+        'guest_token',
         'review_request_sent_at',
         'replenishment_reminder_sent_at',
     ];

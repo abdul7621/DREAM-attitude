@@ -20,6 +20,14 @@ class PaymentController extends Controller
     public function verify(Request $request, string $gateway): RedirectResponse
     {
         $gatewayDriver = $this->paymentManager->driver($gateway);
+
+        if (method_exists($gatewayDriver, 'verifySignature')) {
+            if (!$gatewayDriver->verifySignature($request)) {
+                Log::warning('Payment verification failed due to invalid signature', ['gateway' => $gateway, 'ip' => $request->ip()]);
+                return redirect()->route('checkout.create')->withErrors(['payment' => __('Invalid payment signature.')]);
+            }
+        }
+
         $incomingId = $gatewayDriver->extractOrderId($request->all());
 
         if (!$incomingId) {

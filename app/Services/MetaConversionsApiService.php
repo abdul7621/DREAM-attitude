@@ -43,6 +43,13 @@ class MetaConversionsApiService
             }
         }
 
+        if (request()->hasCookie('_fbp')) {
+            $userData['fbp'] = request()->cookie('_fbp');
+        }
+        if (request()->hasCookie('_fbc')) {
+            $userData['fbc'] = request()->cookie('_fbc');
+        }
+
         $event = [
             'event_name' => 'Purchase',
             'event_time' => $eventTime,

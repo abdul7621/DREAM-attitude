@@ -112,6 +112,19 @@ class PhonePeDriver implements PaymentGatewayInterface
         
         $finalXHeader = hash('sha256', "/pg/v1/status/{$this->merchantId}/{$transactionId}" . $saltKey) . "###" . $saltIndex;
 
+    public function verifyPayment(array $requestData, Order $order): bool
+    {
+        $transactionId = $requestData['transactionId'] ?? $order->gateway_order_id ?? '';
+        
+        if (empty($transactionId)) {
+            return false;
+        }
+
+        $saltKey = $this->saltKey;
+        $saltIndex = $this->saltIndex;
+        
+        $finalXHeader = hash('sha256', "/pg/v1/status/{$this->merchantId}/{$transactionId}" . $saltKey) . "###" . $saltIndex;
+
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
             'accept' => 'application/json',
@@ -124,6 +137,29 @@ class PhonePeDriver implements PaymentGatewayInterface
         }
 
         return false;
+    }
+
+    public function verifySignature(\Illuminate\Http\Request $request): bool
+    {
+        // Server-to-Server Callback
+        if ($request->has('response') && $request->header('X-VERIFY')) {
+            $expected = hash('sha256', $request->input('response') . $this->saltKey) . '###' . $this->saltIndex;
+            return hash_equals($expected, $request->header('X-VERIFY'));
+        }
+
+        // UI Redirect from PhonePe
+        if ($request->has('code') && $request->has('checksum') && $request->has('merchantId') && $request->has('transactionId') && $request->has('amount')) {
+            $data = $request->input('merchantId') . $request->input('transactionId') . $request->input('amount');
+            $expected = hash('sha256', $data . $this->saltKey) . '###' . $this->saltIndex;
+            return hash_equals($expected, $request->input('checksum'));
+        }
+
+        // Reject plain GET requests like /payments/verify/phonepe?status=success that are blind probing
+        if ($request->isMethod('get') && !$request->has('checksum')) {
+            return false;
+        }
+
+        return true;
     }
 
     public function refund(Order $order, float $amount): array

@@ -107,11 +107,21 @@ class CheckoutController extends Controller
         try {
             if ($data['payment_method'] === 'cod') {
                 $order = $this->orders->createCodOrder($cart, $data);
+                if (!\Illuminate\Support\Facades\Auth::check()) {
+                    $guestToken = \Illuminate\Support\Str::random(32);
+                    $order->update(['guest_token' => $guestToken]);
+                    session(['guest_order_token_' . $order->order_number => $guestToken]);
+                }
                 return redirect()->route('order.success', ['orderNumber' => $order->order_number]);
             }
 
             $gateway = $this->paymentManager->driver($data['payment_method']);
             $order = $this->orders->createPendingOnlineOrder($cart, $data);
+            if (!\Illuminate\Support\Facades\Auth::check()) {
+                $guestToken = \Illuminate\Support\Str::random(32);
+                $order->update(['guest_token' => $guestToken]);
+                session(['guest_order_token_' . $order->order_number => $guestToken]);
+            }
             
             $paymentData = $gateway->createOrder($order);
 

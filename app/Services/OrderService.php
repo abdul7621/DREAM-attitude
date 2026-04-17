@@ -31,11 +31,11 @@ class OrderService
             throw new RuntimeException(__('Your cart is empty.'));
         }
 
-        $this->assertStock($lines);
-
         $totals = $this->cartService->computeTotals($data['postal_code']);
 
         $order = DB::transaction(function () use ($cart, $data, $lines, $totals): Order {
+            $this->assertStock($lines);
+
             $order = Order::query()->create(array_merge([
                 'order_number' => $this->newOrderNumber(),
                 'user_id' => Auth::id(),
@@ -135,8 +135,6 @@ class OrderService
             throw new RuntimeException(__('Your cart is empty.'));
         }
 
-        $this->assertStock($lines);
-
         $totals = $this->cartService->computeTotals($data['postal_code']);
 
         // Fix #4: Check for reusable order (payment retry)
@@ -168,12 +166,16 @@ class OrderService
                 'payment_status' => Order::PAYMENT_STATUS_PENDING,
                 'order_status' => Order::ORDER_STATUS_AWAITING_PAYMENT,
                 'notes' => $data['notes'] ?? null,
-            ]);
+            // Reset gateway_order_id to force new payment session creation
+            $reusable->gateway_order_id = null;
+            $reusable->save();
 
             return $reusable;
         }
 
         return DB::transaction(function () use ($data, $lines, $totals): Order {
+            $this->assertStock($lines);
+
             $order = Order::query()->create(array_merge([
                 'order_number' => $this->newOrderNumber(),
                 'user_id' => Auth::id(),

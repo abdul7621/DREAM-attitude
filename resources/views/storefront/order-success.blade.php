@@ -38,6 +38,8 @@ if (typeof fbq === 'function') {
             @endforeach
         ],
         content_type: 'product'
+    }, {
+        eventID: 'purchase-{{ $order->order_number }}'
     });
 }
 </script>
