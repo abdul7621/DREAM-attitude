@@ -18,7 +18,7 @@
     <meta name="description" content="@hasSection('meta_description')@yield('meta_description')@else{{ $pageDescription ?? $storeSettings['meta_description'] ?? '' }}@endif">
     <meta property="og:title" content="@hasSection('title')@yield('title')@else{{ $pageTitle ?? $storeSettings['store_name'] ?? config('app.name') }}@endif">
     <meta property="og:description" content="@hasSection('meta_description')@yield('meta_description')@else{{ $pageDescription ?? $storeSettings['meta_description'] ?? '' }}@endif">
-    <meta property="og:image" content="@hasSection('og_image')@yield('og_image')@else{{ asset('storage/' . ($ss->get('theme.og_image') ?? $ss->get('theme.logo') ?? '')) }}@endif">
+    <meta property="og:image" content="@hasSection('og_image') @yield('og_image') @else {{ asset('storage/' . ($ss->get('theme.og_image') ?? $ss->get('theme.logo') ?? '')) }} @endif">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:type" content="@yield('og_type', 'website')">
     <meta name="twitter:card" content="summary_large_image">

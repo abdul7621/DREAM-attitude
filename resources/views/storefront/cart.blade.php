@@ -17,7 +17,7 @@
             
             {{-- Empty Cart: Best Collections --}}
             @php
-                $emptyCartUpsells = \App\Models\Product::where('is_active', true)->where('is_featured', true)->take(4)->get();
+                $emptyCartUpsells = \App\Models\Product::where('status', \App\Models\Product::STATUS_ACTIVE)->where('is_featured', true)->take(4)->get();
             @endphp
             @if($emptyCartUpsells->isNotEmpty())
                 <div style="margin-top: 60px;">
@@ -100,7 +100,7 @@
                         if (!empty($categoryIds)) {
                             $upsells = \App\Models\Product::whereIn('category_id', $categoryIds)
                                                           ->whereNotIn('id', $cartProductIds)
-                                                          ->where('is_active', true)
+                                                          ->where('status', \App\Models\Product::STATUS_ACTIVE)
                                                           ->inRandomOrder()
                                                           ->take(3)
                                                           ->get();
