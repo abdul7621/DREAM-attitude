@@ -43,8 +43,66 @@
                 'reviewCount' => $reviewCount,
             ];
         }
+
+        // Breadcrumb Schema
+        $breadcrumbSchema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'BreadcrumbList',
+            'itemListElement' => [
+                [
+                    '@type' => 'ListItem',
+                    'position' => 1,
+                    'name' => 'Home',
+                    'item' => route('home', [], true)
+                ]
+            ]
+        ];
+        $pos = 2;
+        if ($product->category) {
+            $breadcrumbSchema['itemListElement'][] = [
+                '@type' => 'ListItem',
+                'position' => $pos++,
+                'name' => $product->category->name,
+                'item' => route('category.show', $product->category, true)
+            ];
+        }
+        $breadcrumbSchema['itemListElement'][] = [
+            '@type' => 'ListItem',
+            'position' => $pos,
+            'name' => $product->name,
+            'item' => route('product.show', $product, true)
+        ];
+
+        // FAQ Schema
+        $faqSchema = null;
+        if (!empty($product->meta['faq']) && is_array($product->meta['faq'])) {
+            $faqItems = [];
+            foreach ($product->meta['faq'] as $faq) {
+                if (!empty($faq['q']) && !empty($faq['a'])) {
+                    $faqItems[] = [
+                        '@type' => 'Question',
+                        'name' => $faq['q'],
+                        'acceptedAnswer' => [
+                            '@type' => 'Answer',
+                            'text' => strip_tags((string)$faq['a'])
+                        ]
+                    ];
+                }
+            }
+            if (count($faqItems) > 0) {
+                $faqSchema = [
+                    '@context' => 'https://schema.org',
+                    '@type' => 'FAQPage',
+                    'mainEntity' => $faqItems
+                ];
+            }
+        }
     @endphp
     <script type="application/ld+json">{!! json_encode($schema, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) !!}</script>
+    <script type="application/ld+json">{!! json_encode($breadcrumbSchema, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) !!}</script>
+    @if($faqSchema)
+    <script type="application/ld+json">{!! json_encode($faqSchema, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) !!}</script>
+    @endif
 @endpush
 
 @section('content')

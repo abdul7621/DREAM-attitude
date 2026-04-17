@@ -1,7 +1,37 @@
 @extends('layouts.storefront')
 
 @section('title', $category->seo_title ?: $category->name)
+@if ($category->seo_description)
+    @section('meta_description', $category->seo_description)
+@endif
 
+@push('meta')
+    <link rel="canonical" href="{{ route('category.show', $category, true) }}">
+    @if(request()->has('sort'))
+        <meta name="robots" content="noindex, follow">
+    @endif
+    @php
+        $breadcrumbSchema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'BreadcrumbList',
+            'itemListElement' => [
+                [
+                    '@type' => 'ListItem',
+                    'position' => 1,
+                    'name' => 'Home',
+                    'item' => route('home', [], true)
+                ],
+                [
+                    '@type' => 'ListItem',
+                    'position' => 2,
+                    'name' => $category->name,
+                    'item' => route('category.show', $category, true)
+                ]
+            ]
+        ];
+    @endphp
+    <script type="application/ld+json">{!! json_encode($breadcrumbSchema, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) !!}</script>
+@endpush
 @section('content')
 <section class="sf-hero" style="height: 300px;">
     <div class="sf-hero-img-wrap" style="height: 100%;">

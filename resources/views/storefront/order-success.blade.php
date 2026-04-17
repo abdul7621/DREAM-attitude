@@ -2,6 +2,9 @@
 
 @section('title', 'Order Confirmed — ' . $order->order_number)
 
+@push('meta')
+    <meta name="robots" content="noindex, nofollow">
+@endpush
 @push('scripts')
 @if($isFirstVisit)
 <script>

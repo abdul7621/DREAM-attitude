@@ -143,6 +143,27 @@
 
 @if ($tab === 'homepage')
     <div class="col-lg-8">
+        <div class="card mb-4 border-success">
+            <div class="card-header bg-success text-white"><i class="bi bi-search me-2"></i> Homepage SEO Settings</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">SEO Title</label>
+                    <input type="text" name="theme_home_seo_title" class="form-control" value="{{ $theme['theme.home_seo_title'] ?? '' }}" placeholder="e.g. {{ config('app.name') }} | Best D2C Platform India">
+                    <div class="form-text">Overrides the default title tag on the homepage.</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">SEO Description</label>
+                    <textarea name="theme_home_seo_description" rows="2" class="form-control" placeholder="e.g. Shop the best products at {{ config('app.name') }}.">{{ $theme['theme.home_seo_description'] ?? '' }}</textarea>
+                    <div class="form-text">Meta description for the homepage.</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">SEO Content Block</label>
+                    <textarea name="theme_home_seo_content" rows="4" class="form-control" placeholder="Write 150-300 words of keyword-rich content here... HTML is allowed.">{{ $theme['theme.home_seo_content'] ?? '' }}</textarea>
+                    <div class="form-text">This will be displayed just below the Hero banner section to improve On-Page SEO.</div>
+                </div>
+            </div>
+        </div>
+
         <div class="card mb-4">
             <div class="card-header bg-white"><i class="bi bi-layout-wtf me-2"></i> Section Ordering</div>
             <div class="card-body">

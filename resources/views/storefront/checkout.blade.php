@@ -2,6 +2,9 @@
 
 @section('title', 'Checkout')
 
+@push('meta')
+    <meta name="robots" content="noindex, nofollow">
+@endpush
 @section('content')
 <div class="sf-checkout-page" style="background: var(--color-bg-primary); padding-bottom: 60px;">
     {{-- Top Header / Progress Indicator --}}

@@ -1,7 +1,10 @@
 @extends('layouts.storefront')
 
-@section('title', 'Cart')
+@section('title', 'Shopping Cart')
 
+@push('meta')
+    <meta name="robots" content="noindex, nofollow">
+@endpush
 @section('content')
 <section class="sf-section">
     <div class="sf-container">

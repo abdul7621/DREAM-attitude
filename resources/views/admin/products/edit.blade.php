@@ -68,6 +68,36 @@
         </div>
 
         <hr class="my-4">
+        <h2 class="h6 text-success"><i class="bi bi-search me-1"></i> SEO Settings <span class="badge bg-success">Google Rank</span></h2>
+        <p class="text-muted small mb-3">Controls what Google shows in search results. Leave blank to auto-use Product Name & Short Description.</p>
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label fw-semibold">SEO Title <span class="text-muted fw-normal">(50–60 chars ideal)</span></label>
+                <input type="text" name="seo_title" class="form-control" id="seoTitleInput"
+                       value="{{ old('seo_title', $product->seo_title) }}"
+                       placeholder="e.g. Buy Moroccan Argan Shampoo Online India — DREAM Attitude"
+                       maxlength="70">
+                <div class="form-text"><span id="seoTitleCount">0</span>/70 characters — Target: keyword first, brand last.</div>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-semibold">SEO Description <span class="text-muted fw-normal">(140–160 chars ideal)</span></label>
+                <textarea name="seo_description" rows="2" class="form-control" id="seoDescInput"
+                          placeholder="e.g. Shop DREAM Attitude Moroccan Argan Shampoo — controls frizz, restores shine. Free shipping on orders above ₹499." maxlength="170">{{ old('seo_description', $product->seo_description) }}</textarea>
+                <div class="form-text"><span id="seoDescCount">0</span>/170 characters — Include your main keyword + a clear benefit.</div>
+            </div>
+        </div>
+        <script>
+        (function(){
+            var ti = document.getElementById('seoTitleInput');
+            var tc = document.getElementById('seoTitleCount');
+            var di = document.getElementById('seoDescInput');
+            var dc = document.getElementById('seoDescCount');
+            if(ti && tc){ tc.textContent = ti.value.length; ti.addEventListener('input', function(){ tc.textContent = this.value.length; }); }
+            if(di && dc){ dc.textContent = di.value.length; di.addEventListener('input', function(){ dc.textContent = this.value.length; }); }
+        })();
+        </script>
+
+        <hr class="my-4">
         <h2 class="h6">Product Meta Data</h2>
         <div class="row g-3">
             <div class="col-12">

@@ -1,7 +1,15 @@
 @extends('layouts.storefront')
 
-@section('title', config('app.name') . ' — ' . app(\App\Services\SettingsService::class)->get('theme.hero_title', 'Premium Quality Products'))
-
+@php
+    $ss = app(\App\Services\SettingsService::class);
+    $homeSeoTitle = $ss->get('theme.home_seo_title');
+    $homeTitle = $homeSeoTitle ?: (config('app.name') . ' — ' . $ss->get('theme.hero_title', 'Premium Quality Products'));
+    $homeSeoDesc = $ss->get('theme.home_seo_description');
+@endphp
+@section('title', $homeTitle)
+@if($homeSeoDesc)
+    @section('meta_description', $homeSeoDesc)
+@endif
 @section('content')
 @php
     $ss = app(\App\Services\SettingsService::class);
@@ -86,6 +94,19 @@
                 @endif
             </div>
         </div>
+    @endif
+    
+    @if ($sectionKey === 'hero')
+        {{-- SEO Content Block (Below Hero) --}}
+        @if ($ss->get('theme.home_seo_content'))
+            <section class="sf-section py-4" style="background-color: var(--color-bg-subtle);">
+                <div class="sf-container">
+                    <div class="seo-content-block text-muted" style="font-size: 0.95rem; line-height: 1.6;">
+                        {!! \Illuminate\Mail\Markdown::parse($ss->get('theme.home_seo_content')) !!}
+                    </div>
+                </div>
+            </section>
+        @endif
     @endif
 
     @if ($sectionKey === 'trust_strip')

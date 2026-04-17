@@ -8,16 +8,16 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @php $ss = app(\App\Services\SettingsService::class); @endphp
-    <title>{{ $pageTitle ?? $storeSettings['store_name'] ?? config('app.name') }}</title>
+    <title>@hasSection('title')@yield('title')@else{{ $pageTitle ?? $storeSettings['store_name'] ?? config('app.name') }}@endif</title>
     @if($ss->get('theme.favicon'))
         <link rel="icon" href="{{ asset('storage/' . $ss->get('theme.favicon')) }}">
         <link rel="apple-touch-icon" href="{{ asset('storage/' . $ss->get('theme.favicon')) }}">
     @elseif(file_exists(public_path('favicon.ico')))
         <link rel="icon" href="{{ asset('favicon.ico') }}">
     @endif
-    <meta name="description" content="{{ $pageDescription ?? $storeSettings['meta_description'] ?? '' }}">
-    <meta property="og:title" content="{{ $pageTitle ?? $storeSettings['store_name'] ?? config('app.name') }}">
-    <meta property="og:description" content="{{ $pageDescription ?? $storeSettings['meta_description'] ?? '' }}">
+    <meta name="description" content="@hasSection('meta_description')@yield('meta_description')@else{{ $pageDescription ?? $storeSettings['meta_description'] ?? '' }}@endif">
+    <meta property="og:title" content="@hasSection('title')@yield('title')@else{{ $pageTitle ?? $storeSettings['store_name'] ?? config('app.name') }}@endif">
+    <meta property="og:description" content="@hasSection('meta_description')@yield('meta_description')@else{{ $pageDescription ?? $storeSettings['meta_description'] ?? '' }}@endif">
     <meta property="og:image" content="{{ asset('storage/' . ($ss->get('theme.og_image') ?? $ss->get('theme.logo') ?? '')) }}">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:type" content="@yield('og_type', 'website')">
