@@ -166,6 +166,8 @@ class OrderService
                 'payment_status' => Order::PAYMENT_STATUS_PENDING,
                 'order_status' => Order::ORDER_STATUS_AWAITING_PAYMENT,
                 'notes' => $data['notes'] ?? null,
+            ]);
+
             // Reset gateway_order_id to force new payment session creation
             $reusable->gateway_order_id = null;
             $reusable->save();
