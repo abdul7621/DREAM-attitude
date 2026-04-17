@@ -55,7 +55,19 @@ class ProductController extends Controller
         $avgRating = $reviews->avg('rating');
         $reviewCount = $reviews->count();
 
-        // Related products (same category, active, exclude current AND frequentlyBought IDs)
+        // Frequently Bought Together (must be defined BEFORE relatedProducts to enable deduplication)
+        $frequentlyBought = collect();
+        if ($product->category_id) {
+            $frequentlyBought = Product::where('category_id', $product->category_id)
+                ->where('id', '!=', $product->id)
+                ->where('status', Product::STATUS_ACTIVE)
+                ->orderByDesc('sales_count')
+                ->take(3)
+                ->with(['variants', 'images'])
+                ->get();
+        }
+
+        // Related products (exclude current + frequentlyBought IDs to avoid duplicates)
         $relatedProducts = collect();
         if ($product->category_id) {
             $excludeIds = $frequentlyBought->pluck('id')->push($product->id)->unique()->toArray();
@@ -65,18 +77,6 @@ class ProductController extends Controller
                 ->whereNotIn('id', $excludeIds)
                 ->with(['variants', 'images'])
                 ->take(4)
-                ->get();
-        }
-
-        // Frequently Bought Together
-        $frequentlyBought = collect();
-        if ($product->category_id) {
-            $frequentlyBought = Product::where('category_id', $product->category_id)
-                ->where('id', '!=', $product->id)
-                ->where('status', Product::STATUS_ACTIVE)
-                ->orderByDesc('sales_count')
-                ->take(3)
-                ->with(['variants', 'images'])
                 ->get();
         }
 

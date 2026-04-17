@@ -118,7 +118,7 @@
         </div>
     @endif
 
-    @if ($sectionKey === 'reviews' && isset($topReviews) && $topReviews->isNotEmpty())
+    @if ($sectionKey === 'categories' && isset($categories) && $categories->isNotEmpty())
         {{-- ══ CATEGORIES ════════════════════════════════════════════════════════ --}}
         <section class="sf-section sf-section-cream">
             <div class="sf-container">
