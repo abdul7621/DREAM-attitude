@@ -112,19 +112,6 @@ class PhonePeDriver implements PaymentGatewayInterface
         
         $finalXHeader = hash('sha256', "/pg/v1/status/{$this->merchantId}/{$transactionId}" . $saltKey) . "###" . $saltIndex;
 
-    public function verifyPayment(array $requestData, Order $order): bool
-    {
-        $transactionId = $requestData['transactionId'] ?? $order->gateway_order_id ?? '';
-        
-        if (empty($transactionId)) {
-            return false;
-        }
-
-        $saltKey = $this->saltKey;
-        $saltIndex = $this->saltIndex;
-        
-        $finalXHeader = hash('sha256', "/pg/v1/status/{$this->merchantId}/{$transactionId}" . $saltKey) . "###" . $saltIndex;
-
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
             'accept' => 'application/json',
