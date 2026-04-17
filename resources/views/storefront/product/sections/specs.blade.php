@@ -1,5 +1,5 @@
 @if (!empty($product->meta['ingredients']) || !empty($product->meta['how_to_use']))
-    <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--color-border);">
+    <div class="sf-section-content mb-5" style="max-width: 800px; margin: 0 auto; background: var(--color-bg-surface); padding: 32px; border-radius: var(--radius-md); box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
         <h6 style="font-weight:600;font-size:16px;margin-bottom:16px;color:var(--color-text-primary);"><i class="bi bi-list-ul" style="color:var(--color-gold);margin-right:8px;"></i>Details & Specifications</h6>
         @if (!empty($product->meta['ingredients']))
             <div style="border-bottom:1px solid var(--color-border);margin-bottom:8px;">

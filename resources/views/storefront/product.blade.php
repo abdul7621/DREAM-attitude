@@ -142,7 +142,7 @@
                     <input type="hidden" name="redirect" id="redirectInput" value="">
                     
                     @foreach($layoutSections as $section)
-                        @if($section['enabled'] && in_array($section['key'], ['title_price', 'variants', 'buy_buttons', 'trust_badges', 'description', 'specs', 'faq']))
+                        @if($section['enabled'] && in_array($section['key'], ['title_price', 'variants', 'buy_buttons', 'trust_badges']))
                             @include('storefront.product.sections.' . $section['key'], [
                                 'product' => $product,
                                 'selectedVariant' => $selectedVariant
@@ -180,7 +180,7 @@
         {{-- ── Full Width Bottom Sections ───────────────────────── --}}
         <div class="mt-5">
             @foreach($layoutSections as $section)
-                @if($section['enabled'] && in_array($section['key'], ['reviews', 'recently_viewed', 'frequently_bought', 'related']))
+                @if($section['enabled'] && in_array($section['key'], ['description', 'specs', 'faq', 'reviews', 'recently_viewed', 'frequently_bought', 'related']))
                     @include('storefront.product.sections.' . $section['key'], [
                         'product' => $product,
                         'selectedVariant' => $selectedVariant

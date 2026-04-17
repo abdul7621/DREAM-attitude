@@ -20,6 +20,20 @@
 <div class="sf-pdp-info-block" id="volumePricingBlock">
     <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--color-text-muted); margin-bottom: 12px; font-weight: 600;">Choose Your Bundle</div>
     <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+        <style>
+            .sf-bundle-option {
+                border: 2px solid var(--color-border);
+                border-radius: var(--radius-sm);
+                padding: 10px 12px;
+                text-align: center;
+                transition: all 0.2s;
+                background: transparent;
+            }
+            .sf-bundle-option.active {
+                border-color: var(--color-gold);
+                background: rgba(201,168,76,0.05);
+            }
+        </style>
         @foreach($volumePricing as $idx => $bundle)
         @php
             $bundleQty = (int) ($bundle['qty'] ?? 1);
@@ -28,10 +42,8 @@
         @endphp
         <label style="flex: 1; min-width: 100px; cursor: pointer;">
             <input type="radio" name="bundle_qty" value="{{ $bundleQty }}" class="d-none bundle-qty-radio" {{ $idx === 0 ? 'checked' : '' }}
-                   onchange="document.querySelector('[name=qty]').value = this.value;">
-            <div class="sf-bundle-option {{ $idx === 0 ? 'active' : '' }}"
-                 onclick="this.closest('label').querySelector('input').click(); document.querySelectorAll('.sf-bundle-option').forEach(e => e.classList.remove('active')); this.classList.add('active');"
-                 style="border: 2px solid {{ $idx === 0 ? 'var(--color-gold)' : 'var(--color-border)' }}; border-radius: var(--radius-sm); padding: 10px 12px; text-align: center; transition: border-color 0.2s; background: {{ $idx === 0 ? 'rgba(201,168,76,0.05)' : 'transparent' }};">
+                   onchange="document.querySelector('[name=qty]').value = this.value; document.querySelectorAll('.sf-bundle-option').forEach(e => e.classList.remove('active')); this.nextElementSibling.classList.add('active');">
+            <div class="sf-bundle-option {{ $idx === 0 ? 'active' : '' }}">
                 @if(!empty($bundle['badge']))
                     <div style="font-size: 10px; font-weight: 700; color: var(--color-success); text-transform: uppercase; margin-bottom: 4px;">{{ $bundle['badge'] }}</div>
                 @endif
