@@ -93,6 +93,32 @@
         </div>
 
         <hr class="my-4">
+        <h2 class="h6 text-primary"><i class="bi bi-lightning-charge me-1"></i> Conversion Engine (CRO)</h2>
+        <p class="text-muted small mb-3">These fields power the product page conversion blocks — hook the customer, promise results, build trust.</p>
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label fw-semibold">Problem Hook <span class="badge bg-secondary">Shows above price</span></label>
+                <input type="text" name="meta[problem_hook]" class="form-control" value="{{ old('meta.problem_hook', $product->meta['problem_hook'] ?? '') }}" placeholder="e.g. Struggling with hair fall, dryness or dull skin?">
+                <div class="form-text">1 line that agitates the customer's problem. Shows in italic above the price.</div>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-semibold">Result Promise <span class="badge bg-warning text-dark">High impact</span></label>
+                <input type="text" name="meta[result_promise]" class="form-control" value="{{ old('meta.result_promise', $product->meta['result_promise'] ?? '') }}" placeholder="e.g. See visible results in just 7 days — or full refund.">
+                <div class="form-text">1 bold statement that promises transformation. Shows with ✦ icon below the hook.</div>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-semibold">Trust Proof <span class="badge bg-success">After buy buttons</span></label>
+                <textarea name="meta[trust_proof]" rows="2" class="form-control" placeholder="e.g. 10,000+ orders shipped. Rated 4.8/5 by verified buyers.&#10;Dermatologist tested. 100% natural ingredients.">{{ old('meta.trust_proof', $product->meta['trust_proof'] ?? '') }}</textarea>
+                <div class="form-text">Social proof shown below the Add to Cart / Buy Now buttons. Supports multi-line.</div>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-semibold">Volume Pricing (Bundle Deals) <span class="badge bg-info text-dark">JSON format</span></label>
+                <textarea name="meta[volume_pricing]" rows="4" class="form-control font-monospace" placeholder='[{"qty":1,"label":"1 Pack","discount_pct":0,"badge":""},{"qty":2,"label":"2 Pack","discount_pct":10,"badge":"Save 10%"},{"qty":3,"label":"3 Pack","discount_pct":20,"badge":"Best Value"}]'>{{ old('meta.volume_pricing', isset($product->meta['volume_pricing']) ? (is_array($product->meta['volume_pricing']) ? json_encode($product->meta['volume_pricing'], JSON_PRETTY_PRINT) : $product->meta['volume_pricing']) : '') }}</textarea>
+                <div class="form-text">JSON array of bundle options. Each: <code>qty</code>, <code>label</code>, <code>discount_pct</code>, <code>badge</code>. Leave empty to hide bundle section.</div>
+            </div>
+
+
+        <hr class="my-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="h6 mb-0">Custom Layout Engine</h2>
             <div class="form-check form-switch shadow-sm px-4 py-2 border rounded bg-white">

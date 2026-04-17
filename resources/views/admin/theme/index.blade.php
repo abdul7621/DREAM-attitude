@@ -160,8 +160,6 @@
                             'latest'        => '📦 Latest Products',
                             'award_section' => '🏆 Award / Brand Story',
                             'reviews'       => '💬 Customer Reviews',
-                            'trust'         => '🔒 Trust Bar (Legacy)',
-                            'text_with_image' => '📖 Brand Story Block (Legacy)',
                         ];
                         $active = $theme['theme.home_sections'] ?? [];
                     @endphp
@@ -236,6 +234,11 @@
                     <div class="col-12">
                         <label class="form-label">Hero Title</label>
                         <input type="text" name="theme_hero_title" class="form-control" value="{{ $theme['theme.hero_title'] ?? '' }}" placeholder="Salon Quality">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Hero Title Suffix <span class="badge bg-secondary">Optional italic line</span></label>
+                        <input type="text" name="theme_hero_title_suffix" class="form-control" value="{{ $theme['theme.hero_title_suffix'] ?? '' }}" placeholder="at Your Fingertips">
+                        <div class="form-text">Italic text shown on a new line below the title. Leave empty to hide.</div>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Hero Eyebrow <span class="badge bg-secondary">NEW</span></label>

@@ -71,6 +71,7 @@ class ThemeController extends Controller
                 $data = $request->validate([
                     'home_sections'                => ['nullable', 'array'],
                     'theme_hero_title'             => ['nullable', 'string', 'max:255'],
+                    'theme_hero_title_suffix'      => ['nullable', 'string', 'max:255'],
                     'theme_hero_eyebrow'           => ['nullable', 'string', 'max:255'],
                     'theme_hero_award_text'        => ['nullable', 'string', 'max:255'],
                     'theme_hero_subtitle'          => ['nullable', 'string', 'max:500'],
@@ -199,7 +200,7 @@ class ThemeController extends Controller
 
                 // Save all simple string settings
                 $keys = [
-                    'theme_hero_title', 'theme_hero_eyebrow', 'theme_hero_award_text',
+                    'theme_hero_title', 'theme_hero_title_suffix', 'theme_hero_eyebrow', 'theme_hero_award_text',
                     'theme_hero_subtitle', 'theme_hero_cta_text', 'theme_hero_cta_link',
                     'theme_hero_cta2_text', 'theme_hero_cta2_link',
                     'theme_trust_text', 'theme_announcement_text',

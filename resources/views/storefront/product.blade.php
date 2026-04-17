@@ -151,18 +151,17 @@
     </button>
 </div>
 
-{{-- ── Social Proof Toast ──────────────────────────────── --}}
+{{-- ── Social Proof Toast ────────────────────── --}}
 @php
-    $copy = app(\App\Services\SettingsService::class)->get('conversion_copy', []);
-    $spEnabled = $product->meta['show_social_proof'] ?? ($copy['social_proof_enabled'] ?? true);
-    $spInterval = $product->meta['social_proof_interval'] ?? ($copy['social_proof_interval'] ?? 8000);
+    $spEnabled = !empty($socialProofData);
+    $spInterval = $product->meta['social_proof_interval'] ?? app(\App\Services\SettingsService::class)->get('conversion_copy.social_proof_interval', 8000);
 @endphp
 @if($spEnabled)
 <div id="sfSocialProof" style="position: fixed; bottom: 80px; left: 16px; background: var(--color-bg-elevated); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 12px 16px; display: flex; align-items: center; gap: 12px; transform: translateY(100px); opacity: 0; transition: all 0.3s ease; z-index: 1050; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
     <i class="bi bi-check-circle-fill" style="color: var(--color-success); font-size: 20px;"></i>
     <div>
         <div style="color: var(--color-text-primary); font-size: 13px; font-weight: 500;" id="spText">Someone just bought this!</div>
-        <div style="color: var(--color-text-muted); font-size: 11px;"><span id="spTime">2</span> minutes ago</div>
+        <div style="color: var(--color-text-muted); font-size: 11px;" id="spTime">recently</div>
     </div>
 </div>
 <style>
@@ -334,31 +333,34 @@ if (typeof fbq === 'function') {
 
 @if($spEnabled)
 (function() {
-    const names = ['Rahul', 'Priya', 'Amit', 'Sneha', 'Arjun', 'Meera', 'Rohit', 'Ananya', 'Kavita', 'Sanjay', 'Pooja', 'Vikram'];
-    const cities = ['Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Surat', 'Pune', 'Jaipur', 'Ahmedabad', 'Chennai', 'Kolkata'];
-    const spToast = document.getElementById('sfSocialProof');
-    const spText = document.getElementById('spText');
-    const spTime = document.getElementById('spTime');
+    // Real buyer data from server (product + category orders)
+    var spData = @json($socialProofData);
+    var spToast = document.getElementById('sfSocialProof');
+    var spText = document.getElementById('spText');
+    var spTime = document.getElementById('spTime');
+    var spIdx = 0;
+    
+    if (!spToast || !spData || spData.length === 0) return;
     
     function showSocialProof() {
-        if (!spToast) return;
-        const name = names[Math.floor(Math.random() * names.length)];
-        const city = cities[Math.floor(Math.random() * cities.length)];
-        const mins = Math.floor(Math.random() * 40) + 2;
-        
-        spText.textContent = `${name} from ${city} just bought this!`;
-        spTime.textContent = mins;
+        var entry = spData[spIdx % spData.length];
+        spIdx++;
+        spText.textContent = entry.name + ' just bought this!';
+        spTime.textContent = entry.time_ago;
         
         spToast.classList.add('show');
-        setTimeout(() => {
+        setTimeout(function() {
             spToast.classList.remove('show');
         }, 4000);
     }
     
-    setTimeout(() => {
+    // Randomize starting position so repeat visitors see fresh entries
+    spIdx = Math.floor(Math.random() * spData.length);
+    
+    setTimeout(function() {
         showSocialProof();
         setInterval(showSocialProof, {{ (int) $spInterval }});
-    }, 2000);
+    }, 3000);
 })();
 @endif
 </script>

@@ -1,14 +1,66 @@
 @php
     $copy = app(\App\Services\SettingsService::class)->get('conversion_copy.product', config('commerce.conversion_copy.product') ?? []);
     $subtext = ($product->meta['buy_now_subtext'] ?? null) ?: ($copy['buy_now_subtext'] ?? '');
+    
+    // Volume Pricing: decode from meta
+    $volumePricingRaw = $product->meta['volume_pricing'] ?? null;
+    $volumePricing = [];
+    if (is_array($volumePricingRaw)) {
+        $volumePricing = $volumePricingRaw;
+    } elseif (is_string($volumePricingRaw) && !empty($volumePricingRaw)) {
+        $volumePricing = json_decode($volumePricingRaw, true) ?: [];
+    }
+    
+    // Get the base variant price for volume pricing calculations
+    $baseVariantPrice = $selectedVariant ? (float)($variantPrices[$selectedVariant->id]['display'] ?? $selectedVariant->price_retail) : 0;
 @endphp
+
+{{-- Volume Pricing (Bundle Deals) — admin controlled via meta[volume_pricing] --}}
+@if(!empty($volumePricing))
+<div class="sf-pdp-info-block" id="volumePricingBlock">
+    <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--color-text-muted); margin-bottom: 12px; font-weight: 600;">Choose Your Bundle</div>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+        @foreach($volumePricing as $idx => $bundle)
+        @php
+            $bundleQty = (int) ($bundle['qty'] ?? 1);
+            $bundleDiscount = (float) ($bundle['discount_pct'] ?? 0);
+            $bundlePrice = $baseVariantPrice * $bundleQty * (1 - $bundleDiscount / 100);
+        @endphp
+        <label style="flex: 1; min-width: 100px; cursor: pointer;">
+            <input type="radio" name="bundle_qty" value="{{ $bundleQty }}" class="d-none bundle-qty-radio" {{ $idx === 0 ? 'checked' : '' }}
+                   onchange="document.querySelector('[name=qty]').value = this.value;">
+            <div class="sf-bundle-option {{ $idx === 0 ? 'active' : '' }}"
+                 onclick="this.closest('label').querySelector('input').click(); document.querySelectorAll('.sf-bundle-option').forEach(e => e.classList.remove('active')); this.classList.add('active');"
+                 style="border: 2px solid {{ $idx === 0 ? 'var(--color-gold)' : 'var(--color-border)' }}; border-radius: var(--radius-sm); padding: 10px 12px; text-align: center; transition: border-color 0.2s; background: {{ $idx === 0 ? 'rgba(201,168,76,0.05)' : 'transparent' }};">
+                @if(!empty($bundle['badge']))
+                    <div style="font-size: 10px; font-weight: 700; color: var(--color-success); text-transform: uppercase; margin-bottom: 4px;">{{ $bundle['badge'] }}</div>
+                @endif
+                <div style="font-size: 13px; font-weight: 600; color: var(--color-text-primary);">{{ $bundle['label'] ?? $bundleQty.' Pack' }}</div>
+                <div style="font-size: 14px; font-weight: 700; color: var(--color-gold); margin-top: 4px;">
+                    {{ config('commerce.currency_symbol', '₹') }}{{ number_format($bundlePrice, 0) }}
+                </div>
+                @if($bundleDiscount > 0)
+                    <div style="font-size: 10px; color: var(--color-success); margin-top: 2px;">Save {{ $bundleDiscount }}%</div>
+                @endif
+            </div>
+        </label>
+        @endforeach
+    </div>
+</div>
+@endif
+
 <div class="sf-pdp-info-block">
     <div style="display: flex; gap: 16px;">
+        @if(empty($volumePricing))
         <div class="sf-qty">
             <button type="button" onclick="const inpv=this.nextElementSibling; if(inpv.value>1) inpv.value--;"><i class="bi bi-dash"></i></button>
             <input type="number" name="qty" value="1" min="1" max="9999" required readonly>
             <button type="button" onclick="const inpv=this.previousElementSibling; inpv.value++;"><i class="bi bi-plus"></i></button>
         </div>
+        @else
+        {{-- Volume pricing selected — qty is driven by bundle selection --}}
+        <input type="hidden" name="qty" value="1">
+        @endif
         <div style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
             {{-- Fix #7: Buy Now = DOMINANT CTA (solid fill, primary) --}}
             <div style="display: flex; flex-direction: column; gap: 4px;">
@@ -30,3 +82,4 @@
         </div>
     </div>
 </div>
+

@@ -47,7 +47,7 @@
                 @endif
                 <p class="sf-hero-eyebrow">{{ $heroEyebrow }}</p>
                 <h1 class="sf-hero-split-title">
-                    {{ $heroTitle }}<br><em>at Your Fingertips</em>
+                    {{ $heroTitle }}@if($ss->get('theme.hero_title_suffix'))<br><em>{{ $ss->get('theme.hero_title_suffix') }}</em>@endif
                 </h1>
                 <p class="sf-hero-split-sub">{{ $heroSubtitle }}</p>
                 <div class="sf-hero-split-ctas">
@@ -83,16 +83,6 @@
                         @endif
                     </div>
                     @endforeach
-                    {{-- Fallback placeholders if less than 4 slides --}}
-                    @for($i = $slideCount; $i < 4; $i++)
-                    <div class="sf-hero-grid-img" style="background:rgba(255,255,255,0.04);"></div>
-                    @endfor
-                @else
-                    {{-- No images configured: show a gradient placeholder quad --}}
-                    <div class="sf-hero-grid-img" style="background:rgba(255,255,255,0.06);"></div>
-                    <div class="sf-hero-grid-img" style="background:rgba(255,255,255,0.04);"></div>
-                    <div class="sf-hero-grid-img" style="background:rgba(255,255,255,0.08);"></div>
-                    <div class="sf-hero-grid-img" style="background:rgba(255,255,255,0.03);"></div>
                 @endif
             </div>
         </div>
@@ -128,30 +118,13 @@
         </div>
     @endif
 
-    @if ($sectionKey === 'trust')
-        {{-- ── Old trust section (backward compat, renders as compact bar) ───── --}}
-        <section class="sf-section sf-section-white" style="padding: 20px 0;">
-            <div class="sf-container">
-                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 24px;">
-                    @php $trustTexts = array_map('trim', explode('|', $ss->get('theme.trust_text', '100% Authentic | Free Delivery | Secure Checkout | Easy Returns'))); @endphp
-                    @foreach($trustTexts as $i => $text)
-                    <div style="display:flex;align-items:center;gap:8px;font-size:12px;text-transform:uppercase;letter-spacing:1px;">
-                        <i class="bi bi-patch-check-fill" style="color:var(--color-gold);font-size:18px;"></i>
-                        {{ $text }}
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-        </section>
-    @endif
-
-    @if ($sectionKey === 'categories' && isset($categories) && $categories->isNotEmpty())
+    @if ($sectionKey === 'reviews' && isset($topReviews) && $topReviews->isNotEmpty())
         {{-- ══ CATEGORIES ════════════════════════════════════════════════════════ --}}
         <section class="sf-section sf-section-cream">
             <div class="sf-container">
                 <div class="sf-section-header-row">
                     <div>
-                        <p class="sf-section-eyebrow">Explore</p>
+                        <p class="sf-section-eyebrow">{{ $section['eyebrow'] ?? 'Explore' }}</p>
                         <h2 class="sf-section-title">{{ $sTitle ?? 'Shop by Category' }}</h2>
                     </div>
                 </div>
@@ -211,7 +184,7 @@
             <div class="sf-container">
                 <div class="sf-section-header-row">
                     <div>
-                        <p class="sf-section-eyebrow">Top Picks</p>
+                        <p class="sf-section-eyebrow">{{ $section['eyebrow'] ?? 'Top Picks' }}</p>
                         <h2 class="sf-section-title">{{ $sTitle ?? 'Bestsellers' }}</h2>
                     </div>
                     <a class="sf-view-all" href="{{ route('search', ['sort' => 'bestseller']) }}">View All</a>
@@ -255,7 +228,7 @@
             <div class="sf-container">
                 <div class="sf-section-header-row">
                     <div>
-                        <p class="sf-section-eyebrow">Fresh In</p>
+                        <p class="sf-section-eyebrow">{{ $section['eyebrow'] ?? 'Fresh In' }}</p>
                         <h2 class="sf-section-title">{{ $sTitle ?? 'New Arrivals' }}</h2>
                     </div>
                     <a class="sf-view-all" href="{{ route('search') }}">View All</a>
