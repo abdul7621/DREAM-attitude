@@ -10,11 +10,18 @@
     @endphp
     @if ($desc)
         <meta name="description" content="{{ $desc }}">
+        @section('meta_description', $desc)
     @endif
     @php
         $pv = $product->variants->where('is_active', true)->sortBy('price_retail')->first();
         $imgUrl = $product->primaryImage() ? url($product->primaryImage()->url()) : null;
         $offerPrice = $pv ? number_format((float) ($variantPrices[$pv->id]['display'] ?? $pv->price_retail), 2, '.', '') : null;
+    @endphp
+    @if ($imgUrl)
+        @section('og_image', $imgUrl)
+        <link rel="preload" as="image" href="{{ $imgUrl }}">
+    @endif
+    @php
         $schema = [
             '@context' => 'https://schema.org',
             '@type' => 'Product',

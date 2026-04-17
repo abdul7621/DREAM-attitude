@@ -10,6 +10,12 @@
     @if(request()->has('sort'))
         <meta name="robots" content="noindex, follow">
     @endif
+    @if($products->previousPageUrl())
+        <link rel="prev" href="{{ $products->previousPageUrl() }}">
+    @endif
+    @if($products->nextPageUrl())
+        <link rel="next" href="{{ $products->nextPageUrl() }}">
+    @endif
     @php
         $breadcrumbSchema = [
             '@context' => 'https://schema.org',
