@@ -352,7 +352,7 @@
             @endif
             <span>Cart</span>
         </a>
-        <a href="{{ route('account.index') }}" class="sf-bottom-nav-item {{ request()->routeIs('account.*') ? 'active' : '' }}">
+        <a href="{{ route('account.dashboard') }}" class="sf-bottom-nav-item {{ request()->routeIs('account.*') ? 'active' : '' }}">
             <i class="bi bi-person"></i>
             <span>Account</span>
         </a>
