@@ -13,7 +13,7 @@
 @section('content')
 @php
     $ss = app(\App\Services\SettingsService::class);
-    $sections = json_decode($ss->get('theme.home_sections', '[]'), true) ?: ['hero', 'trust_strip', 'categories', 'usp_strip', 'bestsellers', 'offers_banner', 'featured', 'award_section', 'reviews'];
+    $sections = json_decode($ss->get('theme.home_sections', '[]'), true) ?: ['hero', 'trust_strip', 'benefits_strip', 'categories', 'bestsellers', 'usp_strip', 'offers_banner', 'featured', 'award_section', 'reviews'];
 @endphp
 
 @foreach($sections as $section)
@@ -28,74 +28,79 @@
     @endif
 
     @if ($sectionKey === 'hero')
-        {{-- ══ HERO SPLIT — Premium DNA ═══════════════════════════════════════════ --}}
+        {{-- ══ HERO — Full-Width Image Slider ═══════════════════════════════════ --}}
         @php
             $heroSlides = $ss->get('theme.hero_slides');
             $heroSlides = is_array($heroSlides) ? $heroSlides : [];
             if (empty($heroSlides) && $ss->get('theme.hero_image')) {
                 $heroSlides = [['image' => $ss->get('theme.hero_image'), 'link' => $ss->get('theme.hero_cta_link', '/search'), 'alt' => $ss->get('theme.hero_title', '')]];
             }
-            $heroTitle = $ss->get('theme.hero_title', 'Salon Quality');
-            $heroSubtitle = $ss->get('theme.hero_subtitle', '400+ premium beauty products — hair care, skin care, fragrances, and professional salon essentials. No parabens. No SLS. Always cruelty-free.');
-            $heroCta1Text = $ss->get('theme.hero_cta_text', 'Shop Now');
-            $heroCta1Link = $ss->get('theme.hero_cta_link', '/search');
-            $heroCta2Text = $ss->get('theme.hero_cta2_text', '');
-            $heroCta2Link = $ss->get('theme.hero_cta2_link', '');
-            $heroAward = $ss->get('theme.hero_award_text', '★ India\'s Most Promising Brand 2021');
-            $heroEyebrow = $ss->get('theme.hero_eyebrow', 'Professional Beauty, Delivered');
+            // Max 3 slides (conversion-first: no scroll fatigue)
+            $heroSlides = array_slice($heroSlides, 0, 3);
             $slideCount = count($heroSlides);
+
+            // Optional text overlay (show only if admin filled title)
+            $heroTitle = $ss->get('theme.hero_title', '');
+            $heroSubtitle = $ss->get('theme.hero_subtitle', '');
+            $heroCta1Text = $ss->get('theme.hero_cta_text', '');
+            $heroCta1Link = $ss->get('theme.hero_cta_link', '/search');
+            $showOverlay = !empty($heroTitle);
         @endphp
 
-        {{-- Desktop: split layout | Mobile: text above, images below --}}
-        <div class="sf-hero-split">
-            {{-- Left: Content --}}
-            <div class="sf-hero-split-left">
-                @if($heroAward)
-                <div class="sf-hero-award-badge">{{ $heroAward }}</div>
-                @endif
-                <p class="sf-hero-eyebrow">{{ $heroEyebrow }}</p>
-                <h1 class="sf-hero-split-title">
-                    {{ $heroTitle }}@if($ss->get('theme.hero_title_suffix'))<br><em>{{ $ss->get('theme.hero_title_suffix') }}</em>@endif
-                </h1>
-                <p class="sf-hero-split-sub">{{ $heroSubtitle }}</p>
-                <div class="sf-hero-split-ctas">
-                    @if($heroCta1Text)
-                    <a href="{{ $heroCta1Link }}" class="sf-hero-split-btn-primary">{{ $heroCta1Text }}</a>
-                    @endif
-                    @if($heroCta2Text)
-                    <a href="{{ $heroCta2Link }}" class="sf-hero-split-btn-outline">{{ $heroCta2Text }}</a>
-                    @endif
+        @if($slideCount > 0)
+        <div class="sf-hero" id="heroSlider">
+            <div class="sf-hero-track" id="heroTrack">
+                @foreach($heroSlides as $idx => $slide)
+                <div class="sf-hero-slide">
+                    <a href="{{ $slide['link'] ?? $heroCta1Link }}" style="display:block;">
+                        <div class="sf-hero-img-wrap">
+                            <img src="{{ asset('storage/' . $slide['image']) }}"
+                                 alt="{{ $slide['alt'] ?? $heroTitle }}"
+                                 loading="{{ $idx === 0 ? 'eager' : 'lazy' }}"
+                                 class="sf-hero-img">
+                        </div>
+                    </a>
                 </div>
-                {{-- Conversion micro-trust under CTA --}}
-                <div class="sf-hero-micro-trust">
-                    @php $freeThreshold = $ss->get('shipping.free_threshold', 499); @endphp
-                    <span><i class="bi bi-truck"></i> Free Delivery above ₹{{ number_format($freeThreshold) }}</span>
-                    <span><i class="bi bi-cash-coin"></i> Cash on Delivery Available</span>
-                    <span><i class="bi bi-shield-check"></i> Trusted by Salons Across India</span>
-                </div>
+                @endforeach
             </div>
 
-            {{-- Right: Image Grid (admin managed via hero_slides, up to 4 images) --}}
-            <div class="sf-hero-split-right">
-                @if($slideCount > 0)
-                    @foreach(array_slice($heroSlides, 0, 4) as $idx => $slide)
-                    <div class="sf-hero-grid-img">
-                        <a href="{{ $slide['link'] ?? $heroCta1Link }}" style="display:block;width:100%;height:100%;">
-                            <img src="{{ asset('storage/' . $slide['image']) }}"
-                                 alt="{{ $slide['alt'] ?? '' }}"
-                                 loading="{{ $idx === 0 ? 'eager' : 'lazy' }}"
-                                 style="width:100%;height:100%;object-fit:cover;">
-                        </a>
-                        @if(!empty($slide['alt']))
-                        <div class="sf-hero-grid-tag">{{ $slide['alt'] }}</div>
-                        @endif
-                    </div>
-                    @endforeach
+            {{-- Optional Text Overlay (if admin set title — shown on all slides) --}}
+            @if($showOverlay)
+            <div class="sf-hero-overlay" style="background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.15) 50%, transparent 100%);"></div>
+            <div class="sf-hero-content" style="text-align:center; left:50%; transform:translate(-50%,-50%); max-width:700px; width:90%;">
+                <h1 class="sf-hero-title">{{ $heroTitle }}</h1>
+                @if($heroSubtitle)
+                <p class="sf-hero-sub" style="color:rgba(255,255,255,0.85); margin: 0 auto 24px;">{{ $heroSubtitle }}</p>
+                @endif
+                @if($heroCta1Text)
+                <a href="{{ $heroCta1Link }}" class="sf-hero-cta">{{ $heroCta1Text }}</a>
                 @endif
             </div>
+            @endif
+
+            {{-- Navigation Dots --}}
+            @if($slideCount > 1)
+            <div class="sf-hero-dots">
+                @for($d = 0; $d < $slideCount; $d++)
+                <button class="sf-hero-dot {{ $d === 0 ? 'active' : '' }}" data-slide="{{ $d }}"></button>
+                @endfor
+            </div>
+            <button class="sf-hero-arrow sf-hero-prev" aria-label="Previous"><i class="bi bi-chevron-left"></i></button>
+            <button class="sf-hero-arrow sf-hero-next" aria-label="Next"><i class="bi bi-chevron-right"></i></button>
+            @endif
         </div>
+        @else
+        {{-- Fallback: No slides uploaded yet --}}
+        <div class="sf-hero" style="background: var(--color-dark); height: 400px; display:flex; align-items:center; justify-content:center;">
+            <div style="text-align:center; padding: 40px;">
+                <h1 class="sf-hero-title" style="color: var(--color-gold);">{{ $ss->get('theme.hero_title', config('app.name')) }}</h1>
+                <p style="color:rgba(255,255,255,0.6); font-size:15px;">{{ $ss->get('theme.hero_subtitle', 'Premium Beauty Products — Delivered to Your Door') }}</p>
+                <a href="{{ $heroCta1Link }}" class="sf-hero-cta" style="margin-top:20px;">{{ $ss->get('theme.hero_cta_text', 'Shop Now') }}</a>
+            </div>
+        </div>
+        @endif
     @endif
-    
+
     @if ($sectionKey === 'hero')
         {{-- SEO Content Block (Below Hero) --}}
         @if ($ss->get('theme.home_seo_content'))
@@ -139,11 +144,52 @@
         </div>
     @endif
 
+    @if ($sectionKey === 'benefits_strip')
+        {{-- ══ BENEFITS STRIP (Outcome-based, Horizontal Scroll) ═══════════════ --}}
+        @php
+            $benefitsRaw = $ss->get('theme.benefits_items', '');
+            if (is_array($benefitsRaw)) {
+                $benefitsItems = $benefitsRaw;
+            } elseif (is_string($benefitsRaw) && !empty($benefitsRaw)) {
+                $benefitsItems = json_decode($benefitsRaw, true) ?: [];
+            } else {
+                $benefitsItems = [];
+            }
+            if (empty($benefitsItems)) {
+                $benefitsItems = [
+                    ['icon' => 'bi-droplet-half', 'label' => 'Hair Fall Control'],
+                    ['icon' => 'bi-snow2', 'label' => 'Dandruff Reduction'],
+                    ['icon' => 'bi-brilliance', 'label' => 'Salon Smooth Finish'],
+                    ['icon' => 'bi-shield-check', 'label' => 'No Harsh Chemicals'],
+                    ['icon' => 'bi-flower1', 'label' => 'Non-Alcoholic Fragrance'],
+                ];
+            }
+        @endphp
+        @if(!empty($benefitsItems))
+        <div class="sf-benefits-strip">
+            <div class="sf-benefits-scroll">
+                @foreach($benefitsItems as $benefit)
+                <div class="sf-benefit-item">
+                    <div class="sf-benefit-circle">
+                        @if(!empty($benefit['image']))
+                            <img src="{{ asset('storage/' . $benefit['image']) }}" alt="{{ $benefit['label'] ?? '' }}" loading="lazy">
+                        @else
+                            <i class="bi {{ $benefit['icon'] ?? 'bi-check-circle' }}"></i>
+                        @endif
+                    </div>
+                    <div class="sf-benefit-label">{{ $benefit['label'] ?? '' }}</div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+    @endif
+
     @if ($sectionKey === 'categories' && isset($categories) && $categories->isNotEmpty())
         {{-- ══ CATEGORIES ════════════════════════════════════════════════════════ --}}
         <section class="sf-section sf-section-cream">
             <div class="sf-container">
-                <div class="sf-section-header-row">
+                <div class="sf-section-header-row sf-animate">
                     <div>
                         <p class="sf-section-eyebrow">{{ $section['eyebrow'] ?? 'Explore' }}</p>
                         <h2 class="sf-section-title">{{ $sTitle ?? 'Shop by Category' }}</h2>
@@ -203,7 +249,7 @@
         {{-- ══ BESTSELLERS ════════════════════════════════════════════════════════ --}}
         <section class="sf-section sf-section-white">
             <div class="sf-container">
-                <div class="sf-section-header-row">
+                <div class="sf-section-header-row sf-animate">
                     <div>
                         <p class="sf-section-eyebrow">{{ $section['eyebrow'] ?? 'Top Picks' }}</p>
                         <h2 class="sf-section-title">{{ $sTitle ?? 'Bestsellers' }}</h2>
@@ -247,7 +293,7 @@
         {{-- ══ FEATURED PRODUCTS ══════════════════════════════════════════════════ --}}
         <section class="sf-section sf-section-cream">
             <div class="sf-container">
-                <div class="sf-section-header-row">
+                <div class="sf-section-header-row sf-animate">
                     <div>
                         <p class="sf-section-eyebrow">{{ $section['eyebrow'] ?? 'Fresh In' }}</p>
                         <h2 class="sf-section-title">{{ $sTitle ?? 'New Arrivals' }}</h2>
@@ -266,7 +312,7 @@
     @if ($sectionKey === 'latest' && isset($latest) && $latest->isNotEmpty())
         <section class="sf-section sf-section-white">
             <div class="sf-container">
-                <div class="sf-section-header-row">
+                <div class="sf-section-header-row sf-animate">
                     <div>
                         <p class="sf-section-eyebrow">Recently Added</p>
                         <h2 class="sf-section-title">{{ $sTitle ?? 'New Arrivals' }}</h2>
@@ -317,7 +363,7 @@
         @endphp
         <div class="sf-award-section">
             <div class="sf-award-inner">
-                <div class="sf-award-left">
+                <div class="sf-award-left sf-animate">
                     <p class="sf-award-eyebrow">Our Story</p>
                     <h2 class="sf-award-title">{{ $awardTitle }}</h2>
                     <p class="sf-award-desc">{{ $awardText }}</p>
@@ -387,7 +433,7 @@
         {{-- ══ CUSTOMER REVIEWS ═══════════════════════════════════════════════════ --}}
         <section class="sf-section sf-section-white">
             <div class="sf-container">
-                <div style="text-align:center;margin-bottom:36px;">
+                <div style="text-align:center;margin-bottom:36px;" class="sf-animate">
                     <p class="sf-section-eyebrow">Testimonials</p>
                     <h2 class="sf-section-title" style="margin:0 auto;">{{ $sTitle ?? 'What Our Customers Say' }}</h2>
                     <p style="color:var(--color-text-muted);font-size:13px;margin-top:8px;">{{ $sSubtitle ?? 'Real reviews from verified buyers across India' }}</p>
@@ -399,13 +445,18 @@
                             @for($i=1;$i<=5;$i++)<i class="bi bi-star{{ $i <= $review->rating ? '-fill' : '' }}"></i>@endfor
                         </div>
                         <p class="sf-review-text">"{{ \Illuminate\Support\Str::limit($review->body, 140) }}"</p>
-                        <div class="sf-reviewer-name">{{ $review->reviewer_name }}</div>
-                        @if($review->product)
-                        <div class="sf-reviewer-product">on <a href="{{ route('product.show', $review->product->slug) }}" style="color:inherit;text-decoration:underline;">{{ $review->product->name }}</a></div>
-                        @endif
-                        @if($review->verified_purchase)
-                        <div class="sf-reviewer-verified"><i class="bi bi-patch-check-fill"></i> Verified Purchase</div>
-                        @endif
+                        <div class="sf-reviewer-row">
+                            <div class="sf-review-avatar">{{ strtoupper(mb_substr($review->reviewer_name, 0, 1)) }}</div>
+                            <div>
+                                <div class="sf-reviewer-name">{{ $review->reviewer_name }}</div>
+                                @if($review->product)
+                                <div class="sf-reviewer-product">on <a href="{{ route('product.show', $review->product->slug) }}" style="color:inherit;text-decoration:underline;">{{ $review->product->name }}</a></div>
+                                @endif
+                                @if($review->verified_purchase)
+                                <div class="sf-reviewer-verified"><i class="bi bi-patch-check-fill"></i> Verified Purchase</div>
+                                @endif
+                            </div>
+                        </div>
                     </div>
                     @endforeach
                 </div>
@@ -418,5 +469,95 @@
 @endsection
 
 @push('scripts')
-{{-- No extra scripts needed — existing slider JS removed since hero is now split-grid not a slider --}}
+{{-- Hero Slider JS (lightweight, no dependencies) --}}
+<script>
+(function() {
+    var slider = document.getElementById('heroSlider');
+    if (!slider) return;
+
+    var track = document.getElementById('heroTrack');
+    var slides = track.querySelectorAll('.sf-hero-slide');
+    var dots = slider.querySelectorAll('.sf-hero-dot');
+    var prevBtn = slider.querySelector('.sf-hero-prev');
+    var nextBtn = slider.querySelector('.sf-hero-next');
+    var current = 0;
+    var total = slides.length;
+    if (total <= 1) return;
+
+    var autoInterval = 5000;
+    var autoTimer = null;
+
+    function goTo(idx) {
+        if (idx < 0) idx = total - 1;
+        if (idx >= total) idx = 0;
+        current = idx;
+        track.style.transform = 'translateX(-' + (current * 100) + '%)';
+        for (var d = 0; d < dots.length; d++) {
+            dots[d].classList.toggle('active', d === current);
+        }
+    }
+
+    function startAuto() {
+        stopAuto();
+        autoTimer = setInterval(function() { goTo(current + 1); }, autoInterval);
+    }
+    function stopAuto() {
+        if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+    }
+
+    if (nextBtn) nextBtn.addEventListener('click', function() { goTo(current + 1); startAuto(); });
+    if (prevBtn) prevBtn.addEventListener('click', function() { goTo(current - 1); startAuto(); });
+    for (var i = 0; i < dots.length; i++) {
+        dots[i].addEventListener('click', (function(idx) {
+            return function() { goTo(idx); startAuto(); };
+        })(i));
+    }
+
+    // Touch swipe support
+    var startX = 0;
+    var isDragging = false;
+    slider.addEventListener('touchstart', function(e) {
+        startX = e.touches[0].clientX;
+        isDragging = true;
+        stopAuto();
+    }, { passive: true });
+    slider.addEventListener('touchend', function(e) {
+        if (!isDragging) return;
+        isDragging = false;
+        var diff = startX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 50) {
+            goTo(diff > 0 ? current + 1 : current - 1);
+        }
+        startAuto();
+    }, { passive: true });
+
+    // Pause on hover (desktop)
+    slider.addEventListener('mouseenter', stopAuto);
+    slider.addEventListener('mouseleave', startAuto);
+
+    startAuto();
+})();
+</script>
+
+{{-- Scroll Reveal (section headers only) --}}
+<script>
+(function() {
+    if (!('IntersectionObserver' in window)) {
+        // Fallback: just show everything
+        var els = document.querySelectorAll('.sf-animate');
+        for (var i = 0; i < els.length; i++) els[i].classList.add('sf-visible');
+        return;
+    }
+    var observer = new IntersectionObserver(function(entries) {
+        for (var i = 0; i < entries.length; i++) {
+            if (entries[i].isIntersecting) {
+                entries[i].target.classList.add('sf-visible');
+                observer.unobserve(entries[i].target);
+            }
+        }
+    }, { threshold: 0.15 });
+    var targets = document.querySelectorAll('.sf-animate');
+    for (var j = 0; j < targets.length; j++) observer.observe(targets[j]);
+})();
+</script>
 @endpush

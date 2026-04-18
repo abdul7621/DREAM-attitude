@@ -171,16 +171,17 @@
                 <div class="list-group mb-3">
                     @php
                         $available = [
-                            'hero'          => '🖼️ Hero Banner (Split)',
-                            'trust_strip'   => '✅ Trust Strip (Dark Bar)',
-                            'categories'    => '🗂️ Category Grid',
-                            'usp_strip'     => '⭐ USP Strip (4 Features)',
-                            'bestsellers'   => '🔥 Bestsellers',
-                            'offers_banner' => '🏷️ Offers Banner',
-                            'featured'      => '🆕 Featured / New Arrivals',
-                            'latest'        => '📦 Latest Products',
-                            'award_section' => '🏆 Award / Brand Story',
-                            'reviews'       => '💬 Customer Reviews',
+                            'hero'           => '🖼️ Hero Banner (Slider)',
+                            'trust_strip'    => '✅ Trust Strip (Dark Bar)',
+                            'benefits_strip' => '🎯 Benefits Strip (Circles)',
+                            'categories'     => '🗂️ Category Grid',
+                            'usp_strip'      => '⭐ USP Strip (4 Features)',
+                            'bestsellers'    => '🔥 Bestsellers',
+                            'offers_banner'  => '🏷️ Offers Banner',
+                            'featured'       => '🆕 Featured / New Arrivals',
+                            'latest'         => '📦 Latest Products',
+                            'award_section'  => '🏆 Award / Brand Story',
+                            'reviews'        => '💬 Customer Reviews',
                         ];
                         $active = $theme['theme.home_sections'] ?? [];
                     @endphp
@@ -463,6 +464,35 @@
                     @endforeach
                 </div>
                 <div class="form-text mt-2">Bootstrap icons: bi-stars, bi-heart, bi-droplet, bi-shield-check, bi-truck, bi-shop, bi-patch-check</div>
+            </div>
+        </div>
+
+        {{-- ── Benefits Strip ─── --}}
+        <div class="card mb-4">
+            <div class="card-header bg-white"><i class="bi bi-bullseye me-2"></i> Benefits Strip (Circular Icons) <span class="badge bg-success">NEW</span></div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">Circular icons with outcome-based labels. Scrolls horizontally on mobile. Use outcome messaging, not generic claims.</p>
+                @php
+                    $benefitsItems = is_array($theme['theme.benefits_items'] ?? null) ? $theme['theme.benefits_items'] : [
+                        ['icon' => 'bi-droplet-half', 'label' => 'Hair Fall Control'],
+                        ['icon' => 'bi-snow2', 'label' => 'Dandruff Reduction'],
+                        ['icon' => 'bi-brilliance', 'label' => 'Salon Smooth Finish'],
+                        ['icon' => 'bi-shield-check', 'label' => 'No Harsh Chemicals'],
+                        ['icon' => 'bi-flower1', 'label' => 'Non-Alcoholic Fragrance'],
+                    ];
+                @endphp
+                <div class="row g-3">
+                    @foreach(array_slice($benefitsItems, 0, 6) as $bi => $bItem)
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded bg-light">
+                            <label class="form-label small fw-semibold">Benefit {{ $bi + 1 }}</label>
+                            <input type="text" name="benefits_items[{{ $bi }}][icon]" class="form-control form-control-sm mb-1" value="{{ $bItem['icon'] ?? 'bi-check-circle' }}" placeholder="Bootstrap icon (e.g. bi-droplet-half)">
+                            <input type="text" name="benefits_items[{{ $bi }}][label]" class="form-control form-control-sm" value="{{ $bItem['label'] ?? '' }}" placeholder="Label (e.g. Hair Fall Control)">
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                <div class="form-text mt-2">Use outcome labels: Hair Fall Control, Dandruff Reduction, Salon Smooth Finish, etc. Max 6 items.</div>
             </div>
         </div>
             </div>

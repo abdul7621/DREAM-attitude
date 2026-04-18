@@ -1658,6 +1658,179 @@ a[style*="color:var(--color-gold)"] {
   .sf-footer-col-links.open { max-height: 300px; }
 }
 
+/* ── Benefits Strip (Circular Icons, Scroll on Mobile) ── */
+.sf-benefits-strip {
+  padding: 32px 0;
+  background: var(--color-bg-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+.sf-benefits-scroll {
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+  max-width: var(--sf-container-max);
+  margin: 0 auto;
+  padding: 0 var(--sf-container-pad);
+}
+.sf-benefit-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  min-width: 100px;
+  flex-shrink: 0;
+  text-align: center;
+}
+.sf-benefit-circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-primary);
+  transition: var(--transition);
+}
+.sf-benefit-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.sf-benefit-circle i {
+  font-size: 28px;
+  color: var(--color-gold);
+}
+.sf-benefit-item:hover .sf-benefit-circle {
+  border-color: var(--color-gold);
+  transform: scale(1.05);
+}
+.sf-benefit-label {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  max-width: 100px;
+  line-height: 1.3;
+}
+@media(max-width: 768px) {
+  .sf-benefits-scroll {
+    justify-content: flex-start;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 20px;
+    padding-bottom: 8px;
+    scrollbar-width: none;
+  }
+  .sf-benefits-scroll::-webkit-scrollbar { display: none; }
+  .sf-benefit-item { scroll-snap-align: start; }
+  .sf-benefit-circle { width: 64px; height: 64px; }
+}
+
+/* ── Mobile Bottom Navigation ───────────────────────── */
+.sf-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1050;
+  background: var(--color-bg-primary);
+  border-top: 1px solid var(--color-border);
+  box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+  padding: 6px 0 env(safe-area-inset-bottom, 4px);
+}
+.sf-bottom-nav-inner {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+.sf-bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 12px;
+  color: var(--color-text-muted);
+  font-size: 10px;
+  text-decoration: none;
+  letter-spacing: 0.03em;
+  transition: color 0.2s;
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.sf-bottom-nav-item i { font-size: 20px; }
+.sf-bottom-nav-item.active,
+.sf-bottom-nav-item:hover {
+  color: var(--color-gold);
+}
+.sf-bottom-nav-item .sf-bnav-badge {
+  position: absolute;
+  top: 2px;
+  right: 6px;
+  background: var(--color-gold);
+  color: #1a1a1a;
+  font-size: 9px;
+  font-weight: 700;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+@media(max-width: 768px) {
+  .sf-bottom-nav { display: block; }
+  body { padding-bottom: 64px; }
+  /* Hide product page sticky bar when bottom nav is present */
+  .sf-mobile-sticky { bottom: 64px !important; }
+}
+
+/* ── Scroll Animations (Section Headers Only) ─────── */
+.sf-animate {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.sf-animate.sf-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Review Avatar Initials ───────────────────────── */
+.sf-review-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-gold);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  flex-shrink: 0;
+}
+.sf-reviewer-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sf-reviewer-verified {
+  font-size: 10px;
+  color: var(--color-success);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
 /* ── Misc: section background helpers ─────────────── */
 .sf-section-cream { background: var(--color-bg-primary) !important; }
 .sf-section-white { background: var(--color-bg-surface) !important; }

@@ -333,6 +333,32 @@
     </div>
 </footer>
 
+{{-- Mobile Bottom Navigation (4 items: Home, Shop, Cart, Account) --}}
+<nav class="sf-bottom-nav" aria-label="Mobile navigation">
+    <div class="sf-bottom-nav-inner">
+        <a href="{{ route('home') }}" class="sf-bottom-nav-item {{ request()->routeIs('home') ? 'active' : '' }}">
+            <i class="bi bi-house-door"></i>
+            <span>Home</span>
+        </a>
+        <a href="{{ route('search') }}" class="sf-bottom-nav-item {{ request()->routeIs('search') ? 'active' : '' }}">
+            <i class="bi bi-grid"></i>
+            <span>Shop</span>
+        </a>
+        <a href="{{ route('cart.index') }}" class="sf-bottom-nav-item {{ request()->routeIs('cart.*') ? 'active' : '' }}">
+            <i class="bi bi-bag"></i>
+            @php $cartCount = count(session('cart.items', [])); @endphp
+            @if($cartCount > 0)
+            <span class="sf-bnav-badge">{{ $cartCount }}</span>
+            @endif
+            <span>Cart</span>
+        </a>
+        <a href="{{ route('account.index') }}" class="sf-bottom-nav-item {{ request()->routeIs('account.*') ? 'active' : '' }}">
+            <i class="bi bi-person"></i>
+            <span>Account</span>
+        </a>
+    </div>
+</nav>
+
 <x-toast />
 
 {{-- Wishlist Heart System --}}

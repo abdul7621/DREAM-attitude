@@ -104,6 +104,9 @@ class ThemeController extends Controller
                     'usp_strip.*.icon'             => ['nullable', 'string', 'max:50'],
                     'usp_strip.*.title'            => ['nullable', 'string', 'max:150'],
                     'usp_strip.*.desc'             => ['nullable', 'string', 'max:255'],
+                    'benefits_items'               => ['nullable', 'array', 'max:6'],
+                    'benefits_items.*.icon'         => ['nullable', 'string', 'max:50'],
+                    'benefits_items.*.label'        => ['nullable', 'string', 'max:100'],
                     'award_stats'                  => ['nullable', 'array', 'max:3'],
                     'award_stats.*.num'            => ['nullable', 'string', 'max:50'],
                     'award_stats.*.label'          => ['nullable', 'string', 'max:50'],
@@ -232,6 +235,15 @@ class ThemeController extends Controller
                     Setting::updateOrCreate(
                         ['key' => 'theme.usp_strip_items'],
                         ['value' => json_encode(array_values($uspStrip))]
+                    );
+                }
+
+                // Save Benefits Strip items (array)
+                $benefitsItems = $request->input('benefits_items', []);
+                if (!empty($benefitsItems)) {
+                    Setting::updateOrCreate(
+                        ['key' => 'theme.benefits_items'],
+                        ['value' => json_encode(array_values($benefitsItems))]
                     );
                 }
 
