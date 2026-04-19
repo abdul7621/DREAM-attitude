@@ -251,7 +251,11 @@
         <div class="card mb-4">
             <div class="card-header bg-white"><i class="bi bi-type me-2"></i> Hero Text Overlay <span class="badge bg-secondary ms-1">Optional</span></div>
             <div class="card-body">
-                <p class="text-muted small mb-3">Shows on top of slides. Leave empty if your banner images already have text.</p>
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="theme_hero_overlay_enabled" name="theme_hero_overlay_enabled" value="1" {{ !empty($theme['theme.hero_overlay_enabled']) ? 'checked' : '' }}>
+                    <label class="form-check-label" for="theme_hero_overlay_enabled"><strong>Show Text Overlay on Slider</strong></label>
+                    <div class="form-text">OFF = pure image slider (recommended if your banners already have text baked in). ON = title, subtitle & button shown on top of all slides.</div>
+                </div>
                 <div class="row g-3">
                     <div class="col-12">
                         <label class="form-label">Hero Title</label>

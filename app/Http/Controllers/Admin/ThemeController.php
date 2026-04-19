@@ -219,6 +219,7 @@ class ThemeController extends Controller
                     }
                 }
                 Setting::updateOrCreate(['key' => 'theme.announcement_active'], ['value' => $request->boolean('theme_announcement_active') ? '1' : '0']);
+                Setting::updateOrCreate(['key' => 'theme.hero_overlay_enabled'], ['value' => $request->boolean('theme_hero_overlay_enabled') ? '1' : '0']);
 
                 // Save Trust Strip items (array)
                 $trustStrip = $request->input('trust_strip', []);

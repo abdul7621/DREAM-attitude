@@ -39,12 +39,13 @@
             $heroSlides = array_slice($heroSlides, 0, 3);
             $slideCount = count($heroSlides);
 
-            // Optional text overlay (show only if admin filled title)
+            // Text overlay — controlled by admin toggle (default: OFF = pure image slider)
+            $heroOverlayEnabled = (bool) $ss->get('theme.hero_overlay_enabled', false);
             $heroTitle = $ss->get('theme.hero_title', '');
             $heroSubtitle = $ss->get('theme.hero_subtitle', '');
             $heroCta1Text = $ss->get('theme.hero_cta_text', '');
             $heroCta1Link = $ss->get('theme.hero_cta_link', '/search');
-            $showOverlay = !empty($heroTitle);
+            $showOverlay = $heroOverlayEnabled && !empty($heroTitle);
         @endphp
 
         @if($slideCount > 0)
