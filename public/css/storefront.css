@@ -3671,5 +3671,295 @@ a.sf-gold-link:hover {
   font-size: 12px;
   color: var(--color-text-muted);
 }
+
+/* ============================================================
+   DECISION ENGINE - LUXURY & ARCHITECTURE UPGRADES
+   ============================================================ */
+   
+/* Trust Strip Deep Luxury Refinement */
+.sf-trust-strip {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  background: linear-gradient(135deg, #111111 0%, #080808 100%);
+  border-top: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding: 18px 24px;
+  gap: 32px;
+  scrollbar-width: none;
+}
+.sf-trust-strip::-webkit-scrollbar { display: none; }
+.sf-trust-item {
+  scroll-snap-align: start;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-right: 32px;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+.sf-trust-item:last-child {
+  border-right: none;
+  padding-right: 0;
+}
+.sf-trust-val {
+  color: var(--color-gold);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.sf-trust-label {
+  color: rgba(255,255,255,0.7);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* Category Grid (3 Banners) */
+.sf-category-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@media (min-width: 768px) {
+  .sf-category-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+}
+.sf-category-banner {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  aspect-ratio: 4/5;
+  display: block;
+  text-decoration: none !important;
+  background: var(--color-bg-dark);
+}
+.sf-category-banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+.sf-category-banner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 50%, transparent 100%);
+  pointer-events: none;
+}
+.sf-category-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px;
+  z-index: 2;
+  transform: translateY(10px);
+  transition: transform 0.4s ease;
+}
+@media (max-width: 768px) {
+  .sf-category-content { transform: translateY(0); }
+  .sf-category-cta { opacity: 1 !important; }
+}
+.sf-category-banner:hover img {
+  transform: scale(1.05);
+}
+.sf-category-banner:hover .sf-category-content {
+  transform: translateY(0);
+}
+.sf-category-banner h3 {
+  color: #fff;
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+.sf-category-cta {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--color-gold);
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.sf-category-banner:hover .sf-category-cta {
+  opacity: 1;
+}
+
+/* Bento Grid (Top Picks) */
+.sf-bento-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  grid-auto-flow: dense;
+}
+@media (min-width: 768px) {
+  .sf-bento-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+}
+.sf-bento-item-high {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+.sf-bento-item-high .sf-product-card {
+  height: 100%;
+}
+.sf-bento-item-high .sf-product-img-wrap {
+  aspect-ratio: 1/1; 
+}
+.sf-bento-item-medium {
+  grid-column: span 1;
+  grid-row: span 1;
+}
+
+/* Micro-signals directly mapping to hooks/promises */
+.sf-card-signals {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 12px 16px;
+}
+.sf-signal {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--color-text-primary);
+  background: rgba(39,103,73,0.06);
+  padding: 4px 8px;
+  border-radius: 4px;
+  width: fit-content;
+  font-weight: 500;
+}
+.sf-signal i {
+  color: var(--color-success);
+}
+.sf-signal-safe i {
+  color: var(--color-gold);
+}
+
+/* Funnel Catch CTA */
+.sf-funnel-catch {
+  background: linear-gradient(135deg, #1A1A1A 0%, #0A0A0A 100%);
+  border-radius: var(--radius-lg);
+  padding: 56px 32px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+  margin-top: 24px;
+}
+.sf-funnel-catch-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height: 300px;
+  background: var(--color-gold);
+  filter: blur(140px);
+  opacity: 0.15;
+  pointer-events: none;
+}
+.sf-funnel-catch h3 {
+  color: #fff;
+  font-size: 28px;
+  font-family: 'Playfair Display', serif;
+  margin-bottom: 12px;
+  position: relative;
+  z-index: 2;
+}
+.sf-funnel-catch p {
+  color: rgba(255,255,255,0.6);
+  font-size: 15px;
+  margin-bottom: 32px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Problem Solution Engine */
+.sf-ps-engine {
+  display: grid;
+  gap: 32px;
+}
+@media (min-width: 992px) {
+  .sf-ps-engine {
+    grid-template-columns: 350px 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+}
+.sf-ps-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: sticky;
+  top: 100px;
+}
+.sf-ps-tab {
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  padding: 20px 24px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.sf-ps-tab:hover {
+  background: var(--color-bg-surface);
+}
+.sf-ps-tab.active {
+  background: var(--color-dark);
+  color: #fff;
+  border-color: var(--color-dark);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+.sf-ps-tab.active i {
+  color: var(--color-gold);
+  transform: translateX(4px);
+  transition: transform 0.3s ease;
+}
+.sf-ps-content {
+  display: none;
+  animation: sfFadeInUp 0.4s ease forwards;
+}
+.sf-ps-content.active {
+  display: block;
+}
+.sf-ps-solution-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  grid-auto-flow: dense;
+}
+@media (min-width: 768px) {
+  .sf-ps-solution-grid {
+    grid-template-columns: 2fr 1fr 1fr; /* Custom asymmetric layout for PS Strip */
+    gap: 24px;
+  }
+}
+.sf-ps-primary {
+  grid-column: span 2;
+}
+@media (min-width: 768px) {
+  .sf-ps-primary {
+    grid-column: span 1; /* In 2fr 1fr 1fr array, this takes up the 2fr slot roughly */
+  }
+}
+
+@keyframes sfFadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
   color: var(--color-gold);
 }

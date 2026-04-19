@@ -115,6 +115,9 @@ class ThemeController extends Controller
                     'award_images_existing'        => ['nullable', 'array', 'max:4'],
                     'award_images_existing.*'      => ['nullable', 'string', 'max:255'],
                     'award_images_remove'          => ['nullable', 'array', 'max:4'],
+                    'problem_matrix'               => ['nullable', 'array', 'max:6'],
+                    'problem_matrix.*.problem'     => ['nullable', 'string', 'max:255'],
+                    'problem_matrix.*.products'    => ['nullable', 'string', 'max:100'],
                 ]);
 
                 // Normalize sections
@@ -255,6 +258,16 @@ class ThemeController extends Controller
                         ['value' => json_encode(array_values($uspStrip))]
                     );
                 }
+
+                // Save Problem-Solution Matrix items (array)
+                $problemMatrix = $request->input('problem_matrix', []);
+                if (!empty($problemMatrix)) {
+                    Setting::updateOrCreate(
+                        ['key' => 'theme.problem_matrix'],
+                        ['value' => json_encode(array_values($problemMatrix))]
+                    );
+                }
+
 
                 // Save Benefits Strip items (array)
                 $benefitsItems = $request->input('benefits_items', []);

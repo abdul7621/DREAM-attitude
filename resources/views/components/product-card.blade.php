@@ -1,4 +1,4 @@
-@props(['product'])
+@props(['product', 'bentoClass' => ''])
 @php
     $variant = $product->variants->firstWhere('is_active', true) ?? $product->variants->first();
     $img = $product->primaryImage();
@@ -15,8 +15,8 @@
     $hasMultipleVariants = $realVariants->count() > 1;
     $isOutOfStock = $variant && $variant->track_inventory && $variant->stock_qty <= 0;
 @endphp
-<div class="sf-product-card">
-    <div class="img-wrap">
+<div class="sf-product-card {{ $bentoClass }}">
+    <div class="img-wrap sf-product-img-wrap">
         <a href="{{ route('product.show', $product) }}">
             @if ($img)
                 <img src="{{ asset('storage/'.$img->path) }}" alt="{{ $img->alt_text ?? $product->name }}" loading="lazy" width="400" height="400">
@@ -41,6 +41,22 @@
     
     <div class="card-body">
         <a href="{{ route('product.show', $product) }}" class="product-name">{{ $product->name }}</a>
+        
+        {{-- MICRO SIGNALS --}}
+        @if(!empty($product->meta['problem_hook']) || !empty($product->meta['result_promise']) || !empty($product->meta['safety_tag']))
+            <div class="sf-card-signals">
+                @if(!empty($product->meta['problem_hook']))
+                    <span class="sf-signal"><i class="bi bi-check-circle-fill"></i> {{ Str::limit($product->meta['problem_hook'], 30) }}</span>
+                @endif
+                @if(!empty($product->meta['result_promise']))
+                    <span class="sf-signal"><i class="bi bi-stars"></i> {{ Str::limit($product->meta['result_promise'], 30) }}</span>
+                @endif
+                @if(!empty($product->meta['safety_tag']))
+                    <span class="sf-signal sf-signal-safe"><i class="bi bi-shield-check"></i> {{ Str::limit($product->meta['safety_tag'], 30) }}</span>
+                @endif
+            </div>
+        @endif
+
         @if (isset($product->reviews_count) && $product->reviews_count > 0)
             <div style="display:flex;align-items:center;gap:4px;margin-bottom:4px;">
                 @for ($i = 1; $i <= 5; $i++)

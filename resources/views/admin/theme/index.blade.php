@@ -486,6 +486,39 @@
         </div>
 
         {{-- ── Benefits Strip ─── --}}
+        <div class="card mb-4 border-dark">
+            <div class="card-header bg-dark text-white"><i class="bi bi-diagram-3 me-2"></i> Problem → Solution Matrix <span class="badge bg-gold text-dark" style="background:#C9A84C;">ENGINE</span></div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">Build the conversion engine here. Map customer problems directly to products. (Enter exact Product IDs comma-separated).</p>
+                @php
+                    $matrixItems = is_array($theme['theme.problem_matrix'] ?? null) ? $theme['theme.problem_matrix'] : [
+                        ['problem' => 'Hair Fall & Thinning?', 'products' => ''],
+                        ['problem' => 'Dull, Lifeless Skin?', 'products' => ''],
+                        ['problem' => 'Frizzy Hair & Split Ends?', 'products' => ''],
+                    ];
+                @endphp
+                <div class="row g-3">
+                    @foreach($matrixItems as $mi => $mItem)
+                    <div class="col-12">
+                        <div class="p-3 border rounded bg-light border-start border-4 border-dark">
+                            <div class="row g-2 align-items-center">
+                                <div class="col-md-5">
+                                    <label class="form-label small fw-bold">Problem Headline {{ $mi + 1 }}</label>
+                                    <input type="text" name="problem_matrix[{{ $mi }}][problem]" class="form-control" value="{{ $mItem['problem'] ?? '' }}" placeholder="e.g. Hair Fall? -> Try This">
+                                </div>
+                                <div class="col-md-7">
+                                    <label class="form-label small fw-bold">Product IDs (Comma Separated)</label>
+                                    <input type="text" name="problem_matrix[{{ $mi }}][products]" class="form-control" value="{{ $mItem['products'] ?? '' }}" placeholder="e.g. 12, 45, 89">
+                                    <div class="form-text" style="font-size:11px;">Enter 3 Product IDs exactly. Find IDs in the Products tab.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+
         <div class="card mb-4">
             <div class="card-header bg-white"><i class="bi bi-bullseye me-2"></i> Benefits Strip (Circular Icons) <span class="badge bg-success">NEW</span></div>
             <div class="card-body">

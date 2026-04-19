@@ -190,24 +190,28 @@
     @endif
 
     @if ($sectionKey === 'categories' && isset($categories) && $categories->isNotEmpty())
-        {{-- ══ CATEGORIES — Circular Icons, Horizontal Scroll ═════════════════ --}}
-        <section class="sf-section sf-section-cream">
+        {{-- ══ CATEGORIES — 3 Big Cards Layout ═════════════════ --}}
+        <section class="sf-section" style="background:var(--color-bg-primary); padding: 48px 0;">
             <div class="sf-container">
-                <div style="text-align:center; margin-bottom:32px;" class="sf-animate">
-                    <p class="sf-section-eyebrow">{{ $section['eyebrow'] ?? 'Explore' }}</p>
-                    <h2 class="sf-section-title" style="margin:0 auto;">{{ $sTitle ?? 'Shop by Category' }}</h2>
+                <div style="text-align:center; margin-bottom:40px;" class="sf-animate">
+                    <p class="sf-section-eyebrow">{{ $section['eyebrow'] ?? 'Curated For You' }}</p>
+                    <h2 class="sf-section-title" style="margin:0 auto; color:var(--color-text-primary);">{{ $sTitle ?? 'Shop by Category' }}</h2>
                 </div>
-                <div class="sf-cat-circle-wrap">
-                    @foreach ($categories as $cat)
-                    <a href="{{ route('category.show', $cat) }}" class="sf-cat-circle-item">
-                        <div class="sf-cat-circle-img">
-                            @if ($cat->image_path)
-                                <img src="{{ asset('storage/'.$cat->image_path) }}" alt="{{ $cat->name }}" loading="lazy">
-                            @else
-                                <i class="bi bi-grid"></i>
-                            @endif
+                <div class="sf-category-grid">
+                    @foreach ($categories->take(3) as $cat)
+                    <a href="{{ route('category.show', $cat) }}" class="sf-category-banner">
+                        @if ($cat->image_path)
+                            <img src="{{ asset('storage/'.$cat->image_path) }}" alt="{{ $cat->name }}" loading="lazy">
+                        @else
+                            {{-- Fallback placeholder --}}
+                            <div style="width:100%; height:100%; background:#222; display:flex; align-items:center; justify-content:center;">
+                                <i class="bi bi-image text-muted" style="font-size:3rem;"></i>
+                            </div>
+                        @endif
+                        <div class="sf-category-content">
+                            <h3>{{ $cat->name }}</h3>
+                            <div class="sf-category-cta">Shop Now <i class="bi bi-arrow-right ms-1"></i></div>
                         </div>
-                        <span class="sf-cat-circle-name">{{ $cat->name }}</span>
                     </a>
                     @endforeach
                 </div>
@@ -253,24 +257,102 @@
     @endif
 
     @if ($sectionKey === 'bestsellers' && isset($bestsellers) && $bestsellers->isNotEmpty())
-        {{-- ══ BESTSELLERS ════════════════════════════════════════════════════════ --}}
-        <section class="sf-section sf-section-white">
+        {{-- ══ BESTSELLERS (The Bento Box Core) ══════════════════════════════ --}}
+        <section class="sf-section sf-section-white" style="background:var(--color-bg-primary);">
             <div class="sf-container">
                 <div class="sf-section-header-row sf-animate">
                     <div>
                         <p class="sf-section-eyebrow">{{ $section['eyebrow'] ?? 'Top Picks' }}</p>
-                        <h2 class="sf-section-title">{{ $sTitle ?? 'Bestsellers' }}</h2>
+                        <h2 class="sf-section-title" style="color:var(--color-text-primary);">{{ $sTitle ?? 'Bestsellers' }}</h2>
                     </div>
-                    <a class="sf-view-all" href="{{ route('search', ['sort' => 'bestseller']) }}">View All</a>
+                    <a class="sf-view-all" href="{{ route('search', ['sort' => 'bestseller']) }}" style="color:var(--color-gold);">View All</a>
                 </div>
-                <div class="sf-product-grid">
-                    @foreach ($bestsellers as $product)
-                        <x-product-card :product="$product" />
+                
+                {{-- BENTO GRID --}}
+                <div class="sf-bento-grid">
+                    @foreach ($bestsellers as $index => $product)
+                        @php
+                            // Index matching for Bento layout mapping
+                            $bentoClass = 'sf-bento-item-medium';
+                            if ($index === 0 || $index === 5 || $index === 10 || $index === 15) {
+                                $bentoClass = 'sf-bento-item-high';
+                            }
+                        @endphp
+                        <x-product-card :product="$product" bentoClass="{{ $bentoClass }}" />
                     @endforeach
                 </div>
+                
+                {{-- FUNNEL CATCH CTA --}}
+                <div class="sf-funnel-catch sf-animate">
+                    <div class="sf-funnel-catch-glow"></div>
+                    <h3>Still Confused? Let Us Guide You</h3>
+                    <p>The perfect match for your needs is waiting in our complete collection.</p>
+                    <a href="{{ route('shop') }}" class="btn" style="background:#fff; color:#0A0A0A; font-weight:700; padding:12px 32px; border-radius:100px; text-transform:uppercase; letter-spacing:1px; font-size:13px;">Find Your Perfect Product <i class="bi bi-arrow-right ms-2"></i></a>
+                </div>
+
+                {{-- PROBLEM -> SOLUTION MATRIX ENGINE --}}
+                @php
+                    $matrixRaw = $ss->get('theme.problem_matrix', '');
+                    $matrixItems = is_string($matrixRaw) ? json_decode($matrixRaw, true) : (is_array($matrixRaw) ? $matrixRaw : []);
+                @endphp
+                @if(!empty($matrixItems))
+                <div class="sf-ps-engine sf-animate" style="margin-top:80px;">
+                    <div class="sf-ps-tabs" id="psTabs">
+                        <div style="margin-bottom:24px;">
+                            <p class="sf-section-eyebrow" style="margin-bottom:4px;">Diagnostic Tool</p>
+                            <h2 style="font-family:'Playfair Display',serif; font-size:32px; color:var(--color-text-primary); margin:0;">Target Solutions</h2>
+                        </div>
+                        @foreach($matrixItems as $i => $mItem)
+                            @if(!empty($mItem['problem']))
+                                <div class="sf-ps-tab {{ $i===0?'active':'' }}" data-target="ps-panel-{{$i}}">
+                                    <span>{{ $mItem['problem'] }}</span>
+                                    <i class="bi bi-chevron-right"></i>
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
+                    
+                    <div class="sf-ps-contents" id="psContents">
+                        @foreach($matrixItems as $i => $mItem)
+                            @if(!empty($mItem['problem']))
+                                @php
+                                    $pIds = array_map('trim', explode(',', $mItem['products'] ?? ''));
+                                    $pIds = array_filter($pIds);
+                                    $psProducts = \App\Models\Product::whereIn('id', $pIds)->with(['variants'])->take(3)->get();
+                                    
+                                    // Order them exactly as IDs were entered if possible, else take directly.
+                                    if(count($pIds) > 0) {
+                                      $psProducts = $psProducts->sortBy(function($model) use ($pIds) {
+                                          return array_search($model->id, $pIds);
+                                      });
+                                    }
+                                @endphp
+                                <div class="sf-ps-content {{ $i===0?'active':'' }}" id="ps-panel-{{$i}}">
+                                    @if($psProducts->isNotEmpty())
+                                        <div class="sf-ps-solution-grid">
+                                            @foreach($psProducts as $pi => $psP)
+                                                <div class="{{ $loop->first ? 'sf-ps-primary' : '' }}">
+                                                    <x-product-card :product="$psP" bentoClass="" />
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <div style="background:var(--color-bg-surface); padding:32px; border-radius:var(--radius-md); text-align:center; color:var(--color-text-muted);">
+                                            Products resolving to IDs "{{ $mItem['products'] ?? '' }}" were not found.
+                                        </div>
+                                    @endif
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+                {{-- END MATRIX --}}
+
             </div>
         </section>
     @endif
+
 
     @if ($sectionKey === 'offers_banner' || $sectionKey === 'image_banner')
         {{-- ══ IMAGE BANNER ═══════════════════════════════════════════════════════ --}}
@@ -637,5 +719,28 @@ document.addEventListener("DOMContentLoaded", function() {
     var targets = document.querySelectorAll('.sf-animate');
     for (var j = 0; j < targets.length; j++) observer.observe(targets[j]);
 })();
+</script>
+
+{{-- Problem Solution Engine Tool --}}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var psTabs = document.querySelectorAll('.sf-ps-tab');
+    var psContents = document.querySelectorAll('.sf-ps-content');
+    
+    psTabs.forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            var targetId = tab.getAttribute('data-target');
+            
+            // Deactivate all
+            psTabs.forEach(function(t) { t.classList.remove('active'); });
+            psContents.forEach(function(c) { c.classList.remove('active'); });
+            
+            // Activate selected
+            tab.classList.add('active');
+            var targetContent = document.getElementById(targetId);
+            if(targetContent) targetContent.classList.add('active');
+        });
+    });
+});
 </script>
 @endpush
