@@ -479,11 +479,13 @@ a { color: inherit; text-decoration: none; }
   position: relative;
   overflow: hidden;
   width: 100%;
+  aspect-ratio: 2560 / 1256;
 }
 .sf-hero-track {
   display: flex;
   transition: transform 0.5s ease;
   will-change: transform;
+  height: 100%;
 }
 .sf-hero-slide {
   min-width: 100%;
@@ -492,15 +494,14 @@ a { color: inherit; text-decoration: none; }
   align-items: center;
   justify-content: center;
   background: #000;
+  height: 100%;
 }
 .sf-hero-img-wrap {
   width: 100%;
-  aspect-ratio: 2560 / 1256;
-  overflow: hidden;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #000;
 }
 .sf-hero-img {
   width: 100%;

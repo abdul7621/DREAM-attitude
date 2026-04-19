@@ -51,7 +51,7 @@
             <div class="sf-hero-track" id="heroTrack">
                 @foreach($heroSlides as $idx => $slide)
                 <div class="sf-hero-slide">
-                    <a href="{{ $slide['link'] ?? $heroCta1Link }}" style="display:block;">
+                    <a href="{{ $slide['link'] ?? $heroCta1Link }}" style="display:block; width:100%; height:100%;">
                         <div class="sf-hero-img-wrap">
                             <img src="{{ asset('storage/' . $slide['image']) }}"
                                  alt="{{ $slide['alt'] ?? $heroTitle }}"
