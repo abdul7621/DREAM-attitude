@@ -53,11 +53,17 @@
                 <div class="sf-hero-slide">
                     <a href="{{ $slide['link'] ?? $heroCta1Link }}" style="display:block; width:100%;">
                         <div class="sf-hero-img-wrap">
-                            <img src="{{ asset('storage/' . $slide['image']) }}"
-                                 alt="{{ $slide['alt'] ?? $heroTitle }}"
-                                 width="2560" height="1256"
-                                 loading="{{ $idx === 0 ? 'eager' : 'lazy' }}"
-                                 class="sf-hero-img">
+                            <picture class="sf-hero-picture">
+                                @if(!empty($slide['image_mobile']))
+                                <source media="(max-width: 768px)" srcset="{{ asset('storage/' . $slide['image_mobile']) }}" width="1080" height="1350">
+                                @endif
+                                <img src="{{ asset('storage/' . $slide['image']) }}"
+                                     alt="{{ $slide['alt'] ?? $heroTitle }}"
+                                     width="1920" height="800"
+                                     fetchpriority="{{ $idx === 0 ? 'high' : 'auto' }}"
+                                     loading="{{ $idx === 0 ? 'eager' : 'lazy' }}"
+                                     class="sf-hero-img">
+                            </picture>
                         </div>
                     </a>
                 </div>

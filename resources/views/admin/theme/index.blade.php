@@ -224,19 +224,32 @@
                         <button type="button" class="btn btn-sm btn-outline-danger position-absolute" style="top:8px;right:8px;z-index:2;" onclick="this.closest('.slide-row').remove()"><i class="bi bi-trash"></i></button>
                         <div class="row g-2 align-items-center">
                             <div class="col-md-3 text-center">
+                                <label class="form-label small fw-bold mb-1">Desktop <small class="text-muted">(1920x800)</small> <span class="text-danger">*</span></label>
                                 @if(!empty($slide['image']))
-                                <img src="{{ asset('storage/' . $slide['image']) }}" class="img-fluid rounded border mb-1" style="max-height:70px;">
+                                <img src="{{ asset('storage/' . $slide['image']) }}" class="img-fluid rounded border mb-1" style="max-height:60px;">
                                 <input type="hidden" name="slide_existing[{{ $i }}]" value="{{ $slide['image'] }}">
                                 @endif
-                                <input type="file" name="slide_images[{{ $i }}]" class="form-control form-control-sm" accept="image/*">
+                                <input type="file" name="slide_images[{{ $i }}]" class="form-control form-control-sm" accept="image/*" {{ empty($slide['image']) ? 'required' : '' }}>
                             </div>
-                            <div class="col-md-5">
-                                <label class="form-label small mb-1">Link URL</label>
-                                <input type="text" name="slide_links[{{ $i }}]" class="form-control form-control-sm" value="{{ $slide['link'] ?? '' }}" placeholder="/category/hair-care">
+                            <div class="col-md-3 text-center">
+                                <label class="form-label small fw-bold mb-1">Mobile <small class="text-muted">(1080x1350)</small> <span class="text-danger">*</span></label>
+                                @if(!empty($slide['image_mobile']))
+                                <img src="{{ asset('storage/' . $slide['image_mobile']) }}" class="img-fluid rounded border mb-1" style="max-height:60px;">
+                                <input type="hidden" name="slide_existing_mobile[{{ $i }}]" value="{{ $slide['image_mobile'] }}">
+                                @endif
+                                <input type="file" name="slide_images_mobile[{{ $i }}]" class="form-control form-control-sm" accept="image/*" {{ empty($slide['image_mobile']) ? 'required' : '' }}>
                             </div>
-                            <div class="col-md-4">
-                                <label class="form-label small mb-1">Alt Text</label>
-                                <input type="text" name="slide_alts[{{ $i }}]" class="form-control form-control-sm" value="{{ $slide['alt'] ?? '' }}" placeholder="Banner description">
+                            <div class="col-md-6">
+                                <div class="row g-2">
+                                    <div class="col-12">
+                                        <label class="form-label small mb-1">Link URL</label>
+                                        <input type="text" name="slide_links[{{ $i }}]" class="form-control form-control-sm" value="{{ $slide['link'] ?? '' }}" placeholder="/category/hair-care">
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label small mb-1">Alt Text</label>
+                                        <input type="text" name="slide_alts[{{ $i }}]" class="form-control form-control-sm" value="{{ $slide['alt'] ?? '' }}" placeholder="Product name + benefit">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -558,16 +571,24 @@ document.getElementById('addSlideBtn').addEventListener('click', function() {
         '<button type="button" class="btn btn-sm btn-outline-danger position-absolute" style="top:8px;right:8px;z-index:2;" onclick="this.closest(\'.slide-row\').remove()"><i class="bi bi-trash"></i></button>' +
         '<div class="row g-2 align-items-center">' +
         '<div class="col-md-3 text-center">' +
+        '<label class="form-label small mb-1 fw-bold">Desktop <small class="text-muted">(1920x800)</small> <span class="text-danger">*</span></label>' +
         '<input type="file" name="slide_images[' + slideIndex + ']" class="form-control form-control-sm" accept="image/*" required>' +
         '</div>' +
-        '<div class="col-md-5">' +
+        '<div class="col-md-3 text-center">' +
+        '<label class="form-label small mb-1 fw-bold">Mobile <small class="text-muted">(1080x1350)</small> <span class="text-danger">*</span></label>' +
+        '<input type="file" name="slide_images_mobile[' + slideIndex + ']" class="form-control form-control-sm" accept="image/*" required>' +
+        '</div>' +
+        '<div class="col-md-6">' +
+        '<div class="row g-2">' +
+        '<div class="col-12">' +
         '<label class="form-label small mb-1">Link URL</label>' +
         '<input type="text" name="slide_links[' + slideIndex + ']" class="form-control form-control-sm" placeholder="/category/hair-care">' +
         '</div>' +
-        '<div class="col-md-4">' +
+        '<div class="col-12">' +
         '<label class="form-label small mb-1">Alt Text</label>' +
-        '<input type="text" name="slide_alts[' + slideIndex + ']" class="form-control form-control-sm" placeholder="Banner description">' +
+        '<input type="text" name="slide_alts[' + slideIndex + ']" class="form-control form-control-sm" placeholder="Product name + benefit">' +
         '</div>' +
+        '</div></div>' +
         '</div></div>';
     c.insertAdjacentHTML('beforeend', html);
     slideIndex++;

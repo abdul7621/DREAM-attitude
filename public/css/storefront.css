@@ -591,6 +591,22 @@ button,
 .sf-hero-img-wrap {
   width: 100%;
   display: block;
+  overflow: hidden;
+  /* Prevent layout jumps explicitly across slides */
+  aspect-ratio: 1920 / 800;
+  transition: aspect-ratio 0.4s ease-in-out;
+}
+
+@media (max-width: 768px) {
+  .sf-hero-img-wrap {
+    /* Controlled vertical height ratio for mobile screens */
+    aspect-ratio: 1080 / 1350;
+  }
+}
+
+.sf-hero-picture {
+  width: 100%;
+  display: block;
 }
 
 .sf-hero-img {

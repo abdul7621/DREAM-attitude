@@ -168,6 +168,7 @@ class ThemeController extends Controller
                 // ── Process Hero Slides ──────────────────────────────
                 $slideLinks = $request->input('slide_links', []);
                 $slideExisting = $request->input('slide_existing', []);
+                $slideExistingMobile = $request->input('slide_existing_mobile', []);
                 $slideAlts = $request->input('slide_alts', []);
                 $slides = [];
                 foreach ($slideLinks as $i => $link) {
@@ -182,9 +183,24 @@ class ThemeController extends Controller
                     if (!$imagePath && !empty($slideExisting[$i])) {
                         $imagePath = $slideExisting[$i];
                     }
-                    if ($imagePath) {
+
+                    $imageMobilePath = null;
+                    if ($request->hasFile("slide_images_mobile.$i")) {
+                        $file = $request->file("slide_images_mobile.$i");
+                        if ($file->isValid()) {
+                            $imageMobilePath = $file->store('theme', 'public');
+                            $imageMobilePath = app(ImageOptimizerService::class)->optimize($imageMobilePath, ImageOptimizerService::MAX_HERO);
+                        }
+                    }
+                    if (!$imageMobilePath && !empty($slideExistingMobile[$i])) {
+                        $imageMobilePath = $slideExistingMobile[$i];
+                    }
+
+                    // Strict requirement: System ignores incomplete slides
+                    if ($imagePath && $imageMobilePath) {
                         $slides[] = [
                             'image' => $imagePath,
+                            'image_mobile' => $imageMobilePath,
                             'link' => $link ?: '',
                             'alt' => $slideAlts[$i] ?? '',
                         ];
