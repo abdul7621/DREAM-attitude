@@ -491,11 +491,18 @@
             <div class="card-body">
                 <p class="text-muted small mb-3">Build the conversion engine here. Map customer problems directly to products. (Enter exact Product IDs comma-separated).</p>
                 @php
-                    $matrixItems = is_array($theme['theme.problem_matrix'] ?? null) ? $theme['theme.problem_matrix'] : [
-                        ['problem' => 'Hair Fall & Thinning?', 'products' => ''],
-                        ['problem' => 'Dull, Lifeless Skin?', 'products' => ''],
-                        ['problem' => 'Frizzy Hair & Split Ends?', 'products' => ''],
-                    ];
+                    $matrixRaw = $theme['theme.problem_matrix'] ?? null;
+                    if(is_string($matrixRaw) && !empty($matrixRaw)) {
+                        $matrixItems = json_decode($matrixRaw, true) ?: [];
+                    } elseif (is_array($matrixRaw)) {
+                        $matrixItems = $matrixRaw;
+                    } else {
+                        $matrixItems = [
+                            ['problem' => 'Hair Fall & Thinning?', 'products' => ''],
+                            ['problem' => 'Dull, Lifeless Skin?', 'products' => ''],
+                            ['problem' => 'Frizzy Hair & Split Ends?', 'products' => ''],
+                        ];
+                    }
                 @endphp
                 <div class="row g-3">
                     @foreach($matrixItems as $mi => $mItem)

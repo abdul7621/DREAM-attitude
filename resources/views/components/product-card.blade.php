@@ -46,13 +46,13 @@
         @if(!empty($product->meta['problem_hook']) || !empty($product->meta['result_promise']) || !empty($product->meta['safety_tag']))
             <div class="sf-card-signals">
                 @if(!empty($product->meta['problem_hook']))
-                    <span class="sf-signal"><i class="bi bi-check-circle-fill"></i> {{ Str::limit($product->meta['problem_hook'], 30) }}</span>
+                    <span class="sf-signal"><i class="bi bi-check-circle-fill"></i> {{ \Illuminate\Support\Str::limit($product->meta['problem_hook'], 30) }}</span>
                 @endif
                 @if(!empty($product->meta['result_promise']))
-                    <span class="sf-signal"><i class="bi bi-stars"></i> {{ Str::limit($product->meta['result_promise'], 30) }}</span>
+                    <span class="sf-signal"><i class="bi bi-stars"></i> {{ \Illuminate\Support\Str::limit($product->meta['result_promise'], 30) }}</span>
                 @endif
                 @if(!empty($product->meta['safety_tag']))
-                    <span class="sf-signal sf-signal-safe"><i class="bi bi-shield-check"></i> {{ Str::limit($product->meta['safety_tag'], 30) }}</span>
+                    <span class="sf-signal sf-signal-safe"><i class="bi bi-shield-check"></i> {{ \Illuminate\Support\Str::limit($product->meta['safety_tag'], 30) }}</span>
                 @endif
             </div>
         @endif
