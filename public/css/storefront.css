@@ -583,9 +583,10 @@ button,
 }
 
 .sf-hero-slide {
-  min-width: 100%;
-  flex-shrink: 0;
+  width: 100%;
+  flex: 0 0 100%;
   position: relative;
+  overflow: hidden;
 }
 
 .sf-hero-img-wrap {
@@ -611,6 +612,7 @@ button,
 
 .sf-hero-img {
   width: 100%;
+  max-width: 100%;
   height: auto;
   display: block;
 }
