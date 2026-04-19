@@ -569,8 +569,6 @@ button,
   position: relative;
   overflow: hidden;
   width: 100%;
-  /* Prevent CLS: reserve height before images load */
-  min-height: 320px;
   background: var(--color-bg-dark);
 }
 
@@ -592,23 +590,12 @@ button,
 
 .sf-hero-img-wrap {
   width: 100%;
-  aspect-ratio: 21 / 9;
-  /* Reserves correct space — eliminates CLS */
   display: block;
-  overflow: hidden;
-}
-
-@media (max-width: 768px) {
-  .sf-hero-img-wrap {
-    aspect-ratio: 4 / 3;
-    /* Better ratio on mobile */
-  }
 }
 
 .sf-hero-img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
   display: block;
 }
 

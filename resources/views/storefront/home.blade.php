@@ -55,6 +55,7 @@
                         <div class="sf-hero-img-wrap">
                             <img src="{{ asset('storage/' . $slide['image']) }}"
                                  alt="{{ $slide['alt'] ?? $heroTitle }}"
+                                 width="2560" height="1256"
                                  loading="{{ $idx === 0 ? 'eager' : 'lazy' }}"
                                  class="sf-hero-img">
                         </div>
