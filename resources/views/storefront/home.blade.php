@@ -13,7 +13,7 @@
 @section('content')
 @php
     $ss = app(\App\Services\SettingsService::class);
-    $sections = json_decode($ss->get('theme.home_sections', '[]'), true) ?: ['hero', 'trust_strip', 'benefits_strip', 'categories', 'bestsellers', 'usp_strip', 'offers_banner', 'featured', 'award_section', 'reviews'];
+    $sections = json_decode($ss->get('theme.home_sections', '[]'), true) ?: ['hero', 'trust_strip', 'categories', 'bestsellers', 'usp_strip', 'offers_banner', 'reviews', 'featured', 'instagram_follow', 'award_section'];
 @endphp
 
 @foreach($sections as $section)
@@ -28,18 +28,16 @@
     @endif
 
     @if ($sectionKey === 'hero')
-        {{-- ══ HERO — Full-Width Image Slider ═══════════════════════════════════ --}}
+        {{-- ══ HERO — Full-Width Image Slider (2560×1256, contain desktop, cover mobile) ═══ --}}
         @php
             $heroSlides = $ss->get('theme.hero_slides');
             $heroSlides = is_array($heroSlides) ? $heroSlides : [];
             if (empty($heroSlides) && $ss->get('theme.hero_image')) {
                 $heroSlides = [['image' => $ss->get('theme.hero_image'), 'link' => $ss->get('theme.hero_cta_link', '/search'), 'alt' => $ss->get('theme.hero_title', '')]];
             }
-            // Max 3 slides (conversion-first: no scroll fatigue)
             $heroSlides = array_slice($heroSlides, 0, 3);
             $slideCount = count($heroSlides);
 
-            // Text overlay — controlled by admin toggle (default: OFF = pure image slider)
             $heroOverlayEnabled = (bool) $ss->get('theme.hero_overlay_enabled', false);
             $heroTitle = $ss->get('theme.hero_title', '');
             $heroSubtitle = $ss->get('theme.hero_subtitle', '');
@@ -65,7 +63,6 @@
                 @endforeach
             </div>
 
-            {{-- Optional Text Overlay (if admin set title — shown on all slides) --}}
             @if($showOverlay)
             <div class="sf-hero-overlay" style="background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.15) 50%, transparent 100%);"></div>
             <div class="sf-hero-content" style="text-align:center; left:50%; transform:translate(-50%,-50%); max-width:700px; width:90%;">
@@ -79,7 +76,6 @@
             </div>
             @endif
 
-            {{-- Navigation Dots --}}
             @if($slideCount > 1)
             <div class="sf-hero-dots">
                 @for($d = 0; $d < $slideCount; $d++)
@@ -91,19 +87,19 @@
             @endif
         </div>
         @else
-        {{-- Fallback: No slides uploaded yet --}}
-        <div class="sf-hero" style="background: var(--color-dark); height: 400px; display:flex; align-items:center; justify-content:center;">
-            <div style="text-align:center; padding: 40px;">
-                <h1 class="sf-hero-title" style="color: var(--color-gold);">{{ $ss->get('theme.hero_title', config('app.name')) }}</h1>
-                <p style="color:rgba(255,255,255,0.6); font-size:15px;">{{ $ss->get('theme.hero_subtitle', 'Premium Beauty Products — Delivered to Your Door') }}</p>
-                <a href="{{ $heroCta1Link }}" class="sf-hero-cta" style="margin-top:20px;">{{ $ss->get('theme.hero_cta_text', 'Shop Now') }}</a>
+        <div class="sf-hero" style="background: var(--color-dark); display:flex; align-items:center; justify-content:center;">
+            <div class="sf-hero-img-wrap" style="display:flex; align-items:center; justify-content:center;">
+                <div style="text-align:center; padding: 40px;">
+                    <h1 class="sf-hero-title" style="color: var(--color-gold);">{{ $ss->get('theme.hero_title', config('app.name')) }}</h1>
+                    <p style="color:rgba(255,255,255,0.6); font-size:15px;">{{ $ss->get('theme.hero_subtitle', 'Premium Beauty Products — Delivered to Your Door') }}</p>
+                    <a href="{{ $heroCta1Link }}" class="sf-hero-cta" style="margin-top:20px;">{{ $ss->get('theme.hero_cta_text', 'Shop Now') }}</a>
+                </div>
             </div>
         </div>
         @endif
     @endif
 
     @if ($sectionKey === 'hero')
-        {{-- SEO Content Block (Below Hero) --}}
         @if ($ss->get('theme.home_seo_content'))
             <section class="sf-section py-4" style="background-color: var(--color-bg-subtle);">
                 <div class="sf-container">
@@ -187,23 +183,24 @@
     @endif
 
     @if ($sectionKey === 'categories' && isset($categories) && $categories->isNotEmpty())
-        {{-- ══ CATEGORIES ════════════════════════════════════════════════════════ --}}
+        {{-- ══ CATEGORIES — Circular Icons, Horizontal Scroll ═════════════════ --}}
         <section class="sf-section sf-section-cream">
             <div class="sf-container">
-                <div class="sf-section-header-row sf-animate">
-                    <div>
-                        <p class="sf-section-eyebrow">{{ $section['eyebrow'] ?? 'Explore' }}</p>
-                        <h2 class="sf-section-title">{{ $sTitle ?? 'Shop by Category' }}</h2>
-                    </div>
+                <div style="text-align:center; margin-bottom:32px;" class="sf-animate">
+                    <p class="sf-section-eyebrow">{{ $section['eyebrow'] ?? 'Explore' }}</p>
+                    <h2 class="sf-section-title" style="margin:0 auto;">{{ $sTitle ?? 'Shop by Category' }}</h2>
                 </div>
-                <div class="sf-category-grid">
+                <div class="sf-cat-circle-wrap">
                     @foreach ($categories as $cat)
-                    <a href="{{ route('category.show', $cat) }}" class="sf-cat-card">
-                        @if ($cat->image_path)
-                            <img src="{{ asset('storage/'.$cat->image_path) }}" alt="{{ $cat->name }}" loading="lazy">
-                        @endif
-                        <div class="cat-overlay"></div>
-                        <label>{{ $cat->name }}</label>
+                    <a href="{{ route('category.show', $cat) }}" class="sf-cat-circle-item">
+                        <div class="sf-cat-circle-img">
+                            @if ($cat->image_path)
+                                <img src="{{ asset('storage/'.$cat->image_path) }}" alt="{{ $cat->name }}" loading="lazy">
+                            @else
+                                <i class="bi bi-grid"></i>
+                            @endif
+                        </div>
+                        <span class="sf-cat-circle-name">{{ $cat->name }}</span>
                     </a>
                     @endforeach
                 </div>
@@ -212,7 +209,7 @@
     @endif
 
     @if ($sectionKey === 'usp_strip')
-        {{-- ══ USP STRIP ═════════════════════════════════════════════════════════ --}}
+        {{-- ══ WHY TRUST DREAM ATTITUDE — Brand Authority Block ═══════════════ --}}
         @php
             $uspRaw = $ss->get('theme.usp_strip_items', '');
             if (is_array($uspRaw)) {
@@ -224,14 +221,16 @@
             }
             if (empty($uspItems)) {
                 $uspItems = [
-                    ['icon' => 'bi-stars', 'title' => 'No Paraben, No SLS, No Silicones', 'desc' => 'Clean formulas you can trust on your skin and hair daily'],
-                    ['icon' => 'bi-heart', 'title' => 'Cruelty Free Always', 'desc' => 'Every product ethically developed, never tested on animals'],
-                    ['icon' => 'bi-droplet', 'title' => 'Non-Alcoholic Fragrances', 'desc' => 'Attars and perfumes crafted for everyone, no alcohol used'],
-                    ['icon' => 'bi-shop', 'title' => 'Trusted by Salons Across India', 'desc' => 'Professional-grade products for home and salon use alike'],
+                    ['icon' => 'bi-trophy', 'title' => '45+ Years Industry Experience', 'desc' => 'Powered by N.R. Beauty World — a legacy brand trusted since decades'],
+                    ['icon' => 'bi-star-fill', 'title' => '17,000+ Google Reviews', 'desc' => '4.9★ rated — one of the highest rated beauty brands in India'],
+                    ['icon' => 'bi-people-fill', 'title' => 'Trusted Across India', 'desc' => 'Thousands of salons and customers rely on Dream Attitude daily'],
+                    ['icon' => 'bi-shop', 'title' => 'N.R. Beauty World Legacy', 'desc' => '45+ years of dominance in the professional beauty market'],
                 ];
             }
         @endphp
         <div class="sf-usp-strip">
+            <h2 class="sf-usp-section-title sf-animate">Why Trust Dream Attitude</h2>
+            <p class="sf-usp-section-sub">Built on 45+ years of beauty industry expertise</p>
             <div class="sf-usp-grid">
                 @foreach($uspItems as $usp)
                 <div class="sf-usp-item">
@@ -290,33 +289,79 @@
         @endif
     @endif
 
+    @if ($sectionKey === 'reviews' && isset($topReviews) && $topReviews->isNotEmpty())
+        {{-- ══ CUSTOMER REVIEWS — Card Slider (auto 5s, dots, swipe) ═══════════ --}}
+        <section class="sf-section sf-section-cream">
+            <div class="sf-container">
+                <div style="text-align:center;margin-bottom:36px;" class="sf-animate">
+                    <p class="sf-section-eyebrow">Testimonials</p>
+                    <h2 class="sf-section-title" style="margin:0 auto;">{{ $sTitle ?? 'What Our Customers Say' }}</h2>
+                    <p style="color:var(--color-text-muted);font-size:13px;margin-top:8px;">{{ $sSubtitle ?? 'Real reviews from verified buyers across India' }}</p>
+                </div>
+                <div class="sf-review-slider" id="reviewSlider">
+                    <div class="sf-review-track" id="reviewTrack">
+                        @foreach ($topReviews as $review)
+                        <div class="sf-review-slide">
+                            <div class="sf-review-card">
+                                <div class="sf-review-stars">
+                                    @for($i=1;$i<=5;$i++)<i class="bi bi-star{{ $i <= $review->rating ? '-fill' : '' }}"></i>@endfor
+                                </div>
+                                <p class="sf-review-text">"{{ \Illuminate\Support\Str::limit($review->body, 200) }}"</p>
+                                <div class="sf-reviewer-row">
+                                    <div class="sf-review-avatar">{{ strtoupper(mb_substr($review->reviewer_name, 0, 1)) }}</div>
+                                    <div style="text-align:left;">
+                                        <div class="sf-reviewer-name">{{ $review->reviewer_name }}</div>
+                                        <div class="sf-reviewer-role">Beauty Enthusiast</div>
+                                        @if($review->verified_purchase)
+                                        <div class="sf-reviewer-verified"><i class="bi bi-patch-check-fill"></i> Verified Purchase</div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @if($topReviews->count() > 1)
+                    <div class="sf-review-dots">
+                        @for($rd = 0; $rd < $topReviews->count(); $rd++)
+                        <button class="sf-review-dot {{ $rd === 0 ? 'active' : '' }}" data-slide="{{ $rd }}"></button>
+                        @endfor
+                    </div>
+                    @endif
+                </div>
+            </div>
+        </section>
+    @endif
+
     @if ($sectionKey === 'featured' && isset($featured) && $featured->isNotEmpty())
         {{-- ══ FEATURED PRODUCTS ══════════════════════════════════════════════════ --}}
-        <section class="sf-section sf-section-cream">
+        <section class="sf-section sf-section-white">
             <div class="sf-container">
                 <div class="sf-section-header-row sf-animate">
                     <div>
                         <p class="sf-section-eyebrow">{{ $section['eyebrow'] ?? 'Fresh In' }}</p>
                         <h2 class="sf-section-title">{{ $sTitle ?? 'New Arrivals' }}</h2>
                     </div>
-                    <a class="sf-view-all" href="{{ route('search') }}">View All</a>
                 </div>
                 <div class="sf-product-grid">
                     @foreach ($featured as $product)
                         <x-product-card :product="$product" />
                     @endforeach
                 </div>
+                <div style="text-align:center;">
+                    <a href="{{ route('search') }}" class="sf-view-all-btn">View All Products</a>
+                </div>
             </div>
         </section>
     @endif
 
     @if ($sectionKey === 'latest' && isset($latest) && $latest->isNotEmpty())
-        <section class="sf-section sf-section-white">
+        <section class="sf-section sf-section-cream">
             <div class="sf-container">
                 <div class="sf-section-header-row sf-animate">
                     <div>
                         <p class="sf-section-eyebrow">Recently Added</p>
-                        <h2 class="sf-section-title">{{ $sTitle ?? 'New Arrivals' }}</h2>
+                        <h2 class="sf-section-title">{{ $sTitle ?? 'More Products' }}</h2>
                     </div>
                 </div>
                 <div class="sf-product-grid">
@@ -324,8 +369,29 @@
                         <x-product-card :product="$product" />
                     @endforeach
                 </div>
+                <div style="text-align:center;">
+                    <a href="{{ route('search') }}" class="sf-view-all-btn">Explore More</a>
+                </div>
             </div>
         </section>
+    @endif
+
+    @if ($sectionKey === 'instagram_follow')
+        {{-- ══ INSTAGRAM FOLLOW — Admin Controlled ═════════════════════════════ --}}
+        @php
+            $igHandle = $ss->get('theme.instagram_handle', 'dream_attitude_international');
+        @endphp
+        @if(!empty($igHandle))
+        <section class="sf-instagram-section">
+            <div class="sf-instagram-inner">
+                <div class="sf-instagram-icon"><i class="bi bi-instagram"></i></div>
+                <a href="https://www.instagram.com/{{ $igHandle }}/" target="_blank" rel="noopener" class="sf-instagram-cta">
+                    <i class="bi bi-instagram"></i> Follow @{{ $igHandle }}
+                </a>
+                <p class="sf-instagram-proof">Join 10,000+ Happy Customers</p>
+            </div>
+        </section>
+        @endif
     @endif
 
     @if ($sectionKey === 'award_section')
@@ -335,7 +401,6 @@
             $awardText   = $ss->get('theme.brand_story_text', 'Recognized at the Asian Excellence Awards 2021, Dream Attitude brings you a legacy of trust and innovation across hair care, skin care, fragrances, and professional salon essentials. Trusted by salons, wholesalers, and customers across India.');
             $awardLink   = $ss->get('theme.brand_story_link', '');
 
-            // Decode award images (stored as JSON string in DB)
             $awardImagesRaw = $ss->get('theme.award_images', '');
             if (is_array($awardImagesRaw)) {
                 $awardImages = $awardImagesRaw;
@@ -345,7 +410,6 @@
                 $awardImages = [];
             }
 
-            // Decode award stats (stored as JSON string in DB)
             $awardStatsRaw = $ss->get('theme.award_stats', '');
             if (is_array($awardStatsRaw)) {
                 $awardStats = $awardStatsRaw;
@@ -430,41 +494,6 @@
         @endif
     @endif
 
-    @if ($sectionKey === 'reviews' && isset($topReviews) && $topReviews->isNotEmpty())
-        {{-- ══ CUSTOMER REVIEWS ═══════════════════════════════════════════════════ --}}
-        <section class="sf-section sf-section-white">
-            <div class="sf-container">
-                <div style="text-align:center;margin-bottom:36px;" class="sf-animate">
-                    <p class="sf-section-eyebrow">Testimonials</p>
-                    <h2 class="sf-section-title" style="margin:0 auto;">{{ $sTitle ?? 'What Our Customers Say' }}</h2>
-                    <p style="color:var(--color-text-muted);font-size:13px;margin-top:8px;">{{ $sSubtitle ?? 'Real reviews from verified buyers across India' }}</p>
-                </div>
-                <div class="sf-review-grid">
-                    @foreach ($topReviews as $review)
-                    <div class="sf-review-card">
-                        <div class="sf-review-stars">
-                            @for($i=1;$i<=5;$i++)<i class="bi bi-star{{ $i <= $review->rating ? '-fill' : '' }}"></i>@endfor
-                        </div>
-                        <p class="sf-review-text">"{{ \Illuminate\Support\Str::limit($review->body, 140) }}"</p>
-                        <div class="sf-reviewer-row">
-                            <div class="sf-review-avatar">{{ strtoupper(mb_substr($review->reviewer_name, 0, 1)) }}</div>
-                            <div>
-                                <div class="sf-reviewer-name">{{ $review->reviewer_name }}</div>
-                                @if($review->product)
-                                <div class="sf-reviewer-product">on <a href="{{ route('product.show', $review->product->slug) }}" style="color:inherit;text-decoration:underline;">{{ $review->product->name }}</a></div>
-                                @endif
-                                @if($review->verified_purchase)
-                                <div class="sf-reviewer-verified"><i class="bi bi-patch-check-fill"></i> Verified Purchase</div>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-        </section>
-    @endif
-
 @endforeach
 
 @endsection
@@ -532,7 +561,72 @@
         startAuto();
     }, { passive: true });
 
-    // Pause on hover (desktop)
+    slider.addEventListener('mouseenter', stopAuto);
+    slider.addEventListener('mouseleave', startAuto);
+
+    startAuto();
+})();
+</script>
+
+{{-- Review Slider JS (auto 5s, dots, pause on hover, swipe) --}}
+<script>
+(function() {
+    var slider = document.getElementById('reviewSlider');
+    if (!slider) return;
+
+    var track = document.getElementById('reviewTrack');
+    var slides = track.querySelectorAll('.sf-review-slide');
+    var dots = slider.querySelectorAll('.sf-review-dot');
+    var current = 0;
+    var total = slides.length;
+    if (total <= 1) return;
+
+    var autoInterval = 5000;
+    var autoTimer = null;
+
+    function goTo(idx) {
+        if (idx < 0) idx = total - 1;
+        if (idx >= total) idx = 0;
+        current = idx;
+        track.style.transform = 'translateX(-' + (current * 100) + '%)';
+        for (var d = 0; d < dots.length; d++) {
+            dots[d].classList.toggle('active', d === current);
+        }
+    }
+
+    function startAuto() {
+        stopAuto();
+        autoTimer = setInterval(function() { goTo(current + 1); }, autoInterval);
+    }
+    function stopAuto() {
+        if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+    }
+
+    for (var i = 0; i < dots.length; i++) {
+        dots[i].addEventListener('click', (function(idx) {
+            return function() { goTo(idx); startAuto(); };
+        })(i));
+    }
+
+    // Touch swipe
+    var startX = 0;
+    var isDragging = false;
+    slider.addEventListener('touchstart', function(e) {
+        startX = e.touches[0].clientX;
+        isDragging = true;
+        stopAuto();
+    }, { passive: true });
+    slider.addEventListener('touchend', function(e) {
+        if (!isDragging) return;
+        isDragging = false;
+        var diff = startX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 50) {
+            goTo(diff > 0 ? current + 1 : current - 1);
+        }
+        startAuto();
+    }, { passive: true });
+
+    // Pause on hover
     slider.addEventListener('mouseenter', stopAuto);
     slider.addEventListener('mouseleave', startAuto);
 
@@ -544,7 +638,6 @@
 <script>
 (function() {
     if (!('IntersectionObserver' in window)) {
-        // Fallback: just show everything
         var els = document.querySelectorAll('.sf-animate');
         for (var i = 0; i < els.length; i++) els[i].classList.add('sf-visible');
         return;

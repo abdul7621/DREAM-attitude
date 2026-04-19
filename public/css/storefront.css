@@ -42,6 +42,9 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* ── Global Overflow Fix (prevents mobile horizontal shift) ── */
+html, body { overflow-x: hidden; max-width: 100vw; }
+
 /* Utility Classes */
 .d-none { display: none !important; }
 .d-block { display: block !important; }
@@ -94,6 +97,84 @@ a { color: inherit; text-decoration: none; }
   .sf-product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
+/* ── Category Circle Scroll ─────────────────────── */
+.sf-cat-circle-wrap {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  flex-wrap: wrap;
+  max-width: var(--sf-container-max);
+  margin: 0 auto;
+  padding: 0 var(--sf-container-pad);
+}
+@media(max-width: 768px) {
+  .sf-cat-circle-wrap {
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 16px;
+    padding-bottom: 8px;
+    scrollbar-width: none;
+  }
+  .sf-cat-circle-wrap::-webkit-scrollbar { display: none; }
+}
+.sf-cat-circle-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  transition: var(--transition);
+}
+.sf-cat-circle-img {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2.5px solid var(--color-border);
+  background: var(--color-bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+.sf-cat-circle-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.sf-cat-circle-img i {
+  font-size: 32px;
+  color: var(--color-gold);
+}
+.sf-cat-circle-item:hover .sf-cat-circle-img {
+  border-color: var(--color-gold);
+  transform: scale(1.06);
+  box-shadow: 0 4px 16px rgba(201,150,58,0.15);
+}
+.sf-cat-circle-name {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: center;
+  max-width: 110px;
+  line-height: 1.3;
+}
+.sf-cat-circle-item:hover .sf-cat-circle-name {
+  color: var(--color-gold-dark);
+}
+@media(max-width: 768px) {
+  .sf-cat-circle-img { width: 76px; height: 76px; }
+  .sf-cat-circle-name { font-size: 10px; max-width: 76px; }
+}
+
+/* Legacy category grid (kept for backward compat) */
 .sf-category-grid {
   display: -ms-grid;
   display: grid;
@@ -464,16 +545,19 @@ a { color: inherit; text-decoration: none; }
 }
 .sf-hero-img-wrap {
   width: 100%;
-  height: 500px;
-}
-@media(max-width:768px) {
-  .sf-hero-img-wrap { height: 300px; }
+  aspect-ratio: 2560 / 1256;
+  background: var(--color-bg-surface);
 }
 .sf-hero-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
+}
+@media(max-width: 768px) {
+  .sf-hero-img {
+    object-fit: cover;
+  }
 }
 .sf-hero-overlay {
   position: absolute;
@@ -1559,22 +1643,50 @@ a[style*="color:var(--color-gold)"] {
   .sf-trust-item:nth-child(4) { border-right: none; }
 }
 
-/* ── USP Strip ───────────────────────────────────── */
+/* ── USP / Why Trust Section ─────────────────────── */
 .sf-usp-strip { background: var(--color-bg-surface); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); }
+.sf-usp-section-title {
+  text-align: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 30px;
+  color: var(--color-dark);
+  margin-bottom: 8px;
+  padding-top: 48px;
+  font-weight: 400;
+}
+.sf-usp-section-sub {
+  text-align: center;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-bottom: 36px;
+  letter-spacing: 0.02em;
+}
 .sf-usp-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px;
   max-width: var(--sf-container-max); margin: 0 auto;
-  padding: 40px var(--sf-container-pad);
+  padding: 0 var(--sf-container-pad) 48px;
 }
-@media(max-width: 767px) { .sf-usp-grid { grid-template-columns: 1fr; gap: 16px; } }
-.sf-usp-item { display: flex; align-items: flex-start; gap: 14px; }
+@media(max-width: 767px) {
+  .sf-usp-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .sf-usp-section-title { font-size: 24px; padding-top: 36px; }
+}
+.sf-usp-item {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; gap: 10px;
+}
 .sf-usp-icon-wrap {
-  width: 40px; height: 40px; border: 1px solid var(--color-border);
+  width: 56px; height: 56px; border: 1.5px solid var(--color-border-gold);
   border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; background: var(--color-bg-primary); color: var(--color-gold); font-size: 16px;
+  flex-shrink: 0; background: var(--color-bg-primary); color: var(--color-gold); font-size: 22px;
+  transition: var(--transition);
 }
-.sf-usp-title { font-size: 13px; font-weight: 500; color: var(--color-dark); margin-bottom: 3px; }
-.sf-usp-desc { font-size: 12px; color: var(--color-text-muted); line-height: 1.5; }
+.sf-usp-item:hover .sf-usp-icon-wrap {
+  border-color: var(--color-gold);
+  background: var(--color-gold-muted);
+  transform: scale(1.08);
+}
+.sf-usp-title { font-size: 13px; font-weight: 600; color: var(--color-dark); margin-bottom: 2px; }
+.sf-usp-desc { font-size: 11px; color: var(--color-text-muted); line-height: 1.5; max-width: 180px; }
 
 /* ── Award / Brand Story Section ─────────────────── */
 .sf-award-section { background: var(--color-plum); padding: 56px 0; }
@@ -1611,7 +1723,113 @@ a[style*="color:var(--color-gold)"] {
 .sf-award-img-block img { width: 100%; height: 100%; object-fit: cover; display: block; }
 @media(max-width: 768px) { .sf-award-img-block { height: 120px; } }
 
-/* ── Review Cards (horizontal scroll on mobile) ───── */
+/* ── Review Card Slider (single card, centered, dots) ── */
+.sf-review-slider {
+  position: relative;
+  max-width: 600px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+.sf-review-track {
+  display: flex;
+  transition: transform 0.45s ease;
+  will-change: transform;
+}
+.sf-review-slide {
+  min-width: 100%;
+  flex-shrink: 0;
+  padding: 0 8px;
+}
+.sf-review-card {
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  text-align: center;
+}
+.sf-review-stars {
+  color: #f5a623;
+  font-size: 18px;
+  margin-bottom: 16px;
+  letter-spacing: 2px;
+}
+.sf-review-text {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.8;
+  font-style: italic;
+  margin-bottom: 20px;
+}
+.sf-reviewer-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.sf-review-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-gold);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  flex-shrink: 0;
+}
+.sf-reviewer-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-dark);
+}
+.sf-reviewer-role {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+.sf-reviewer-product {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+.sf-reviewer-verified {
+  font-size: 10px;
+  color: var(--color-success);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+.sf-review-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+}
+.sf-review-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-border);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: var(--transition);
+}
+.sf-review-dot.active {
+  background: var(--color-gold);
+  transform: scale(1.2);
+}
+@media(max-width: 768px) {
+  .sf-review-card { padding: 24px 20px; }
+  .sf-review-text { font-size: 13px; }
+}
+
+/* Legacy grid (backward compat) */
 .sf-review-grid {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
 }
@@ -1623,17 +1841,7 @@ a[style*="color:var(--color-gold)"] {
     padding-bottom: 12px; scrollbar-width: none;
   }
   .sf-review-grid::-webkit-scrollbar { display: none; }
-  .sf-review-card { min-width: 280px; flex-shrink: 0; scroll-snap-align: start; }
 }
-.sf-review-card {
-  background: var(--color-bg-primary);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md); padding: 24px;
-}
-.sf-review-stars { color: var(--color-gold); font-size: 13px; margin-bottom: 10px; }
-.sf-review-text { font-size: 13px; color: var(--color-text-muted); line-height: 1.75; font-style: italic; margin-bottom: 14px; }
-.sf-reviewer-name { font-size: 13px; font-weight: 500; color: var(--color-dark); }
-.sf-reviewer-product { font-size: 11px; color: var(--color-text-muted); margin-top: 2px; }
 
 /* ── Product Card - Plum CTA & Warm badges ───────── */
 .sf-product-card .btn-add { background: var(--color-plum); border: none; color: #fff; }
@@ -1682,8 +1890,8 @@ a[style*="color:var(--color-gold)"] {
   text-align: center;
 }
 .sf-benefit-circle {
-  width: 72px;
-  height: 72px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   overflow: hidden;
   border: 2px solid var(--color-border);
@@ -1699,7 +1907,7 @@ a[style*="color:var(--color-gold)"] {
   object-fit: cover;
 }
 .sf-benefit-circle i {
-  font-size: 28px;
+  font-size: 30px;
   color: var(--color-gold);
 }
 .sf-benefit-item:hover .sf-benefit-circle {
@@ -1726,7 +1934,72 @@ a[style*="color:var(--color-gold)"] {
   }
   .sf-benefits-scroll::-webkit-scrollbar { display: none; }
   .sf-benefit-item { scroll-snap-align: start; }
-  .sf-benefit-circle { width: 64px; height: 64px; }
+  .sf-benefit-circle { width: 68px; height: 68px; }
+}
+
+/* ── Instagram Follow Section ───────────────────── */
+.sf-instagram-section {
+  padding: 48px 0;
+  text-align: center;
+  background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%);
+}
+.sf-instagram-inner {
+  max-width: var(--sf-container-max);
+  margin: 0 auto;
+  padding: 0 var(--sf-container-pad);
+}
+.sf-instagram-icon {
+  font-size: 36px;
+  color: #fff;
+  margin-bottom: 12px;
+}
+.sf-instagram-cta {
+  display: inline-block;
+  background: #fff;
+  color: #333;
+  padding: 14px 36px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  border-radius: 30px;
+  text-decoration: none;
+  transition: var(--transition);
+  margin-bottom: 12px;
+}
+.sf-instagram-cta:hover {
+  transform: scale(1.04);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+.sf-instagram-cta i {
+  margin-right: 8px;
+}
+.sf-instagram-proof {
+  font-size: 13px;
+  color: rgba(255,255,255,0.9);
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+
+/* ── View All Products CTA Button ───────────────── */
+.sf-view-all-btn {
+  display: inline-block;
+  background: transparent;
+  border: 1.5px solid var(--color-dark);
+  color: var(--color-dark);
+  padding: 12px 36px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+  margin-top: 32px;
+}
+.sf-view-all-btn:hover {
+  background: var(--color-dark);
+  color: #fff;
 }
 
 /* ── Mobile Bottom Navigation ───────────────────────── */
@@ -1802,34 +2075,7 @@ a[style*="color:var(--color-gold)"] {
   transform: translateY(0);
 }
 
-/* ── Review Avatar Initials ───────────────────────── */
-.sf-review-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--color-gold);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: 'DM Sans', sans-serif;
-  flex-shrink: 0;
-}
-.sf-reviewer-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.sf-reviewer-verified {
-  font-size: 10px;
-  color: var(--color-success);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 4px;
-}
+/* (Review avatar & reviewer-row styles moved to review slider section above) */
 
 /* ── Misc: section background helpers ─────────────── */
 .sf-section-cream { background: var(--color-bg-primary) !important; }

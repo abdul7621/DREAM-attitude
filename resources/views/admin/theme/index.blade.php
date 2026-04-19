@@ -171,17 +171,18 @@
                 <div class="list-group mb-3">
                     @php
                         $available = [
-                            'hero'           => '🖼️ Hero Banner (Slider)',
-                            'trust_strip'    => '✅ Trust Strip (Dark Bar)',
-                            'benefits_strip' => '🎯 Benefits Strip (Circles)',
-                            'categories'     => '🗂️ Category Grid',
-                            'usp_strip'      => '⭐ USP Strip (4 Features)',
-                            'bestsellers'    => '🔥 Bestsellers',
-                            'offers_banner'  => '🏷️ Offers Banner',
-                            'featured'       => '🆕 Featured / New Arrivals',
-                            'latest'         => '📦 Latest Products',
-                            'award_section'  => '🏆 Award / Brand Story',
-                            'reviews'        => '💬 Customer Reviews',
+                            'hero'             => '🖼️ Hero Banner (Slider)',
+                            'trust_strip'      => '✅ Trust Strip (Dark Bar)',
+                            'benefits_strip'   => '🎯 Benefits Strip (Circles)',
+                            'categories'       => '🗂️ Category Circles',
+                            'usp_strip'        => '🏆 Why Trust (Brand Authority)',
+                            'bestsellers'      => '🔥 Bestsellers',
+                            'offers_banner'    => '🏷️ Offers Banner',
+                            'reviews'          => '💬 Customer Reviews (Slider)',
+                            'featured'         => '🆕 Featured / New Arrivals',
+                            'latest'           => '📦 Latest Products',
+                            'instagram_follow' => '📸 Instagram Follow',
+                            'award_section'    => '🏆 Award / Brand Story',
                         ];
                         $active = $theme['theme.home_sections'] ?? [];
                     @endphp
@@ -497,6 +498,19 @@
                     @endforeach
                 </div>
                 <div class="form-text mt-2">Use outcome labels: Hair Fall Control, Dandruff Reduction, Salon Smooth Finish, etc. Max 6 items.</div>
+            </div>
+        </div>
+
+        {{-- ── Instagram Follow ─── --}}
+        <div class="card mb-4">
+            <div class="card-header bg-white"><i class="bi bi-instagram me-2"></i> Instagram Follow Section</div>
+            <div class="card-body">
+                <label class="form-label">Instagram Handle</label>
+                <div class="input-group">
+                    <span class="input-group-text">@</span>
+                    <input type="text" name="theme_instagram_handle" class="form-control" value="{{ $theme['theme.instagram_handle'] ?? 'dream_attitude_international' }}" placeholder="dream_attitude_international">
+                </div>
+                <div class="form-text">Your Instagram username without @. Links to instagram.com/{handle}/</div>
             </div>
         </div>
             </div>

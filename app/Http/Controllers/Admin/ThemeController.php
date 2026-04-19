@@ -210,6 +210,7 @@ class ThemeController extends Controller
                     'theme_brand_story_title', 'theme_brand_story_text', 'theme_brand_story_link',
                     'theme_offers_banner_text', 'theme_offers_banner_link',
                     'theme_home_seo_title', 'theme_home_seo_description', 'theme_home_seo_content',
+                    'theme_instagram_handle',
                 ];
                 foreach ($keys as $key) {
                     if (array_key_exists($key, $data)) {
