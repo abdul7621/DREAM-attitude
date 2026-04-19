@@ -21,26 +21,33 @@
 
         {{-- Review Cards --}}
         @if ($reviewCount > 0)
-            <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));gap:16px;margin-bottom:32px;">
-                @foreach ($reviews as $review)
-                    <div style="background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:20px;">
-                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
-                            <div>
-                                <div style="color:var(--color-gold);font-size:14px;margin-bottom:4px;">
+            <div class="sf-review-slider" id="productReviewSlider" style="margin-bottom:32px;">
+                <div class="sf-review-track" id="productReviewTrack">
+                    @foreach ($reviews as $review)
+                        <div class="sf-review-slide">
+                            <div class="sf-review-card" style="box-shadow:none;">
+                                <div class="sf-review-stars">
                                     @for ($i = 1; $i <= 5; $i++)
                                         <i class="bi bi-star{{ $i <= $review->rating ? '-fill' : '' }}"></i>
                                     @endfor
                                 </div>
-                                <span style="color:var(--color-text-primary);font-size:13px;font-weight:500;">{{ $review->reviewer_name }}</span>
-                                @if ($review->verified_purchase)
-                                    <span style="color:var(--color-success);font-size:11px;margin-left:8px;"><i class="bi bi-patch-check-fill"></i> Verified</span>
-                                @endif
+                                <p class="sf-review-text">"{{ $review->body }}"</p>
+                                <div class="sf-reviewer-row">
+                                    <div class="sf-review-avatar">{{ strtoupper(mb_substr($review->reviewer_name, 0, 1)) }}</div>
+                                    <div style="text-align:left;">
+                                        <div class="sf-reviewer-name">{{ $review->reviewer_name }}</div>
+                                        <div class="sf-reviewer-role">Beauty Enthusiast</div>
+                                        @if ($review->verified_purchase)
+                                            <div style="color:var(--color-success);font-size:11px;margin-top:2px;">
+                                                <i class="bi bi-patch-check-fill"></i> Verified
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
                             </div>
-                            <span style="color:var(--color-text-muted);font-size:11px;">{{ $review->created_at->format('d M Y') }}</span>
                         </div>
-                        <p style="color:var(--color-text-secondary);font-size:14px;line-height:1.6;margin:0;">"{{ $review->body }}"</p>
-                    </div>
-                @endforeach
+                    @endforeach
+                </div>
             </div>
         @else
             <div style="text-align:center;padding:32px 20px;background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:32px;">
@@ -87,3 +94,33 @@
 
     </div>
 </section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var slider = document.getElementById('productReviewSlider');
+    if (!slider) return;
+    var track = document.getElementById('productReviewTrack');
+    if (!track) return;
+    var timer = null;
+    function autoSlide() {
+        var maxScroll = track.scrollWidth - track.clientWidth;
+        if (maxScroll <= 0) return;
+        if (track.scrollLeft + 10 >= maxScroll) { track.scrollTo({ left: 0, behavior: 'smooth' }); }
+        else {
+            var item = track.querySelector('.sf-review-slide');
+            if(!item) return;
+            var itemWidth = item.getBoundingClientRect().width;
+            var style = window.getComputedStyle(track);
+            var gap = parseFloat(style.gap) || 0;
+            track.scrollBy({ left: itemWidth + gap, behavior: 'smooth' });
+        }
+    }
+    function start() { stop(); timer = setInterval(autoSlide, 4500); }
+    function stop() { if(timer) { clearInterval(timer); timer = null; } }
+    slider.addEventListener('mouseenter', stop);
+    slider.addEventListener('mouseleave', start);
+    slider.addEventListener('touchstart', stop, {passive: true});
+    slider.addEventListener('touchend', start, {passive: true});
+    start();
+});
+</script>

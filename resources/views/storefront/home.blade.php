@@ -575,70 +575,47 @@
 })();
 </script>
 
-{{-- Review Slider JS (auto 5s, dots, pause on hover, swipe) --}}
+{{-- Review & Categories Auto Slider JS (Performance Optimized) --}}
 <script>
-(function() {
-    var slider = document.getElementById('reviewSlider');
-    if (!slider) return;
-
-    var track = document.getElementById('reviewTrack');
-    var slides = track.querySelectorAll('.sf-review-slide');
-    var dots = slider.querySelectorAll('.sf-review-dot');
-    var current = 0;
-    var total = slides.length;
-    if (total <= 1) return;
-
-    var autoInterval = 5000;
-    var autoTimer = null;
-
-    function goTo(idx) {
-        if (idx < 0) idx = total - 1;
-        if (idx >= total) idx = 0;
-        current = idx;
-        track.style.transform = 'translateX(-' + (current * 100) + '%)';
-        for (var d = 0; d < dots.length; d++) {
-            dots[d].classList.toggle('active', d === current);
+document.addEventListener("DOMContentLoaded", function() {
+    function initNativeSlider(sliderId, trackClass, itemClass, intervalSpeed) {
+        var slider = document.getElementById(sliderId) || document.querySelector(sliderId);
+        if(!slider) return;
+        var track = typeof trackClass === 'string' ? slider.querySelector(trackClass) : trackClass;
+        if(!track) return;
+        
+        var timer = null;
+        function autoSlide() {
+            var maxScroll = track.scrollWidth - track.clientWidth;
+            if (maxScroll <= 0) return; // No need to slide
+            
+            if (track.scrollLeft + 10 >= maxScroll) {
+                track.scrollTo({ left: 0, behavior: 'smooth' });
+            } else {
+                var item = track.querySelector(itemClass);
+                if(!item) return;
+                var itemWidth = item.getBoundingClientRect().width;
+                var style = window.getComputedStyle(track);
+                var gap = parseFloat(style.gap) || 0;
+                track.scrollBy({ left: itemWidth + gap, behavior: 'smooth' });
+            }
         }
+        
+        function start() { stop(); timer = setInterval(autoSlide, intervalSpeed); }
+        function stop() { if(timer){ clearInterval(timer); timer = null; } }
+        
+        slider.addEventListener('mouseenter', stop);
+        slider.addEventListener('mouseleave', start);
+        slider.addEventListener('touchstart', stop, {passive: true});
+        slider.addEventListener('touchend', start, {passive: true});
+        start();
     }
 
-    function startAuto() {
-        stopAuto();
-        autoTimer = setInterval(function() { goTo(current + 1); }, autoInterval);
-    }
-    function stopAuto() {
-        if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
-    }
-
-    for (var i = 0; i < dots.length; i++) {
-        dots[i].addEventListener('click', (function(idx) {
-            return function() { goTo(idx); startAuto(); };
-        })(i));
-    }
-
-    // Touch swipe
-    var startX = 0;
-    var isDragging = false;
-    slider.addEventListener('touchstart', function(e) {
-        startX = e.touches[0].clientX;
-        isDragging = true;
-        stopAuto();
-    }, { passive: true });
-    slider.addEventListener('touchend', function(e) {
-        if (!isDragging) return;
-        isDragging = false;
-        var diff = startX - e.changedTouches[0].clientX;
-        if (Math.abs(diff) > 50) {
-            goTo(diff > 0 ? current + 1 : current - 1);
-        }
-        startAuto();
-    }, { passive: true });
-
-    // Pause on hover
-    slider.addEventListener('mouseenter', stopAuto);
-    slider.addEventListener('mouseleave', startAuto);
-
-    startAuto();
-})();
+    // Init Reviews (Home)
+    initNativeSlider('reviewSlider', '.sf-review-track', '.sf-review-slide', 4000);
+    // Init Categories (Home)
+    initNativeSlider('.sf-cat-circle-wrap', document.querySelector('.sf-cat-circle-wrap'), '.sf-cat-circle-item', 3500);
+});
 </script>
 
 {{-- Scroll Reveal (section headers only) --}}
