@@ -287,7 +287,7 @@
                     <div class="sf-funnel-catch-glow"></div>
                     <h3>Still Confused? Let Us Guide You</h3>
                     <p>The perfect match for your needs is waiting in our complete collection.</p>
-                    <a href="{{ route('shop') }}" class="btn" style="background:#fff; color:#0A0A0A; font-weight:700; padding:12px 32px; border-radius:100px; text-transform:uppercase; letter-spacing:1px; font-size:13px;">Find Your Perfect Product <i class="bi bi-arrow-right ms-2"></i></a>
+                    <a href="{{ route('search') }}" class="btn" style="background:#fff; color:#0A0A0A; font-weight:700; padding:12px 32px; border-radius:100px; text-transform:uppercase; letter-spacing:1px; font-size:13px;">Find Your Perfect Product <i class="bi bi-arrow-right ms-2"></i></a>
                 </div>
 
                 {{-- PROBLEM -> SOLUTION MATRIX ENGINE --}}
