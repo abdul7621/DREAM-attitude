@@ -14,6 +14,19 @@
 @php
     $ss = app(\App\Services\SettingsService::class);
     $sections = json_decode($ss->get('theme.home_sections', '[]'), true) ?: ['hero', 'trust_strip', 'categories', 'usp_strip', 'bestsellers', 'offers_banner', 'reviews', 'featured', 'instagram_follow', 'award_section'];
+
+    // Force usp_strip right after categories (regardless of DB order)
+    $sectionKeys = array_map(fn($s) => is_array($s) ? ($s['key'] ?? '') : $s, $sections);
+    $uspIdx = array_search('usp_strip', $sectionKeys);
+    $catIdx = array_search('categories', $sectionKeys);
+    if ($uspIdx !== false && $catIdx !== false && $uspIdx !== $catIdx + 1) {
+        $uspItem = $sections[$uspIdx];
+        array_splice($sections, $uspIdx, 1);
+        // Recalculate catIdx after splice
+        $sectionKeys2 = array_map(fn($s) => is_array($s) ? ($s['key'] ?? '') : $s, $sections);
+        $catIdx2 = array_search('categories', $sectionKeys2);
+        array_splice($sections, $catIdx2 + 1, 0, [$uspItem]);
+    }
 @endphp
 
 @foreach($sections as $section)
@@ -220,38 +233,39 @@
     @endif
 
     @if ($sectionKey === 'usp_strip')
-        {{-- ══ WHY TRUST DREAM ATTITUDE — Brand Authority Block ═══════════════ --}}
-        @php
-            $uspRaw = $ss->get('theme.usp_strip_items', '');
-            if (is_array($uspRaw)) {
-                $uspItems = $uspRaw;
-            } elseif (is_string($uspRaw) && !empty($uspRaw)) {
-                $uspItems = json_decode($uspRaw, true) ?: [];
-            } else {
-                $uspItems = [];
-            }
-            if (empty($uspItems)) {
-                $uspItems = [
-                    ['icon' => 'bi-clock-history', 'title' => '45+ Years of Industry Experience', 'desc' => 'Backed by decades of real-world salon and retail expertise.'],
-                    ['icon' => 'bi-people', 'title' => 'Trusted by 17,000+ Customers', 'desc' => 'A brand built on consistent performance and repeat buyers.'],
-                    ['icon' => 'bi-star-fill', 'title' => '4.9★ from 16,000+ Reviews', 'desc' => 'Real feedback from real customers across India.'],
-                    ['icon' => 'bi-shield-check', 'title' => 'Designed for Trust.', 'desc' => 'Not a new brand — a proven system.'],
-                ];
-            }
-        @endphp
+        {{-- ══ BRAND AUTHORITY BLOCK — Hardcoded (Not admin-configurable generic USP) ═══════════════ --}}
         <div class="sf-usp-strip">
             <h2 class="sf-usp-section-title sf-animate">45+ Years of Beauty Expertise. Trusted by Thousands.</h2>
             <p class="sf-usp-section-sub">Powered by NR Beauty World — a name dominating the beauty market for over 45 years.</p>
             <div class="sf-usp-grid">
-                @foreach($uspItems as $usp)
                 <div class="sf-usp-item">
-                    <div class="sf-usp-icon-wrap"><i class="bi {{ $usp['icon'] ?? 'bi-stars' }}"></i></div>
+                    <div class="sf-usp-icon-wrap"><i class="bi bi-clock-history"></i></div>
                     <div>
-                        <div class="sf-usp-title">{{ $usp['title'] ?? '' }}</div>
-                        <div class="sf-usp-desc">{{ $usp['desc'] ?? '' }}</div>
+                        <div class="sf-usp-title">45+ Years of Industry Experience</div>
+                        <div class="sf-usp-desc">Backed by decades of real-world salon and retail expertise.</div>
                     </div>
                 </div>
-                @endforeach
+                <div class="sf-usp-item">
+                    <div class="sf-usp-icon-wrap"><i class="bi bi-people"></i></div>
+                    <div>
+                        <div class="sf-usp-title">Trusted by 17,000+ Customers</div>
+                        <div class="sf-usp-desc">A brand built on consistent performance and repeat buyers.</div>
+                    </div>
+                </div>
+                <div class="sf-usp-item">
+                    <div class="sf-usp-icon-wrap"><i class="bi bi-star-fill"></i></div>
+                    <div>
+                        <div class="sf-usp-title">4.9★ from 16,000+ Reviews</div>
+                        <div class="sf-usp-desc">Real feedback from real customers across India.</div>
+                    </div>
+                </div>
+                <div class="sf-usp-item">
+                    <div class="sf-usp-icon-wrap"><i class="bi bi-shield-check"></i></div>
+                    <div>
+                        <div class="sf-usp-title">Built for Scale. Designed for Trust.</div>
+                        <div class="sf-usp-desc">Not a new brand — a proven system.</div>
+                    </div>
+                </div>
             </div>
         </div>
     @endif
