@@ -119,7 +119,8 @@ class ThemeController extends Controller
                     'award_images_remove'          => ['nullable', 'array', 'max:4'],
                     'problem_matrix'               => ['nullable', 'array', 'max:6'],
                     'problem_matrix.*.problem'     => ['nullable', 'string', 'max:255'],
-                    'problem_matrix.*.products'    => ['nullable', 'string', 'max:100'],
+                    'problem_matrix.*.products'    => ['nullable', 'array', 'max:3'],
+                    'problem_matrix.*.products.*'  => ['nullable', 'string'],
                 ]);
 
                 // Normalize sections

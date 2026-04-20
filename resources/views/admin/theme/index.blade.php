@@ -660,6 +660,11 @@ document.getElementById('addSlideBtn').addEventListener('click', function() {
         font-size: 13px;
         margin-top: 6px !important;
     }
+    .select2-results__option {
+        text-overflow: ellipsis; 
+        white-space: nowrap; 
+        overflow: hidden;
+    }
 </style>
 @endpush
 
@@ -671,7 +676,8 @@ $(document).ready(function() {
     $('.select2-products').select2({
         placeholder: "Search and select products...",
         allowClear: true,
-        maximumSelectionLength: 3
+        maximumSelectionLength: 3,
+        width: '100%' // Force to not overflow parent
     });
 });
 </script>
