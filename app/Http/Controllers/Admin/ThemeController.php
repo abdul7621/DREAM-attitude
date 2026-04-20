@@ -45,8 +45,22 @@ class ThemeController extends Controller
 
         $theme = array_merge($defaults, $settings);
         
+        // Fix double-encoded JSON strings for arrays saved previously
+        $arrayKeys = [
+            'theme.home_sections', 'theme.trust_strip_items', 'theme.usp_strip_items',
+            'theme.benefits_items', 'theme.award_stats', 'theme.award_images', 'theme.problem_matrix', 'theme.hero_slides'
+        ];
+        foreach ($arrayKeys as $k) {
+            if (isset($theme[$k]) && is_string($theme[$k])) {
+                $decoded = json_decode($theme[$k], true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $theme[$k] = $decoded;
+                }
+            }
+        }
+
         // Extract only the string keys for the view so isset($available[$key]) doesn't crash.
-        $sections = json_decode($theme['theme.home_sections'], true) ?? [];
+        $sections = $theme['theme.home_sections'] ?? [];
         $activeKeys = [];
         foreach ($sections as $sec) {
             if (is_string($sec)) {
@@ -162,7 +176,7 @@ class ThemeController extends Controller
 
                 Setting::updateOrCreate(
                     ['key' => 'theme.home_sections'], 
-                    ['value' => json_encode($normalized)]
+                    ['value' => $normalized]
                 );
 
                 if ($request->hasFile('theme_hero_image')) {
@@ -249,7 +263,7 @@ class ThemeController extends Controller
                 if (!empty($trustStrip)) {
                     Setting::updateOrCreate(
                         ['key' => 'theme.trust_strip_items'],
-                        ['value' => json_encode(array_values($trustStrip))]
+                        ['value' => array_values($trustStrip)]
                     );
                 }
 
@@ -258,7 +272,7 @@ class ThemeController extends Controller
                 if (!empty($uspStrip)) {
                     Setting::updateOrCreate(
                         ['key' => 'theme.usp_strip_items'],
-                        ['value' => json_encode(array_values($uspStrip))]
+                        ['value' => array_values($uspStrip)]
                     );
                 }
 
@@ -272,7 +286,7 @@ class ThemeController extends Controller
                     }
                     Setting::updateOrCreate(
                         ['key' => 'theme.problem_matrix'],
-                        ['value' => json_encode(array_values($problemMatrix))]
+                        ['value' => array_values($problemMatrix)]
                     );
                 }
 
@@ -282,7 +296,7 @@ class ThemeController extends Controller
                 if (!empty($benefitsItems)) {
                     Setting::updateOrCreate(
                         ['key' => 'theme.benefits_items'],
-                        ['value' => json_encode(array_values($benefitsItems))]
+                        ['value' => array_values($benefitsItems)]
                     );
                 }
 
@@ -291,14 +305,14 @@ class ThemeController extends Controller
                 if (!empty($awardStats)) {
                     Setting::updateOrCreate(
                         ['key' => 'theme.award_stats'],
-                        ['value' => json_encode(array_values($awardStats))]
+                        ['value' => array_values($awardStats)]
                     );
                 }
 
                 // ── Process Award Section Images (4 slots) ──────────────
                 $awardImagesExisting = $request->input('award_images_existing', []);
                 $awardImagesRemove   = $request->input('award_images_remove', []);
-                $finalAwardImages    = [];
+                $finalAwardImages = [null, null, null, null];
                 for ($ai = 0; $ai < 4; $ai++) {
                     // If admin checked "Remove" for this slot, skip it
                     if (!empty($awardImagesRemove[$ai])) {
@@ -310,18 +324,18 @@ class ThemeController extends Controller
                         if ($file->isValid()) {
                             $path = $file->store('theme/award', 'public');
                             $path = app(ImageOptimizerService::class)->optimize($path, 800);
-                            $finalAwardImages[] = $path;
+                            $finalAwardImages[$ai] = $path;
                             continue;
                         }
                     }
                     // Keep existing if no new upload
                     if (!empty($awardImagesExisting[$ai])) {
-                        $finalAwardImages[] = $awardImagesExisting[$ai];
+                        $finalAwardImages[$ai] = $awardImagesExisting[$ai];
                     }
                 }
                 Setting::updateOrCreate(
                     ['key' => 'theme.award_images'],
-                    ['value' => json_encode($finalAwardImages)]
+                    ['value' => $finalAwardImages]
                 );
 
                 Cache::forget('commerce.settings.array');
