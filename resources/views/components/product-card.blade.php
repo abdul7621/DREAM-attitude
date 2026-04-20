@@ -42,18 +42,11 @@
     <div class="card-body">
         <a href="{{ route('product.show', $product) }}" class="product-name">{{ $product->name }}</a>
         
-        {{-- MICRO SIGNALS --}}
-        @if(!empty($product->meta['problem_hook']) || !empty($product->meta['result_promise']) || !empty($product->meta['safety_tag']))
-            <div class="sf-card-signals">
-                @if(!empty($product->meta['problem_hook']))
-                    <span class="sf-signal"><i class="bi bi-check-circle-fill"></i> {{ \Illuminate\Support\Str::limit($product->meta['problem_hook'], 30) }}</span>
-                @endif
-                @if(!empty($product->meta['result_promise']))
-                    <span class="sf-signal"><i class="bi bi-stars"></i> {{ \Illuminate\Support\Str::limit($product->meta['result_promise'], 30) }}</span>
-                @endif
-                @if(!empty($product->meta['safety_tag']))
-                    <span class="sf-signal sf-signal-safe"><i class="bi bi-shield-check"></i> {{ \Illuminate\Support\Str::limit($product->meta['safety_tag'], 30) }}</span>
-                @endif
+        {{-- MICRO SIGNALS - STRICT SINGLE LINE CLAMP --}}
+        @if(!empty($product->meta['problem_hook']))
+            <div class="sf-card-signal-single">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>{{ $product->meta['problem_hook'] }}</span>
             </div>
         @endif
 
@@ -65,27 +58,30 @@
                 <span style="font-size:10px;color:var(--color-text-muted);">({{ $product->reviews_count }})</span>
             </div>
         @endif
+
         @if ($variant)
-            <div class="price-row">
-                <span class="sale-price">₹{{ number_format($price, 0) }}</span>
-                @if ($compare && $compare > $price)
-                    <span class="mrp">₹{{ number_format($compare, 0) }}</span>
-                    <span class="discount">{{ $discount }}% OFF</span>
+            <div style="margin-top: auto;">
+                <div class="price-row">
+                    <span class="sale-price">₹{{ number_format($price, 0) }}</span>
+                    @if ($compare && $compare > $price)
+                        <span class="mrp">₹{{ number_format($compare, 0) }}</span>
+                        <span class="discount">{{ $discount }}% OFF</span>
+                    @endif
+                </div>
+                
+                @if ($hasMultipleVariants)
+                    <a href="{{ route('product.show', $product) }}" class="btn-add" style="display:block;text-align:center;text-decoration:none;line-height:36px;">Select Options →</a>
+                @elseif ($isOutOfStock)
+                    <button type="button" class="btn-add" disabled style="opacity:0.5;cursor:not-allowed;">Out of Stock</button>
+                @else
+                    <form action="{{ route('cart.items.store') }}" method="POST" class="form-add-to-cart">
+                        @csrf
+                        <input type="hidden" name="variant_id" value="{{ $variant->id }}">
+                        <input type="hidden" name="qty" value="1">
+                        <button type="submit" class="btn-add">Add to Cart</button>
+                    </form>
                 @endif
             </div>
-            
-            @if ($hasMultipleVariants)
-                <a href="{{ route('product.show', $product) }}" class="btn-add" style="display:block;text-align:center;text-decoration:none;line-height:36px;">Select Options →</a>
-            @elseif ($isOutOfStock)
-                <button type="button" class="btn-add" disabled style="opacity:0.5;cursor:not-allowed;">Out of Stock</button>
-            @else
-                <form action="{{ route('cart.items.store') }}" method="POST" class="form-add-to-cart">
-                    @csrf
-                    <input type="hidden" name="variant_id" value="{{ $variant->id }}">
-                    <input type="hidden" name="qty" value="1">
-                    <button type="submit" class="btn-add">Add to Cart</button>
-                </form>
-            @endif
         @endif
     </div>
 </div>
