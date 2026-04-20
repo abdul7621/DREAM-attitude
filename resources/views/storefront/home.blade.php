@@ -493,7 +493,7 @@
             <div class="sf-instagram-inner">
                 <div class="sf-instagram-icon"><i class="bi bi-instagram"></i></div>
                 <a href="https://www.instagram.com/{{ $igHandle }}/" target="_blank" rel="noopener" class="sf-instagram-cta">
-                    <i class="bi bi-instagram"></i> Follow @{{ $igHandle }}
+                    <i class="bi bi-instagram"></i> Follow {{ '@' . $igHandle }}
                 </a>
                 <p class="sf-instagram-proof">Join 10,000+ Happy Customers</p>
             </div>
