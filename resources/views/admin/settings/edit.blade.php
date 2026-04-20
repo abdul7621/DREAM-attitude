@@ -177,30 +177,52 @@
         </div>
 
         <div class="col-12 mt-4">
-            <h6 class="fw-bold border-bottom pb-2">🚀 Shiprocket Integration</h6>
+            <h6 class="fw-bold border-bottom pb-2">🚚 Logistics Engine (Shipping Provider)</h6>
         </div>
-        <div class="col-md-3">
-            <label class="form-label">Shiprocket Enabled</label>
-            <select name="shipping__shiprocket_enabled" class="form-select">
-                <option value="1" {{ ($groups['shipping']['shiprocket_enabled'] ?? '0') === '1' ? 'selected' : '' }}>Yes</option>
-                <option value="0" {{ ($groups['shipping']['shiprocket_enabled'] ?? '0') === '0' ? 'selected' : '' }}>No</option>
-            </select>
-        </div>
-        <div class="col-md-3">
-            <label class="form-label">Auto Create Shipment</label>
-            <select name="shipping__shiprocket_auto_create" class="form-select">
-                <option value="1" {{ ($groups['shipping']['shiprocket_auto_create'] ?? '0') === '1' ? 'selected' : '' }}>Yes</option>
-                <option value="0" {{ ($groups['shipping']['shiprocket_auto_create'] ?? '0') === '0' ? 'selected' : '' }}>No</option>
-            </select>
-        </div>
-        <div class="col-md-6"></div>
         <div class="col-md-6">
-            <label class="form-label">Shiprocket Email</label>
+            <label class="form-label">Active Provider</label>
+            <div class="d-flex gap-4 mt-2">
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="shipping__active_provider" id="provShiprocket" value="shiprocket" {{ ($groups['shipping']['active_provider'] ?? 'shiprocket') === 'shiprocket' ? 'checked' : '' }}>
+                    <label class="form-check-label fw-bold" for="provShiprocket">Shiprocket</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="shipping__active_provider" id="provIthink" value="ithink" {{ ($groups['shipping']['active_provider'] ?? '') === 'ithink' ? 'checked' : '' }}>
+                    <label class="form-check-label fw-bold" for="provIthink">iThink Logistics</label>
+                </div>
+            </div>
+            <div class="form-text mt-1 text-danger">Fallback mechanism is enabled. If Active Provider fails, the system will try the other.</div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Auto Push Order on Creation</label>
+            <select name="shipping__auto_create" class="form-select">
+                <option value="1" {{ ($groups['shipping']['auto_create'] ?? '1') === '1' ? 'selected' : '' }}>Yes (Recommended)</option>
+                <option value="0" {{ ($groups['shipping']['auto_create'] ?? '1') === '0' ? 'selected' : '' }}>No</option>
+            </select>
+        </div>
+
+        <div class="col-12 mt-3">
+            <h6 class="fw-bold text-muted" style="font-size: 13px; text-transform: uppercase;">🔹 Shiprocket Credentials</h6>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Email</label>
             <input type="email" name="shipping__shiprocket_email" class="form-control" value="{{ $groups['shipping']['shiprocket_email'] ?? '' }}">
         </div>
         <div class="col-md-6">
-            <label class="form-label">Shiprocket Password</label>
+            <label class="form-label">Password</label>
             <input type="password" name="shipping__shiprocket_password" class="form-control" value="{{ $groups['shipping']['shiprocket_password'] ?? '' }}">
+        </div>
+
+        <div class="col-12 mt-3">
+            <h6 class="fw-bold text-muted" style="font-size: 13px; text-transform: uppercase;">🔹 iThink Logistics Credentials</h6>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Access Token</label>
+            <input type="text" name="shipping__ithink_access_token" class="form-control" value="{{ $groups['shipping']['ithink_access_token'] ?? '' }}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Secret Key</label>
+            <input type="password" name="shipping__ithink_secret_key" class="form-control" value="{{ $groups['shipping']['ithink_secret_key'] ?? '' }}" autocomplete="new-password">
         </div>
     </div>
 @endif

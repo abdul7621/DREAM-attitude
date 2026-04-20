@@ -3,11 +3,12 @@
 namespace App\Services;
 
 use App\Models\Order;
+use App\Contracts\ShippingProviderInterface;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class ShiprocketService
+class ShiprocketService implements ShippingProviderInterface
 {
     private string $baseUrl = 'https://apiv2.shiprocket.in/v1/external';
 

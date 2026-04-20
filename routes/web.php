@@ -116,6 +116,7 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
 
 // ── Webhooks ───────────────────────────────────────────────────────────────
 Route::post('/api/shiprocket/webhook', [\App\Http\Controllers\Api\ShiprocketWebhookController::class, 'handle'])->name('webhook.shiprocket');
+Route::post('/api/webhooks/ithink', [\App\Http\Controllers\Api\IthinkWebhookController::class, 'handle'])->name('webhook.ithink');
 
 // ── Admin Panel ────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function (): void {

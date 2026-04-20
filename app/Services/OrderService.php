@@ -115,8 +115,8 @@ class OrderService
 
         OrderPlaced::dispatch($order);
 
-        if (app(\App\Services\SettingsService::class)->get('shipping.shiprocket_auto_create')) {
-            \App\Jobs\CreateShiprocketShipment::dispatch($order);
+        if (app(\App\Services\SettingsService::class)->get('shipping.auto_create', true)) {
+            \App\Jobs\CreateShipmentJob::dispatch($order);
         }
 
         return $order;
@@ -333,8 +333,8 @@ class OrderService
         // Fire events AFTER transaction commits (outside transaction)
         OrderPlaced::dispatch($order->fresh());
 
-        if (app(\App\Services\SettingsService::class)->get('shipping.shiprocket_auto_create')) {
-            \App\Jobs\CreateShiprocketShipment::dispatch($order->fresh());
+        if (app(\App\Services\SettingsService::class)->get('shipping.auto_create', true)) {
+            \App\Jobs\CreateShipmentJob::dispatch($order->fresh());
         }
     }
 
