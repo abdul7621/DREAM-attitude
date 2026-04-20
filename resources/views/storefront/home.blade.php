@@ -13,7 +13,7 @@
 @section('content')
 @php
     $ss = app(\App\Services\SettingsService::class);
-    $sections = json_decode($ss->get('theme.home_sections', '[]'), true) ?: ['hero', 'trust_strip', 'categories', 'bestsellers', 'usp_strip', 'offers_banner', 'reviews', 'featured', 'instagram_follow', 'award_section'];
+    $sections = json_decode($ss->get('theme.home_sections', '[]'), true) ?: ['hero', 'trust_strip', 'categories', 'usp_strip', 'bestsellers', 'offers_banner', 'reviews', 'featured', 'instagram_follow', 'award_section'];
 @endphp
 
 @foreach($sections as $section)
@@ -232,16 +232,16 @@
             }
             if (empty($uspItems)) {
                 $uspItems = [
-                    ['icon' => 'bi-trophy', 'title' => '45+ Years Industry Experience', 'desc' => 'Powered by N.R. Beauty World — a legacy brand trusted since decades'],
-                    ['icon' => 'bi-star-fill', 'title' => '17,000+ Google Reviews', 'desc' => '4.9★ rated — one of the highest rated beauty brands in India'],
-                    ['icon' => 'bi-people-fill', 'title' => 'Trusted Across India', 'desc' => 'Thousands of salons and customers rely on Dream Attitude daily'],
-                    ['icon' => 'bi-shop', 'title' => 'N.R. Beauty World Legacy', 'desc' => '45+ years of dominance in the professional beauty market'],
+                    ['icon' => 'bi-clock-history', 'title' => '45+ Years of Industry Experience', 'desc' => 'Backed by decades of real-world salon and retail expertise.'],
+                    ['icon' => 'bi-people', 'title' => 'Trusted by 17,000+ Customers', 'desc' => 'A brand built on consistent performance and repeat buyers.'],
+                    ['icon' => 'bi-star-fill', 'title' => '4.9★ from 16,000+ Reviews', 'desc' => 'Real feedback from real customers across India.'],
+                    ['icon' => 'bi-shield-check', 'title' => 'Designed for Trust.', 'desc' => 'Not a new brand — a proven system.'],
                 ];
             }
         @endphp
         <div class="sf-usp-strip">
-            <h2 class="sf-usp-section-title sf-animate">Why Trust Dream Attitude</h2>
-            <p class="sf-usp-section-sub">Built on 45+ years of beauty industry expertise</p>
+            <h2 class="sf-usp-section-title sf-animate">45+ Years of Beauty Expertise. Trusted by Thousands.</h2>
+            <p class="sf-usp-section-sub">Powered by NR Beauty World — a name dominating the beauty market for over 45 years.</p>
             <div class="sf-usp-grid">
                 @foreach($uspItems as $usp)
                 <div class="sf-usp-item">
