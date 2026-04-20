@@ -301,10 +301,14 @@
                         <div style="margin-bottom:24px;">
                             <p class="sf-section-eyebrow" style="margin-bottom:4px;">Diagnostic Tool</p>
                             <h2 style="font-family:'Playfair Display',serif; font-size:32px; color:var(--color-text-primary); margin:0;">Target Solutions</h2>
+                            <p style="color:var(--color-text-muted); font-size:14px; margin-top:8px; display: flex; align-items: center; gap: 6px;">
+                                <i class="bi bi-hand-index-thumb fs-5" style="color:var(--color-gold);"></i> 
+                                Tap on a problem below to reveal tailored product solutions.
+                            </p>
                         </div>
                         @foreach($matrixItems as $i => $mItem)
                             @if(!empty($mItem['problem']))
-                                <div class="sf-ps-tab {{ $i===0?'active':'' }}" data-target="ps-panel-{{$i}}">
+                                <div class="sf-ps-tab" data-target="ps-panel-{{$i}}">
                                     <span>{{ $mItem['problem'] }}</span>
                                     <i class="bi bi-chevron-right"></i>
                                 </div>
@@ -327,7 +331,7 @@
                                       });
                                     }
                                 @endphp
-                                <div class="sf-ps-content {{ $i===0?'active':'' }}" id="ps-panel-{{$i}}">
+                                <div class="sf-ps-content" id="ps-panel-{{$i}}">
                                     @if($psProducts->isNotEmpty())
                                         <div class="sf-ps-solution-grid">
                                             @foreach($psProducts as $pi => $psP)
