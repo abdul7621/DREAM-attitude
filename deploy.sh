@@ -79,6 +79,7 @@ ${SSH_CMD} -t "cd ${APP_DIR} && \
     php artisan route:cache && \
     php artisan view:cache && \
     php artisan event:cache && \
+    php artisan queue:restart && \
     chmod -R 755 storage bootstrap/cache && \
     echo '✅ All remote tasks completed successfully!'"
     
