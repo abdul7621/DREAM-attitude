@@ -118,6 +118,17 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
 Route::post('/api/shiprocket/webhook', [\App\Http\Controllers\Api\ShiprocketWebhookController::class, 'handle'])->name('webhook.shiprocket');
 Route::post('/api/webhooks/ithink', [\App\Http\Controllers\Api\IthinkWebhookController::class, 'handle'])->name('webhook.ithink');
 
+Route::get('/test-ithink/{orderId}', function ($orderId) {
+    try {
+        $order = \App\Models\Order::findOrFail($orderId);
+        $service = app(\App\Services\IthinkLogisticsService::class);
+        $response = $service->createOrder($order);
+        return response()->json(['success' => true, 'response' => $response]);
+    } catch (\Exception $e) {
+        return response()->json(['success' => false, 'error' => $e->getMessage()]);
+    }
+});
+
 // ── Admin Panel ────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function (): void {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
