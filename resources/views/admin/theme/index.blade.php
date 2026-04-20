@@ -514,9 +514,19 @@
                                     <input type="text" name="problem_matrix[{{ $mi }}][problem]" class="form-control" value="{{ $mItem['problem'] ?? '' }}" placeholder="e.g. Hair Fall? -> Try This">
                                 </div>
                                 <div class="col-md-7">
-                                    <label class="form-label small fw-bold">Product IDs (Comma Separated)</label>
-                                    <input type="text" name="problem_matrix[{{ $mi }}][products]" class="form-control" value="{{ $mItem['products'] ?? '' }}" placeholder="e.g. 12, 45, 89">
-                                    <div class="form-text" style="font-size:11px;">Enter 3 Product IDs exactly. Find IDs in the Products tab.</div>
+                                    <label class="form-label small fw-bold">Select Products (Max 3)</label>
+                                    @php
+                                        $selectedIds = array_map('trim', explode(',', $mItem['products'] ?? ''));
+                                        $selectedIds = array_filter($selectedIds);
+                                    @endphp
+                                    <select name="problem_matrix[{{ $mi }}][products][]" class="form-select select2-products" multiple="multiple">
+                                        @foreach($productsList as $p)
+                                            <option value="{{ $p->id }}" {{ in_array((string)$p->id, $selectedIds) ? 'selected' : '' }}>
+                                                {{ $p->name }} (SKU: {{ $p->sku ?: 'N/A' }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div class="form-text" style="font-size:11px;">Search and select exactly 3 products that solve this problem.</div>
                                 </div>
                             </div>
                         </div>
@@ -628,7 +638,6 @@ document.getElementById('addSlideBtn').addEventListener('click', function() {
         '<label class="form-label small mb-1">Alt Text</label>' +
         '<input type="text" name="slide_alts[' + slideIndex + ']" class="form-control form-control-sm" placeholder="Product name + benefit">' +
         '</div>' +
-        '</div></div>' +
         '</div></div>';
     c.insertAdjacentHTML('beforeend', html);
     slideIndex++;
@@ -636,3 +645,34 @@ document.getElementById('addSlideBtn').addEventListener('click', function() {
 </script>
 @endif
 @endsection
+
+@push('admin-styles')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .select2-container--default .select2-selection--multiple {
+        border-color: #dee2e6;
+        min-height: 38px;
+    }
+    .select2-container .select2-search--inline .select2-search__field {
+        font-family: inherit;
+    }
+    .select2-selection__choice {
+        font-size: 13px;
+        margin-top: 6px !important;
+    }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('.select2-products').select2({
+        placeholder: "Search and select products...",
+        allowClear: true,
+        maximumSelectionLength: 3
+    });
+});
+</script>
+@endpush

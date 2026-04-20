@@ -57,7 +57,9 @@ class ThemeController extends Controller
         }
         $theme['theme.home_sections'] = $activeKeys;
 
-        return view('admin.theme.index', compact('theme', 'tab'));
+        $productsList = \App\Models\Product::select('id', 'name', 'sku')->orderBy('name')->get();
+
+        return view('admin.theme.index', compact('theme', 'tab', 'productsList'));
     }
 
     public function update(Request $request): RedirectResponse
@@ -262,6 +264,11 @@ class ThemeController extends Controller
                 // Save Problem-Solution Matrix items (array)
                 $problemMatrix = $request->input('problem_matrix', []);
                 if (!empty($problemMatrix)) {
+                    foreach ($problemMatrix as &$pm) {
+                        if (isset($pm['products']) && is_array($pm['products'])) {
+                            $pm['products'] = implode(',', $pm['products']);
+                        }
+                    }
                     Setting::updateOrCreate(
                         ['key' => 'theme.problem_matrix'],
                         ['value' => json_encode(array_values($problemMatrix))]
