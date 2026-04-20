@@ -28,11 +28,29 @@ class IthinkWebhookController extends Controller
             }
         }
 
-        if (!$awb) {
-            return response()->json(['message' => 'Missing AWB'], 422);
+        $shipment = null;
+        if ($awb) {
+            $shipment = Shipment::where('awb', $awb)->first();
         }
 
-        $shipment = Shipment::where('awb', $awb)->first();
+        // Fallback to searching by order number if AWB is missing from our DB
+        if (!$shipment) {
+            $orderNo = $request->input('order_no') ?? $request->input('order_number') ?? $request->input('refnum');
+            if (!$orderNo && isset($data) && is_array($data)) {
+                $item = isset($data[0]) ? $data[0] : $data;
+                $orderNo = $item['order_no'] ?? $item['order_number'] ?? $item['refnum'] ?? null;
+            }
+
+            if ($orderNo) {
+                $orderModel = \App\Models\Order::where('order_number', $orderNo)->first();
+                if ($orderModel) {
+                    $shipment = $orderModel->shipments()->where('carrier', 'ithink')->first();
+                    if ($shipment && $awb && !$shipment->awb) {
+                        $shipment->update(['awb' => $awb]);
+                    }
+                }
+            }
+        }
 
         if (!$shipment) {
             return response()->json(['message' => 'Shipment not found'], 404);

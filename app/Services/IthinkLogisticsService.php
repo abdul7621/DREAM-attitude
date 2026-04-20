@@ -107,7 +107,7 @@ class IthinkLogisticsService implements ShippingProviderInterface
         }
 
         $json = $res->json();
-        if ($json['status_code'] != 1) { // iThink returns status_code == 1 for success
+        if (!in_array($json['status_code'] ?? 0, [1, 200, 201, '200', '201', '1'])) { 
             throw new \Exception('iThink createOrder API Error: ' . json_encode($json));
         }
 
