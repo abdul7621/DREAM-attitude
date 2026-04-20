@@ -13,7 +13,11 @@
 @section('content')
 @php
     $ss = app(\App\Services\SettingsService::class);
-    $sections = json_decode($ss->get('theme.home_sections', '[]'), true) ?: ['hero', 'trust_strip', 'categories', 'usp_strip', 'bestsellers', 'offers_banner', 'reviews', 'featured', 'instagram_follow', 'award_section'];
+    $sectionsRaw = $ss->get('theme.home_sections', '[]');
+    $sections = is_array($sectionsRaw) ? $sectionsRaw : (is_string($sectionsRaw) ? json_decode($sectionsRaw, true) : []);
+    if (empty($sections)) {
+        $sections = ['hero', 'trust_strip', 'categories', 'usp_strip', 'bestsellers', 'offers_banner', 'reviews', 'featured', 'instagram_follow', 'award_section'];
+    }
 
     // Force usp_strip right after categories (regardless of DB order)
     $sectionKeys = array_map(fn($s) => is_array($s) ? ($s['key'] ?? '') : $s, $sections);
