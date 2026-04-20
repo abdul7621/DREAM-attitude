@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 
 class IthinkLogisticsService implements ShippingProviderInterface
 {
-    private string $baseUrl = 'https://api.ithinklogistics.com/api_v3';
+    private string $baseUrl = 'https://my.ithinklogistics.com/api_v3';
 
     private function getCredentials(): array
     {
@@ -31,9 +31,15 @@ class IthinkLogisticsService implements ShippingProviderInterface
     {
         $creds = $this->getCredentials();
 
-        // Prepare items block if iThink requests detailed items
-        // Wait, standard Add Order requires "product_name" as string or concatenated, let's keep it simple or join.
-        $productNames = $order->orderItems->pluck('product_name_snapshot')->join(', ');
+        $products = $order->orderItems->map(fn($item) => [
+            'product_name' => $item->product_name_snapshot ?? 'Product',
+            'product_sku' => $item->sku_snapshot ?? 'SKU-'.$item->id,
+            'product_quantity' => (string) $item->qty,
+            'product_price' => (string) $item->unit_price,
+            'product_tax_rate' => (string) ($order->gst_rate ?? 0),
+            'product_hsn_code' => '',
+            'product_discount' => '0'
+        ])->toArray();
 
         $payload = [
             'data' => [
@@ -41,41 +47,52 @@ class IthinkLogisticsService implements ShippingProviderInterface
                 'secret_key'   => $creds['secret_key'],
                 'shipments'    => [
                     [
-                        'waybill'               => '', // Let iThink generate it
                         'order'                 => (string) $order->order_number,
                         'sub_order'             => '',
-                        'order_date'            => $order->created_at->format('d-m-Y'),
-                        'total_amount'          => $order->grand_total,
+                        'order_date'            => $order->created_at ? $order->created_at->format('d-m-Y H:i:s') : now()->format('d-m-Y H:i:s'),
+                        'total_amount'          => (string) $order->grand_total,
                         'name'                  => $order->customer_name,
                         'company_name'          => '',
                         'add'                   => $order->address_line1 . ($order->address_line2 ? ', ' . $order->address_line2 : ''),
-                        'pin'                   => $order->postal_code,
+                        'add2'                  => '',
+                        'add3'                  => '',
+                        'pin'                   => (string) $order->postal_code,
                         'city'                  => $order->city,
                         'state'                 => $order->state,
                         'country'               => 'India',
-                        'phone'                 => $order->phone,
+                        'phone'                 => (string) $order->phone,
                         'alt_phone'             => '',
                         'email'                 => $order->email ?? '',
                         'is_billing_same_as_shipping' => 'yes',
                         'billing_name'          => $order->customer_name,
                         'billing_company_name'  => '',
                         'billing_add'           => $order->address_line1 . ($order->address_line2 ? ', ' . $order->address_line2 : ''),
-                        'billing_pin'           => $order->postal_code,
+                        'billing_add2'          => '',
+                        'billing_add3'          => '',
+                        'billing_pin'           => (string) $order->postal_code,
                         'billing_city'          => $order->city,
                         'billing_state'         => $order->state,
                         'billing_country'       => 'India',
-                        'billing_phone'         => $order->phone,
+                        'billing_phone'         => (string) $order->phone,
                         'billing_alt_phone'     => '',
                         'billing_email'         => $order->email ?? '',
-                        'products'              => $productNames,
-                        'products_sku'          => '',
-                        'quantity'              => $order->orderItems->sum('qty'),
+                        'products'              => $products,
+                        'shipment_length'       => '10',
+                        'shipment_width'        => '10',
+                        'shipment_height'       => '10',
+                        'weight'                => '0.5',
+                        'shipping_charges'      => '0',
+                        'giftwrap_charges'      => '0',
+                        'transaction_charges'   => '0',
+                        'total_discount'        => '0',
+                        'first_attemp_discount' => '0',
+                        'cod_amount'            => $order->payment_method === 'cod' ? (string) $order->grand_total : '0',
+                        'cod_charges'           => '0',
+                        'advance_amount'        => '0',
                         'payment_mode'          => $order->payment_method === 'cod' ? 'COD' : 'Prepaid',
-                        'return_address_id'     => '', 
-                        'length'                => '10',
-                        'width'                 => '10',
-                        'height'                => '10',
-                        'weight'                => '0.5' // Ensure dimension matches package
+                        'reseller_name'         => '',
+                        'eway_bill_number'      => '',
+                        'gst_number'            => ''
                     ]
                 ]
             ]
@@ -83,7 +100,7 @@ class IthinkLogisticsService implements ShippingProviderInterface
 
         Log::info('iThink Push Payload', $payload);
 
-        $res = Http::post($this->baseUrl . '/order/add.json', $payload);
+        $res = Http::post($this->baseUrl . '/order/sync.json', $payload);
 
         if (!$res->successful()) {
             throw new \Exception('iThink createOrder failed HTTP Error: ' . $res->body());
