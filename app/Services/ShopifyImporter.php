@@ -303,8 +303,14 @@ class ShopifyImporter
 
         foreach ($rows as $index => $row) {
             try {
-                $email = trim($row['Email'] ?? '');
-                $phone = trim($row['Phone'] ?? '');
+                $email = strtolower(trim($row['Email'] ?? ''));
+                $rawPhone = trim($row['Phone'] ?? '');
+                
+                $phone = null;
+                if ($rawPhone !== '') {
+                    $phone = preg_replace('/[^\d+]/', '', $rawPhone);
+                }
+                
                 $name  = trim(($row['First Name'] ?? '') . ' ' . ($row['Last Name'] ?? ''));
 
                 if (! $email && ! $phone && ! $name) {
@@ -312,24 +318,20 @@ class ShopifyImporter
                     continue;
                 }
 
-                // Try to find existing user by email or phone
+                // Identity System - Primary identifier is email
                 $user = null;
                 if ($email) {
                     $user = \App\Models\User::where('email', $email)->first();
                 }
-                if (! $user && $phone) {
-                    $user = \App\Models\User::where('phone', $phone)->first();
-                }
 
                 if (! $user) {
                     // Generate a unique placeholder email if none provided
-                    // (users.email is NOT NULL + UNIQUE in Laravel)
                     $safeEmail = $email ?: 'imported_' . time() . '_' . $index . '_' . mt_rand(100,999) . '@placeholder.local';
 
                     $user = \App\Models\User::create([
                         'name'     => $name ?: 'Imported Customer',
                         'email'    => $safeEmail,
-                        'phone'    => $phone ?: null,
+                        'phone'    => $phone,
                         'password' => bcrypt(\Illuminate\Support\Str::random(16)),
                         'is_admin' => false,
                     ]);
@@ -671,10 +673,27 @@ class ShopifyImporter
             return null;
         }
 
-        return Category::query()->firstOrCreate(
-            ['slug' => Str::slug($name)],
-            ['name' => $name, 'is_active' => true]
-        );
+        $parts = array_map('trim', explode('>', $name));
+        $parent = null;
+        $category = null;
+
+        foreach ($parts as $part) {
+            if (!$part) continue;
+
+            $slug = $parent ? $parent->slug . '-' . Str::slug($part) : Str::slug($part);
+            
+            $category = Category::query()->firstOrCreate(
+                ['slug' => $slug],
+                [
+                    'name' => $part, 
+                    'is_active' => true,
+                    'parent_id' => $parent ? $parent->id : null,
+                ]
+            );
+            $parent = $category;
+        }
+
+        return $category;
     }
 
     private function uniqueSlug(string $handle): string

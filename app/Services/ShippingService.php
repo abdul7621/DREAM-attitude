@@ -9,13 +9,18 @@ class ShippingService
     public function quote(string $postalCode, int $weightGramsTotal, string $subtotal): string
     {
         $rules = ShippingRule::query()->where('is_active', true)->orderByDesc('priority')->get();
+        
+        \Illuminate\Support\Facades\Log::info("Evaluating Shipping Rules for Pincode: {$postalCode}, Weight: {$weightGramsTotal}g, Subtotal: {$subtotal}");
+
         foreach ($rules as $rule) {
             $amt = $this->matchRule($rule, $postalCode, $weightGramsTotal, $subtotal);
             if ($amt !== null) {
+                \Illuminate\Support\Facades\Log::info("Shipping Rule Matched: [ID: {$rule->id}] {$rule->name} (Type: {$rule->type}, Priority: {$rule->priority}). Applied Amount: {$amt}");
                 return number_format($amt, 2, '.', '');
             }
         }
 
+        \Illuminate\Support\Facades\Log::info("No Shipping Rule matched. Defaulting to 0.00");
         return '0.00';
     }
 
