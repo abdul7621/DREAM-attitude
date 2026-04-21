@@ -50,7 +50,7 @@ class Coupon extends Model
     {
         static::created(function (Coupon $coupon) {
             if (auth()->check()) {
-                AuditLog::log('coupon_created', $coupon, null, $coupon->toArray());
+                AuditLog::log('coupon_created', $coupon, [], $coupon->toArray());
             }
         });
 
@@ -73,7 +73,7 @@ class Coupon extends Model
 
         static::deleted(function (Coupon $coupon) {
             if (auth()->check()) {
-                AuditLog::log('coupon_deleted', $coupon, $coupon->toArray(), null);
+                AuditLog::log('coupon_deleted', $coupon, $coupon->toArray(), []);
             }
         });
     }
