@@ -109,29 +109,57 @@ class ImportController extends Controller
             default   => null,
         };
 
-        if (!$importer || $type !== 'products') {
+        if (!$importer || !in_array($type, ['products', 'customers', 'orders'])) {
             return response()->json(['error' => 'Unsupported import type for chunked processing'], 400);
         }
 
         try {
             $filePath = Storage::disk('local')->path($importJob->filename);
-            $result = $importer->importChunk($filePath, $offset, $limit);
-
-            // Merge running totals into job stats
             $stats = (array) $importJob->stats;
-            $stats['products']  = ($stats['products_done'] ?? 0) + ($result['products'] ?? 0);
-            $stats['products_done'] = $stats['products'];
-            $stats['variants']  = ($stats['variants_done'] ?? 0) + ($result['variants'] ?? 0);
-            $stats['variants_done'] = $stats['variants'];
-            $stats['images']    = ($stats['images_done'] ?? 0) + ($result['images'] ?? 0);
-            $stats['images_done'] = $stats['images'];
+
+            if ($type === 'products') {
+                $result = $importer->importChunk($filePath, $offset, $limit);
+
+                // Merge running totals into job stats
+                $stats['products']  = ($stats['products_done'] ?? 0) + ($result['products'] ?? 0);
+                $stats['products_done'] = $stats['products'];
+                $stats['variants']  = ($stats['variants_done'] ?? 0) + ($result['variants'] ?? 0);
+                $stats['variants_done'] = $stats['variants'];
+                $stats['images']    = ($stats['images_done'] ?? 0) + ($result['images'] ?? 0);
+                $stats['images_done'] = $stats['images'];
+
+                $done = $result['done'] ?? false;
+                $processedParents = $result['processed_parents'];
+                $totalParents = $result['total_parents'];
+
+            } else {
+                // Customers and Orders are not currently chunked internally, run once at offset 0
+                if ($offset === 0) {
+                    if ($type === 'customers' && method_exists($importer, 'importCustomers')) {
+                        $result = $importer->importCustomers($filePath);
+                    } elseif ($type === 'orders' && method_exists($importer, 'importOrders')) {
+                        $result = $importer->importOrders($filePath);
+                    } else {
+                        $result = ['error' => 'Method not found'];
+                    }
+
+                    $stats[$type . '_done'] = $result[$type] ?? 0;
+                    $stats['errors'] = array_merge($stats['errors'] ?? [], $result['errors'] ?? []);
+                } else {
+                    $result = []; // already done in offset 0
+                }
+                
+                $result['errors'] = $result['errors'] ?? [];
+                $done = true;
+                $processedParents = $stats[$type . '_done'] ?? ($stats[$type] ?? 1);
+                $totalParents = $processedParents;
+            }
 
             // Accumulate errors
             $existingErrors = $stats['errors'] ?? [];
             if (!is_array($existingErrors)) $existingErrors = [];
             $stats['errors'] = array_merge($existingErrors, $result['errors'] ?? []);
 
-            $done = $result['done'] ?? false;
             $stats['status'] = $done ? 'completed' : 'processing';
 
             $importJob->update([
@@ -141,12 +169,14 @@ class ImportController extends Controller
 
             return response()->json([
                 'done'      => $done,
-                'offset'    => $offset + $result['processed_parents'],
-                'processed' => $stats['products_done'],
-                'total'     => $result['total_parents'],
-                'products'  => $stats['products_done'],
-                'variants'  => $stats['variants_done'],
-                'images'    => $stats['images_done'],
+                'offset'    => $offset + $processedParents,
+                'processed' => $type === 'products' ? $stats['products_done'] : ($stats[$type . '_done'] ?? $totalParents),
+                'total'     => $totalParents,
+                'products'  => $stats['products_done'] ?? 0,
+                'variants'  => $stats['variants_done'] ?? 0,
+                'images'    => $stats['images_done'] ?? 0,
+                'customers' => $stats['customers_done'] ?? 0,
+                'orders'    => $stats['orders_done'] ?? 0,
                 'errors'    => count($stats['errors']),
                 'chunk_errors' => $result['errors'] ?? [],
             ]);

@@ -2,26 +2,43 @@
 @section('title', 'Importing...')
 @section('content')
 @php
-    $totalProducts = $stats['products'] ?? 0;
+    $type = $stats['type'] ?? 'products';
+    $totalCount = $stats[$type] ?? ($stats['products'] ?? 0);
+    if ($type === 'customers' && empty($totalCount)) {
+        $totalCount = $stats['customers'] ?? 0;
+    }
+    if ($type === 'orders' && empty($totalCount)) {
+        $totalCount = $stats['orders'] ?? 0;
+    }
+    
+    $title = ucfirst($type);
 @endphp
 
-<h1 class="h4 mb-1">Importing Products</h1>
-<p class="text-muted small mb-4">Processing {{ $totalProducts }} products in small batches. Do not close this page.</p>
+<h1 class="h4 mb-1">Importing {{ $title }}</h1>
+<p class="text-muted small mb-4">Processing {{ $totalCount }} {{ $type }} in small batches. Do not close this page.</p>
 
 <div class="card shadow-sm mb-4">
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-2">
             <span class="fw-semibold" id="statusText">Starting import...</span>
-            <span class="badge bg-primary" id="progressBadge">0 / {{ $totalProducts }}</span>
+            <span class="badge bg-primary" id="progressBadge">0 / {{ $totalCount }}</span>
         </div>
         <div class="progress mb-3" style="height: 24px;">
             <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%;" id="progressBar">0%</div>
         </div>
         <div class="row g-3 text-center" id="counters">
-            <div class="col-3"><div class="h4 fw-bold text-primary mb-0" id="cntProducts">0</div><div class="text-muted small">Products</div></div>
-            <div class="col-3"><div class="h4 fw-bold text-primary mb-0" id="cntVariants">0</div><div class="text-muted small">Variants</div></div>
-            <div class="col-3"><div class="h4 fw-bold text-primary mb-0" id="cntImages">0</div><div class="text-muted small">Images</div></div>
+            @if($type === 'products')
+                <div class="col-3"><div class="h4 fw-bold text-primary mb-0" id="cntProducts">0</div><div class="text-muted small">Products</div></div>
+                <div class="col-3"><div class="h4 fw-bold text-primary mb-0" id="cntVariants">0</div><div class="text-muted small">Variants</div></div>
+                <div class="col-3"><div class="h4 fw-bold text-primary mb-0" id="cntImages">0</div><div class="text-muted small">Images</div></div>
+            @else
+                <div class="col-4"><div class="h4 fw-bold text-primary mb-0" id="cntProcessed">0</div><div class="text-muted small">{{ $title }}</div></div>
+                <div class="col-4"><div class="h4 fw-bold text-primary mb-0" id="cntPending">0</div><div class="text-muted small">Pending</div></div>
+                <div class="col-4"><div class="h4 fw-bold text-danger mb-0" id="cntErrors">0</div><div class="text-muted small">Errors</div></div>
+            @endif
+            @if($type === 'products')
             <div class="col-3"><div class="h4 fw-bold text-danger mb-0" id="cntErrors">0</div><div class="text-muted small">Errors</div></div>
+            @endif
         </div>
     </div>
 </div>
@@ -59,10 +76,17 @@
         document.getElementById('progressBar').style.width = pct + '%';
         document.getElementById('progressBar').textContent = pct + '%';
         document.getElementById('progressBadge').textContent = data.processed + ' / ' + data.total;
-        document.getElementById('cntProducts').textContent = data.products || 0;
-        document.getElementById('cntVariants').textContent = data.variants || 0;
-        document.getElementById('cntImages').textContent = data.images || 0;
-        document.getElementById('cntErrors').textContent = data.errors || 0;
+        if (document.getElementById('cntProducts')) {
+            document.getElementById('cntProducts').textContent = data.products || 0;
+            document.getElementById('cntVariants').textContent = data.variants || 0;
+            document.getElementById('cntImages').textContent = data.images || 0;
+            document.getElementById('cntErrors').textContent = data.errors || 0;
+        } else {
+            var typ = "{{ $type }}";
+            document.getElementById('cntProcessed').textContent = data[typ] || 0;
+            document.getElementById('cntPending').textContent = Math.max(0, data.total - (data[typ] || 0));
+            document.getElementById('cntErrors').textContent = data.errors || 0;
+        }
         document.getElementById('statusText').textContent = 'Processing batch... (' + data.processed + ' of ' + data.total + ')';
 
         if (data.chunk_errors && data.chunk_errors.length > 0) {
