@@ -318,28 +318,45 @@ class ShopifyImporter
                     continue;
                 }
 
-                // Identity System - Primary identifier is email
+                // Identity System - Primary identifier is email, fallback is phone
                 $user = null;
                 if ($email) {
-                    $user = \App\Models\User::where('email', $email)->first();
+                    $user = \App\Models\User::withTrashed()->where('email', $email)->first();
+                }
+
+                if (! $user && $phone) {
+                    $user = \App\Models\User::withTrashed()->where('phone', $phone)->first();
                 }
 
                 if (! $user) {
                     // Generate a unique placeholder email if none provided
                     $safeEmail = $email ?: 'imported_' . time() . '_' . $index . '_' . mt_rand(100,999) . '@placeholder.local';
 
-                    $user = \App\Models\User::create([
-                        'name'     => $name ?: 'Imported Customer',
-                        'email'    => $safeEmail,
-                        'phone'    => $phone,
-                        'password' => bcrypt(\Illuminate\Support\Str::random(16)),
-                        'is_admin' => false,
-                    ]);
-                    $counts['customers']++;
+                    try {
+                        $user = \App\Models\User::create([
+                            'name'     => $name ?: 'Imported Customer',
+                            'email'    => $safeEmail,
+                            'phone'    => $phone,
+                            'password' => bcrypt(\Illuminate\Support\Str::random(16)),
+                            'is_admin' => false,
+                        ]);
+                        $counts['customers']++;
+                    } catch (\Illuminate\Database\QueryException $e) {
+                        // Fallback completely if any obscure duplicate constraint hits (e.g. race conditions)
+                        if ($e->errorInfo[1] === 1062) {
+                            $counts['skipped']++;
+                            continue;
+                        }
+                        throw $e;
+                    }
                 } else {
                     // Update missing fields on existing user
+                    if ($user->trashed()) {
+                        $user->restore();
+                    }
                     $updates = [];
                     if ($phone && ! $user->phone) $updates['phone'] = $phone;
+                    if ($email && str_contains($user->email, '@placeholder.local')) $updates['email'] = $email;
                     if ($name && $user->name === 'Imported Customer') $updates['name'] = $name;
                     if (! empty($updates)) $user->update($updates);
                     $counts['skipped']++;
