@@ -3,70 +3,94 @@
 namespace App\Services;
 
 use App\Models\ShippingRule;
+use Illuminate\Support\Facades\Log;
 
 class ShippingService
 {
-    public function quote(string $postalCode, int $weightGramsTotal, string $subtotal): string
+    protected PincodeService $pincodeService;
+
+    public function __construct(PincodeService $pincodeService)
     {
-        $rules = ShippingRule::query()->where('is_active', true)->orderByDesc('priority')->get();
+        $this->pincodeService = $pincodeService;
+    }
+
+    public function quote(string $postalCode, ?string $paymentMethod, int $weightGramsTotal, string $subtotal): string
+    {
+        $rules = ShippingRule::with(['conditions', 'action'])
+            ->where('is_active', true)
+            ->orderByDesc('priority')
+            ->get();
         
-        \Illuminate\Support\Facades\Log::info("Evaluating Shipping Rules for Pincode: {$postalCode}, Weight: {$weightGramsTotal}g, Subtotal: {$subtotal}");
+        $location = $this->pincodeService->resolve($postalCode);
+        
+        $context = [
+            'order_value'    => (float) $subtotal,
+            'state'          => $location ? $location['state'] : null,
+            'city'           => $location ? $location['city'] : null,
+            'pincode_prefix' => substr(preg_replace('/\D/', '', $postalCode), 0, 3) ?: null,
+            'payment_method' => $paymentMethod ? strtoupper($paymentMethod) : null,
+            'weight'         => $weightGramsTotal
+        ];
+
+        Log::info("Evaluating Advanced Shipping Rules", ['context' => $context]);
 
         foreach ($rules as $rule) {
-            $amt = $this->matchRule($rule, $postalCode, $weightGramsTotal, $subtotal);
-            if ($amt !== null) {
-                \Illuminate\Support\Facades\Log::info("Shipping Rule Matched: [ID: {$rule->id}] {$rule->name} (Type: {$rule->type}, Priority: {$rule->priority}). Applied Amount: {$amt}");
-                return number_format($amt, 2, '.', '');
+            if ($this->matchRule($rule, $context)) {
+                $amt = $this->applyAction($rule, $context);
+                
+                if ($amt !== null) {
+                    Log::info("Shipping Rule Matched: [ID: {$rule->id}] {$rule->name} (Priority: {$rule->priority}). Applied Amount: {$amt}");
+                    return number_format($amt, 2, '.', '');
+                }
             }
         }
 
-        \Illuminate\Support\Facades\Log::info("No Shipping Rule matched. Defaulting to 0.00");
+        Log::info("No Shipping Rule matched. Defaulting to 0.00");
         return '0.00';
     }
 
-    private function matchRule(ShippingRule $rule, string $postalCode, int $weightGrams, string $subtotal): ?float
+    private function matchRule(ShippingRule $rule, array $context): bool
     {
-        $cfg = $rule->config ?? [];
+        if ($rule->conditions->isEmpty()) {
+            return true; // No conditions = ALWAYS appplies (e.g. Default fallback)
+        }
 
-        return match ($rule->type) {
-            'flat' => isset($cfg['amount']) ? (float) $cfg['amount'] : null,
-            'weight' => $this->weightBands($cfg['bands'] ?? [], $weightGrams),
-            'pincode' => $this->pincodePrefixes($cfg, $postalCode),
-            default => null,
-        };
-    }
+        foreach ($rule->conditions as $cond) {
+            $contextValue = $context[$cond->type] ?? null;
+            $ruleValue = $cond->value; // This is automatically cast to array because of Model casts
 
-    /**
-     * @param  array<int, array{max_g: int|float, price: float}>  $bands
-     */
-    private function weightBands(array $bands, int $weightGrams): ?float
-    {
-        foreach ($bands as $b) {
-            $max = (int) ($b['max_g'] ?? 0);
-            $price = (float) ($b['price'] ?? 0);
-            if ($weightGrams <= $max) {
-                return $price;
+            $matched = match ($cond->operator) {
+                '=='      => $contextValue == ($ruleValue[0] ?? null),
+                '!='      => $contextValue != ($ruleValue[0] ?? null),
+                '>'       => $contextValue > ($ruleValue[0] ?? 0),
+                '<'       => $contextValue < ($ruleValue[0] ?? 0),
+                '>='      => $contextValue >= ($ruleValue[0] ?? 0),
+                '<='      => $contextValue <= ($ruleValue[0] ?? 0),
+                'in'      => is_array($ruleValue) && in_array($contextValue, $ruleValue),
+                'not_in'  => is_array($ruleValue) && !in_array($contextValue, $ruleValue),
+                default   => false,
+            };
+
+            if (!$matched) {
+                return false; // ALL conditions must match
             }
         }
 
-        return null;
+        return true;
     }
 
-    /**
-     * @param  array{prefixes?: array<string, float>, default?: float}  $cfg
-     */
-    private function pincodePrefixes(array $cfg, string $postalCode): ?float
+    private function applyAction(ShippingRule $rule, array $context): ?float
     {
-        $pc = preg_replace('/\D/', '', $postalCode) ?? '';
-        if ($pc === '') {
-            return isset($cfg['default']) ? (float) $cfg['default'] : null;
-        }
-        $prefix2 = substr($pc, 0, 2);
-        $prefixes = $cfg['prefixes'] ?? [];
-        if (isset($prefixes[$prefix2])) {
-            return (float) $prefixes[$prefix2];
+        if (!$rule->action) {
+            return null;
         }
 
-        return isset($cfg['default']) ? (float) $cfg['default'] : null;
+        return match ($rule->action->type) {
+            'flat'       => (float) $rule->action->value,
+            'free'       => 0.00,
+            'percentage' => (float) ($context['order_value'] * ($rule->action->value / 100)),
+            'per_kg'     => (float) (ceil($context['weight'] / 1000) * $rule->action->value),
+            default      => null,
+        };
     }
 }

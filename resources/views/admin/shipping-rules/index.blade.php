@@ -8,14 +8,21 @@
 <div class="card shadow-sm">
 <div class="table-responsive">
 <table class="table table-hover mb-0">
-    <thead class="table-light"><tr><th>Priority</th><th>Name</th><th>Type</th><th>Config</th><th>Active</th><th></th></tr></thead>
+    <thead class="table-light"><tr><th>Prio</th><th>Name</th><th>Action</th><th>Conditions</th><th>Active</th><th></th></tr></thead>
     <tbody>
     @forelse ($rules as $r)
         <tr>
             <td>{{ $r->priority }}</td>
             <td>{{ $r->name }}</td>
-            <td>{{ $r->type }}</td>
-            <td><code class="small">{{ json_encode($r->config) }}</code></td>
+            <td>
+                @if($r->action)
+                    <span class="badge bg-secondary">{{ $r->action->type }}</span> 
+                    <strong>{{ $r->action->value }}</strong>
+                @else
+                    N/A
+                @endif
+            </td>
+            <td><code class="small text-muted">{{ $r->conditions_count ?? $r->conditions()->count() }} condition(s)</code></td>
             <td>{!! $r->is_active ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-secondary">No</span>' !!}</td>
             <td class="text-end">
                 <a href="{{ route('admin.shipping-rules.edit', $r) }}" class="btn btn-sm btn-outline-secondary">Edit</a>

@@ -459,27 +459,10 @@
                             Store.emit('pincode:resolved', { city: info.District, state: info.State, pincode: pinInput.value });
                         }
 
-                        // ── Real-time Shipping Quote ────────────────────────
-                        fetch('{{ route("checkout.shipping.quote") }}?postal_code=' + encodeURIComponent(pinInput.value), {
-                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                        })
-                        .then(function(r) { return r.json(); })
-                        .then(function(q) {
-                            var shippingEl = document.getElementById('summary-shipping-val');
-                            var grandEl    = document.getElementById('summary-grand-val');
-                            if (shippingEl) {
-                                if (q.is_free) {
-                                    shippingEl.innerHTML = '<span style="color: var(--color-success); font-weight: 600;">FREE</span>';
-                                } else {
-                                    shippingEl.innerHTML = '<span style="font-weight: 500;">₹' + parseFloat(q.shipping).toFixed(2) + '</span>';
-                                }
-                            }
-                            if (grandEl && q.grand) {
-                                grandEl.textContent = '₹' + parseFloat(q.grand).toFixed(2);
-                            }
-                        })
-                        .catch(function() { /* silently fail — shipping shows default */ });
-                        // ───────────────────────────────────────────────────
+                        // Trigger AJAX Quote
+                        if (typeof refreshShippingQuote === 'function') {
+                            refreshShippingQuote();
+                        }
                     } else if (data && data[0] && data[0].Status === 'Error') {
                         // Invalid PIN Case 3
                         cityInput.value = '';
@@ -595,6 +578,45 @@
             }
         });
     }
+
+    // ── Global Shipping Quote JS ──
+    window.refreshShippingQuote = function() {
+        var pin = (pinInput && pinInput.value) ? pinInput.value.trim() : '';
+        if (pin.length !== 6) return; // Only fetch if PIN is present
+
+        var method = document.querySelector('input[name="payment_method"]:checked');
+        var methodVal = method ? method.value : '';
+
+        var url = '{{ route("checkout.shipping.quote") }}?postal_code=' + encodeURIComponent(pin) + '&payment_method=' + encodeURIComponent(methodVal);
+
+        fetch(url, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(q) {
+            var shippingEl = document.getElementById('summary-shipping-val');
+            var grandEl    = document.getElementById('summary-grand-val');
+            if (shippingEl) {
+                if (q.is_free) {
+                    shippingEl.innerHTML = '<span style="color: var(--color-success); font-weight: 600;">FREE</span>';
+                } else {
+                    shippingEl.innerHTML = '<span style="font-weight: 500;">₹' + parseFloat(q.shipping).toFixed(2) + '</span>';
+                }
+            }
+            if (grandEl && q.grand) {
+                grandEl.textContent = '₹' + parseFloat(q.grand).toFixed(2);
+            }
+        })
+        .catch(function(e) { console.warn('Shipping quote fetch failed', e); });
+    };
+
+    // Listen to Payment Method changes
+    var paymentRadios = document.querySelectorAll('input[name="payment_method"]');
+    paymentRadios.forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            refreshShippingQuote();
+        });
+    });
 
     // Analytics and Form Submit
     var form = document.getElementById('checkout-form');

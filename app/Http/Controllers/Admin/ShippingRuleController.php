@@ -7,12 +7,13 @@ use App\Models\ShippingRule;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
 
 class ShippingRuleController extends Controller
 {
     public function index(): View
     {
-        $rules = ShippingRule::query()->orderBy('priority')->orderByDesc('id')->paginate(30);
+        $rules = ShippingRule::with('action')->orderByDesc('priority')->orderByDesc('id')->paginate(30);
 
         return view('admin.shipping-rules.index', compact('rules'));
     }
@@ -25,56 +26,99 @@ class ShippingRuleController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'name'      => 'required|string|max:255',
-            'type'      => 'required|in:flat,weight,pincode',
-            'priority'  => 'nullable|integer|min:0',
-            'is_active' => 'boolean',
-            'config'    => 'required|array',
+            'name'                => 'required|string|max:255',
+            'priority'            => 'nullable|integer|min:0',
+            'is_active'           => 'boolean',
+            'action_type'         => 'required|in:flat,free,percentage,per_kg',
+            'action_value'        => 'required|numeric|min:0',
+            'conditions'          => 'nullable|array',
+            'conditions.*.type'   => 'required|string',
+            'conditions.*.operator'=> 'required|string',
+            'conditions.*.value'  => 'required',
         ]);
 
-        $data['is_active'] = $request->boolean('is_active', true);
-        $data['priority']  = $data['priority'] ?? 0;
+        DB::transaction(function () use ($data, $request) {
+            $rule = ShippingRule::create([
+                'name'      => $data['name'],
+                'priority'  => $data['priority'] ?? 0,
+                'is_active' => $request->boolean('is_active', true),
+            ]);
 
-        if (isset($data['config']['raw_json'])) {
-            $decoded = json_decode($data['config']['raw_json'], true);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                return back()->withInput()->withErrors(['config' => 'Invalid JSON structure provided.']);
+            $rule->action()->create([
+                'type'  => $data['action_type'],
+                'value' => $data['action_value'],
+            ]);
+
+            if (!empty($data['conditions'])) {
+                foreach ($data['conditions'] as $cond) {
+                    $val = is_string($cond['value']) && str_contains($cond['value'], ',') 
+                        ? array_map('trim', explode(',', $cond['value'])) 
+                        : [$cond['value']];
+
+                    $rule->conditions()->create([
+                        'type'     => $cond['type'],
+                        'operator' => $cond['operator'],
+                        'value'    => $val, // Casts to JSON implicitly
+                    ]);
+                }
             }
-            $data['config'] = $decoded;
-        }
-
-        ShippingRule::query()->create($data);
+        });
 
         return redirect()->route('admin.shipping-rules.index')->with('success', 'Shipping rule created.');
     }
 
     public function edit(ShippingRule $shippingRule): View
     {
+        $shippingRule->load(['conditions', 'action']);
         return view('admin.shipping-rules.edit', compact('shippingRule'));
     }
 
     public function update(Request $request, ShippingRule $shippingRule): RedirectResponse
     {
         $data = $request->validate([
-            'name'      => 'required|string|max:255',
-            'type'      => 'required|in:flat,weight,pincode',
-            'priority'  => 'nullable|integer|min:0',
-            'is_active' => 'boolean',
-            'config'    => 'required|array',
+            'name'                => 'required|string|max:255',
+            'priority'            => 'nullable|integer|min:0',
+            'is_active'           => 'boolean',
+            'action_type'         => 'required|in:flat,free,percentage,per_kg',
+            'action_value'        => 'required|numeric|min:0',
+            'conditions'          => 'nullable|array',
+            'conditions.*.type'   => 'required_with:conditions|string',
+            'conditions.*.operator'=> 'required_with:conditions|string',
+            'conditions.*.value'  => 'required_with:conditions',
         ]);
 
-        $data['is_active'] = $request->boolean('is_active');
-        $data['priority']  = $data['priority'] ?? 0;
+        DB::transaction(function () use ($data, $request, $shippingRule) {
+            $shippingRule->update([
+                'name'      => $data['name'],
+                'priority'  => $data['priority'] ?? 0,
+                'is_active' => $request->boolean('is_active'),
+            ]);
 
-        if (isset($data['config']['raw_json'])) {
-            $decoded = json_decode($data['config']['raw_json'], true);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                return back()->withInput()->withErrors(['config' => 'Invalid JSON structure provided.']);
+            $shippingRule->action()->updateOrCreate(
+                ['rule_id' => $shippingRule->id],
+                [
+                    'type'  => $data['action_type'],
+                    'value' => $data['action_value'],
+                ]
+            );
+
+            // Re-sync conditions (easiest way to handle dynamic arrays)
+            $shippingRule->conditions()->delete();
+            
+            if (!empty($data['conditions'])) {
+                foreach ($data['conditions'] as $cond) {
+                    $val = is_string($cond['value']) && str_contains($cond['value'], ',') 
+                        ? array_map('trim', explode(',', $cond['value'])) 
+                        : [$cond['value']];
+
+                    $shippingRule->conditions()->create([
+                        'type'     => $cond['type'],
+                        'operator' => $cond['operator'],
+                        'value'    => $val, // Casts to JSON implicitly
+                    ]);
+                }
             }
-            $data['config'] = $decoded;
-        }
-
-        $shippingRule->update($data);
+        });
 
         return redirect()->route('admin.shipping-rules.index')->with('success', 'Shipping rule updated.');
     }
