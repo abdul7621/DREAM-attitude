@@ -68,7 +68,7 @@
     var csrfToken = "{{ csrf_token() }}";
     var offset = 0;
     var limit = 5;
-    var totalEstimate = {{ $totalProducts }};
+    var totalEstimate = {{ $totalCount }};
     var errIdx = 0;
 
     function updateUI(data) {
