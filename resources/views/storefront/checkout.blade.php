@@ -62,11 +62,13 @@
                         @endif
                         <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px; color: var(--color-text-secondary);">
                             <span>Shipping</span>
+                            <span id="summary-shipping-val">
                             @if ((float) $totals['shipping'] === 0.0)
                                 <span style="color: var(--color-success); font-weight: 600;">FREE</span>
                             @else
                                 <span style="font-weight: 500;">₹{{ number_format((float) $totals['shipping'], 2) }}</span>
                             @endif
+                            </span>
                         </div>
                         @if ((float) $totals['tax'] > 0)
                             <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px; color: var(--color-text-secondary);">
@@ -76,7 +78,7 @@
                         @endif
                         <div class="sf-cart-total">
                             <span>Total</span>
-                            <span>₹{{ number_format((float) $totals['grand'], 2) }}</span>
+                            <span id="summary-grand-val">₹{{ number_format((float) $totals['grand'], 2) }}</span>
                         </div>
                         @if ($totals['coupon'])
                             <p style="font-size: 11px; color: var(--color-text-muted); margin: 16px 0 0 0; background: var(--color-bg-elevated); padding: 8px; border-radius: var(--radius-sm);"><i class="bi bi-tag-fill text-success me-1"></i> {{ __('Coupon :code applied.', ['code' => $totals['coupon']->code]) }}</p>
@@ -456,6 +458,28 @@
                         if (window.Store) {
                             Store.emit('pincode:resolved', { city: info.District, state: info.State, pincode: pinInput.value });
                         }
+
+                        // ── Real-time Shipping Quote ────────────────────────
+                        fetch('{{ route("checkout.shipping.quote") }}?postal_code=' + encodeURIComponent(pinInput.value), {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        })
+                        .then(function(r) { return r.json(); })
+                        .then(function(q) {
+                            var shippingEl = document.getElementById('summary-shipping-val');
+                            var grandEl    = document.getElementById('summary-grand-val');
+                            if (shippingEl) {
+                                if (q.is_free) {
+                                    shippingEl.innerHTML = '<span style="color: var(--color-success); font-weight: 600;">FREE</span>';
+                                } else {
+                                    shippingEl.innerHTML = '<span style="font-weight: 500;">₹' + parseFloat(q.shipping).toFixed(2) + '</span>';
+                                }
+                            }
+                            if (grandEl && q.grand) {
+                                grandEl.textContent = '₹' + parseFloat(q.grand).toFixed(2);
+                            }
+                        })
+                        .catch(function() { /* silently fail — shipping shows default */ });
+                        // ───────────────────────────────────────────────────
                     } else if (data && data[0] && data[0].Status === 'Error') {
                         // Invalid PIN Case 3
                         cityInput.value = '';

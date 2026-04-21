@@ -183,4 +183,31 @@ class CheckoutController extends Controller
             $lock?->release();
         }
     }
+
+    /**
+     * AJAX: Return real-time shipping cost for a given postal code.
+     * Called from checkout page JS when user enters pincode.
+     */
+    public function shippingQuote(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $postalCode = trim($request->input('postal_code', ''));
+
+        if (strlen($postalCode) !== 6 || !ctype_digit($postalCode)) {
+            return response()->json(['shipping' => '0.00', 'label' => 'FREE']);
+        }
+
+        $totals = $this->cart->computeTotals($postalCode);
+
+        $shipping = (float) ($totals['shipping'] ?? 0);
+        $label    = $shipping > 0
+            ? '₹' . number_format($shipping, 2)
+            : 'FREE';
+
+        return response()->json([
+            'shipping'   => $totals['shipping'],
+            'grand'      => $totals['grand'],
+            'label'      => $label,
+            'is_free'    => $shipping === 0.0,
+        ]);
+    }
 }

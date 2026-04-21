@@ -70,6 +70,7 @@ Route::delete('/cart/coupon', [CartController::class, 'removeCoupon'])->name('ca
 // ── Checkout ───────────────────────────────────────────────────────────────
 Route::get('/checkout', [CheckoutController::class, 'create'])->name('checkout.create');
 Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+Route::get('/api/shipping-quote', [CheckoutController::class, 'shippingQuote'])->name('checkout.shipping.quote');
 
 Route::match(['get', 'post'], '/payments/verify/{gateway}', [PaymentController::class, 'verify'])->name('payments.verify');
 
