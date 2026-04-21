@@ -146,7 +146,6 @@ class OrderService
         // We have removed `findReusableOrder` option because updating an existing 
         // order grand_total without updating order lines creates invoice corruption.
         // Every new online payment attempt creates a new AWAITING_PAYMENT order.
-        }
 
         return DB::transaction(function () use ($data, $lines, $totals): Order {
             // We do NOT assertAndLockStock here because we don't deduct stock yet for online orders.
