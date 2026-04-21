@@ -37,7 +37,14 @@ class CouponService
 
     public function incrementUsage(Coupon $coupon): void
     {
-        $coupon->increment('used_count');
+        $c = Coupon::query()->whereKey($coupon->id)->lockForUpdate()->first();
+        if ($c) {
+            // Check usage limits again with the locked row
+            if (!$c->isValidNow()) {
+                throw new RuntimeException(__('Coupon usage limit exceeded or expired during checkout.'));
+            }
+            $c->increment('used_count');
+        }
     }
 
     public function validateForCart(?Coupon $coupon, string $subtotal): void

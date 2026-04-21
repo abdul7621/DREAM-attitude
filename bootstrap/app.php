@@ -30,5 +30,10 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, \Illuminate\Http\Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json(['message' => 'CSRF token mismatch. Please refresh the page.'], 419);
+            }
+            return redirect()->back()->withErrors(['error' => 'Your session has expired. Please try again.'])->withInput($request->except('_token'));
+        });
     })->create();

@@ -34,7 +34,7 @@ class OrderService
         $totals = $this->cartService->computeTotals($data['postal_code']);
 
         $order = DB::transaction(function () use ($cart, $data, $lines, $totals): Order {
-            $this->assertStock($lines);
+            $this->assertAndLockStock($lines);
 
             $order = Order::query()->create(array_merge([
                 'order_number' => $this->newOrderNumber(),
@@ -82,13 +82,15 @@ class OrderService
                     'line_total' => $row['line_total'],
                 ]);
                 // COD: stock deducts immediately (order is confirmed on creation)
-                $this->decrementStock($variant, $row['item']->qty);
+                // Since we already locked the variants in assertAndLockStock, we can decrement safely.
+                if ($variant->track_inventory) {
+                    ProductVariant::query()->whereKey($variant->id)->decrement('stock_qty', $row['item']->qty);
+                }
 
                 Log::info('[STOCK_DEBUG] COD stock deducted', [
                     'order_id' => $order->id,
                     'variant_id' => $variant->id,
                     'qty_deducted' => $row['item']->qty,
-                    'stock_after' => $variant->fresh()->stock_qty ?? 'N/A',
                 ]);
             }
 
@@ -113,7 +115,11 @@ class OrderService
             'order_status' => $order->order_status,
         ]);
 
-        OrderPlaced::dispatch($order);
+        try {
+            OrderPlaced::dispatch($order);
+        } catch (\Exception $e) {
+            Log::error('OrderPlaced event dispatch failed: ' . $e->getMessage());
+        }
 
         if (app(\App\Services\SettingsService::class)->get('shipping.auto_create', true)) {
             \App\Jobs\CreateShipmentJob::dispatch($order);
@@ -137,47 +143,15 @@ class OrderService
 
         $totals = $this->cartService->computeTotals($data['postal_code']);
 
-        // Fix #4: Check for reusable order (payment retry)
-        $reusable = $this->findReusableOrder($lines);
-        if ($reusable) {
-            Log::info('[STOCK_DEBUG] Reusing existing order for retry', [
-                'order_id' => $reusable->id,
-                'order_number' => $reusable->order_number,
-                'original_status' => $reusable->order_status,
-            ]);
-
-            // Update order details in case address/totals changed
-            $reusable->update([
-                'customer_name' => $data['customer_name'],
-                'email' => $data['email'] ?? null,
-                'phone' => $data['phone'],
-                'address_line1' => $data['address_line1'],
-                'address_line2' => $data['address_line2'] ?? null,
-                'city' => $data['city'],
-                'state' => $data['state'],
-                'postal_code' => $data['postal_code'],
-                'country' => $data['country'] ?? 'IN',
-                'subtotal' => $totals['subtotal'],
-                'shipping_total' => $totals['shipping'],
-                'discount_total' => $totals['discount'],
-                'tax_total' => $totals['tax'],
-                'grand_total' => $totals['grand'],
-                'payment_method' => $data['payment_method'],
-                'payment_status' => Order::PAYMENT_STATUS_PENDING,
-                'order_status' => Order::ORDER_STATUS_AWAITING_PAYMENT,
-                'notes' => $data['notes'] ?? null,
-            ]);
-
-            // Reset gateway_order_id to force new payment session creation
-            $reusable->gateway_order_id = null;
-            $reusable->save();
-
-            return $reusable;
+        // We have removed `findReusableOrder` option because updating an existing 
+        // order grand_total without updating order lines creates invoice corruption.
+        // Every new online payment attempt creates a new AWAITING_PAYMENT order.
         }
 
         return DB::transaction(function () use ($data, $lines, $totals): Order {
-            $this->assertStock($lines);
-
+            // We do NOT assertAndLockStock here because we don't deduct stock yet for online orders.
+            // Stock is validated and deducted at finalizeOnlinePayment.
+            
             $order = Order::query()->create(array_merge([
                 'order_number' => $this->newOrderNumber(),
                 'user_id' => Auth::id(),
@@ -331,7 +305,11 @@ class OrderService
         }
 
         // Fire events AFTER transaction commits (outside transaction)
-        OrderPlaced::dispatch($order->fresh());
+        try {
+            OrderPlaced::dispatch($order->fresh());
+        } catch (\Exception $e) {
+            Log::error('OrderPlaced event finalization failed: ' . $e->getMessage());
+        }
 
         if (app(\App\Services\SettingsService::class)->get('shipping.auto_create', true)) {
             \App\Jobs\CreateShipmentJob::dispatch($order->fresh());
@@ -364,50 +342,32 @@ class OrderService
     }
 
     /**
-     * Fix #4: Find a reusable AWAITING_PAYMENT order created within last 15 minutes
-     * with matching cart items (same variants and quantities).
+     * @param  \Illuminate\Support\Collection<int, array{item: \App\Models\CartItem, variant: \App\Models\ProductVariant, product: \App\Models\Product, unit_price: string, line_total: string}>  $lines
      */
-    private function findReusableOrder($lines): ?Order
+    private function assertAndLockStock($lines): void
     {
-        $userId = Auth::id();
-        if (!$userId) {
-            return null;
+        $variantIds = [];
+        foreach ($lines as $row) {
+            $variantIds[] = $row['variant']->id;
         }
 
-        // Find recent AWAITING_PAYMENT or ABANDONED orders for this user
-        $candidates = Order::query()
-            ->where('user_id', $userId)
-            ->whereIn('order_status', [
-                Order::ORDER_STATUS_AWAITING_PAYMENT,
-                Order::ORDER_STATUS_ABANDONED,
-            ])
-            ->whereIn('payment_status', [
-                Order::PAYMENT_STATUS_PENDING,
-                Order::PAYMENT_STATUS_FAILED,
-            ])
-            ->where('created_at', '>=', now()->subMinutes(15))
-            ->with('orderItems')
-            ->orderByDesc('created_at')
-            ->get();
+        sort($variantIds); // prevent deadlocks
 
-        foreach ($candidates as $order) {
-            // Check if cart items match the order items
-            $orderVariants = $order->orderItems
-                ->pluck('qty', 'product_variant_id')
-                ->toArray();
+        $lockedVariants = ProductVariant::query()
+            ->whereIn('id', $variantIds)
+            ->lockForUpdate()
+            ->get()
+            ->keyBy('id');
 
-            $cartVariants = [];
-            foreach ($lines as $row) {
-                $cartVariants[$row['variant']->id] = $row['item']->qty;
-            }
+        foreach ($lines as $row) {
+            $qty = $row['item']->qty;
+            $vId = $row['variant']->id;
+            $locked = $lockedVariants->get($vId);
 
-            // Must have same variants with same quantities
-            if ($orderVariants == $cartVariants) {
-                return $order;
+            if ($locked && $locked->track_inventory && $locked->stock_qty < $qty) {
+                throw new RuntimeException(__('Not enough stock for :name.', ['name' => $locked->product->name]));
             }
         }
-
-        return null;
     }
 
     /**
@@ -435,33 +395,7 @@ class OrderService
         ]);
     }
 
-    /**
-     * @param  \Illuminate\Support\Collection<int, array{item: \App\Models\CartItem, variant: \App\Models\ProductVariant, product: \App\Models\Product, unit_price: string, line_total: string}>  $lines
-     */
-    private function assertStock($lines): void
-    {
-        foreach ($lines as $row) {
-            /** @var ProductVariant $variant */
-            $variant = $row['variant'];
-            $qty = $row['item']->qty;
-            if ($variant->track_inventory && $variant->stock_qty < $qty) {
-                throw new RuntimeException(__('Not enough stock for :name.', ['name' => $variant->product->name]));
-            }
-        }
-    }
 
-    private function decrementStock(ProductVariant $variant, int $qty): void
-    {
-        if (! $variant->track_inventory) {
-            return;
-        }
-
-        $fresh = ProductVariant::query()->whereKey($variant->id)->lockForUpdate()->firstOrFail();
-        if ($fresh->stock_qty < $qty) {
-            throw new RuntimeException(__('Not enough stock.'));
-        }
-        $fresh->decrement('stock_qty', $qty);
-    }
 
     private function newOrderNumber(): string
     {

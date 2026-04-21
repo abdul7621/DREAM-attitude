@@ -103,6 +103,53 @@ class OrderController extends Controller
         return redirect()->route('admin.orders.show', $order)->with('success', "Order status updated to \"{$newStatus}\".");
     }
 
+    public function syncShipments(Order $order): RedirectResponse
+    {
+        $shipment = $order->shipments()->latest()->first();
+        
+        if (!$shipment) {
+            return back()->with('error', 'No shipment pushed for this order yet.');
+        }
+
+        if (!$shipment->awb) {
+            return back()->with('error', 'AWB is not assigned yet. Status will sync automatically via Webhook once assigned by the logistics partner.');
+        }
+
+        try {
+            if ($shipment->carrier === 'ithink') {
+                return back()->with('success', 'Wait for the automated iThink Webhook sync, or manually update status below.');
+            } elseif ($shipment->carrier === 'shiprocket') {
+                $service = app(\App\Services\ShiprocketService::class);
+                $track = $service->trackOrder($shipment->awb);
+                
+                $status = $track['tracking_data']['shipment_track'][0]['current_status'] ?? null;
+                if ($status) {
+                    $lower = strtolower($status);
+                    $newStatus = null;
+                    if (str_contains($lower, 'delivered')) $newStatus = 'delivered';
+                    elseif (str_contains($lower, 'rto') || str_contains($lower, 'returned')) $newStatus = 'rto';
+                    elseif (str_contains($lower, 'cancel')) $newStatus = 'cancelled';
+                    elseif (str_contains($lower, 'shipped') || str_contains($lower, 'transit')) $newStatus = 'shipped';
+
+                    if ($newStatus && $order->order_status !== $newStatus && $order->canTransitionTo($newStatus)) {
+                        $oldStatus = $order->order_status;
+                        $order->update(['order_status' => $newStatus]);
+                        $shipment->update(['status' => $newStatus]);
+                        event(new \App\Events\OrderStatusChanged($order, $oldStatus, $newStatus, 'Auto-synced from Shiprocket API'));
+                        if ($newStatus === 'shipped' && $oldStatus !== 'shipped') event(new \App\Events\OrderShipped($order));
+                        
+                        return back()->with('success', 'Order status synced to: ' . ucfirst($newStatus));
+                    }
+                }
+                return back()->with('success', 'Sync checked: No new status updates from Shiprocket.');
+            }
+
+            return back()->with('success', 'Sync request acknowledged.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Sync failed: ' . $e->getMessage());
+        }
+    }
+
     public function invoicePdf(Order $order): Response
     {
         $order->load('orderItems');

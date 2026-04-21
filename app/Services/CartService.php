@@ -122,16 +122,28 @@ class CartService
         $cart = $this->getCart();
 
         DB::transaction(function () use ($cart, $variant, $qty): void {
-            $existing = $cart->items()->where('product_variant_id', $variant->id)->lockForUpdate()->first();
+            Cart::query()->whereKey($cart->id)->lockForUpdate()->first();
+
+            $existing = $cart->items()->where('product_variant_id', $variant->id)->first();
             if ($existing) {
                 $combined = $existing->qty + $qty;
                 $newQty = $this->maxQty($variant, $combined);
                 $existing->update(['qty' => $newQty]);
             } else {
-                $cart->items()->create([
-                    'product_variant_id' => $variant->id,
-                    'qty' => $this->maxQty($variant, $qty),
-                ]);
+                try {
+                    $cart->items()->create([
+                        'product_variant_id' => $variant->id,
+                        'qty' => $this->maxQty($variant, $qty),
+                    ]);
+                } catch (\Illuminate\Database\QueryException $e) {
+                    // Fallback to update if unique constraint fails during concurrent insert
+                    $existing = $cart->items()->where('product_variant_id', $variant->id)->first();
+                    if ($existing) {
+                        $combined = $existing->qty + $qty;
+                        $newQty = $this->maxQty($variant, $combined);
+                        $existing->update(['qty' => $newQty]);
+                    }
+                }
             }
         });
     }
@@ -298,13 +310,15 @@ class CartService
 
         if ($guest && $guest->id !== $userCart->id) {
             DB::transaction(function () use ($guest, $userCart): void {
+                Cart::query()->whereKey($userCart->id)->lockForUpdate()->first();
+
                 foreach ($guest->items as $gi) {
                     $variant = ProductVariant::query()->with('product')->find($gi->product_variant_id);
                     if (! $variant || ! $variant->is_active || $variant->product->status !== \App\Models\Product::STATUS_ACTIVE) {
                         continue;
                     }
 
-                    $existing = $userCart->items()->where('product_variant_id', $variant->id)->lockForUpdate()->first();
+                    $existing = $userCart->items()->where('product_variant_id', $variant->id)->first();
                     $combined = $existing ? $existing->qty + $gi->qty : $gi->qty;
                     $finalQty = $this->maxQty($variant, $combined);
                     if ($finalQty < 1) {
@@ -313,10 +327,17 @@ class CartService
                     if ($existing) {
                         $existing->update(['qty' => $finalQty]);
                     } else {
-                        $userCart->items()->create([
-                            'product_variant_id' => $variant->id,
-                            'qty' => $finalQty,
-                        ]);
+                        try {
+                            $userCart->items()->create([
+                                'product_variant_id' => $variant->id,
+                                'qty' => $finalQty,
+                            ]);
+                        } catch (\Illuminate\Database\QueryException $e) {
+                            $existing = $userCart->items()->where('product_variant_id', $variant->id)->first();
+                            if ($existing) {
+                                $existing->update(['qty' => $this->maxQty($variant, $existing->qty + $gi->qty)]);
+                            }
+                        }
                     }
                 }
                 $guest->delete();

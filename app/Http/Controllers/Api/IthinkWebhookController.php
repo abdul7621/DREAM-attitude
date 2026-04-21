@@ -11,6 +11,12 @@ class IthinkWebhookController extends Controller
 {
     public function handle(Request $request)
     {
+        $token = config('services.ithink.webhook_token');
+        if ($token && $request->header('x-api-key') !== $token && $request->input('token') !== $token) {
+            Log::warning('iThink Webhook Unauthorized', ['ip' => $request->ip()]);
+            abort(401);
+        }
+
         Log::info('iThink Webhook Received', $request->all());
 
         // iThink structure usually sends array of updates or single object

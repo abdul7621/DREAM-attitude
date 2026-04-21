@@ -11,9 +11,11 @@ class ShiprocketWebhookController extends Controller
 {
     public function handle(Request $request)
     {
-        // For security, ideally check Shiprocket signature here.
-        // Shiprocket typically sends x-api-key or JWT depending on configuration.
-        // For this demo, we'll assume the payload is valid.
+        $token = config('services.shiprocket.webhook_token');
+        if ($token && $request->header('x-api-key') !== $token) {
+            Log::warning('Shiprocket Webhook Unauthorized', ['ip' => $request->ip()]);
+            abort(401);
+        }
 
         Log::info('Shiprocket Webhook Received', $request->all());
 

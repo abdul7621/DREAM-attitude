@@ -89,6 +89,7 @@
             <div style="order: 1;">
                 <form id="checkout-form" action="{{ route('checkout.store') }}" method="post" novalidate>
                     @csrf
+                    <input type="hidden" name="idempotency_key" value="{{ \Illuminate\Support\Str::uuid() }}">
 
                     @if ($errors->any())
                         <div class="sf-checkout-errors" role="alert" id="checkoutErrors">
@@ -312,17 +313,7 @@
         } catch(e) { console.error('Checkout tracking error:', e); }
     }
 
-    const checkoutForm = document.getElementById('checkout-form');
-    if (checkoutForm) {
-        checkoutForm.addEventListener('submit', function() {
-            const btn = document.getElementById('submitBtn');
-            const text = document.getElementById('submitBtnText');
-            if (btn && text) {
-                btn.disabled = true;
-                text.innerHTML = '<i class="bi bi-arrow-repeat" style="display:inline-block;animation:spin 1s linear infinite;margin-right:8px;"></i> Processing...';
-            }
-        });
-    }
+
 
     // ── Saved Address Loader ─────────────────────
     const addrSelect = document.getElementById('saved_address_select');
@@ -623,9 +614,15 @@
         
         var btn = document.getElementById('submitBtn');
         if(btn) {
+            if(btn.dataset.submitting === 'true') { 
+                e.preventDefault(); 
+                return; 
+            }
+            btn.dataset.submitting = 'true';
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Processing...';
             btn.classList.add('disabled');
-            btn.disabled = true;
+            // Async disable to allow form to actually submit before disabling
+            setTimeout(function() { btn.disabled = true; }, 50);
         }
 
         window.dataLayer = window.dataLayer || [];

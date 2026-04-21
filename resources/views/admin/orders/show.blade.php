@@ -73,8 +73,14 @@
             {{-- Shipments --}}
             @if ($order->shipments->isNotEmpty())
                 <div class="card mb-3">
-                    <div class="card-header d-flex align-items-center gap-2">
-                        <i class="bi bi-truck"></i> Shipments
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="bi bi-truck"></i> Shipments
+                        </div>
+                        <form action="{{ route('admin.orders.sync-shipments', $order) }}" method="POST" class="d-inline">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-outline-info p-1"><i class="bi bi-arrow-repeat"></i> Sync Status</button>
+                        </form>
                     </div>
                     <div class="card-body">
                         @foreach ($order->shipments as $s)

@@ -140,6 +140,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
     Route::patch('orders/{order}', [AdminOrderController::class, 'update'])->name('orders.update');
     Route::post('orders/{order}/resend', [AdminOrderController::class, 'resendNotification'])->name('orders.resend');
+    Route::post('orders/{order}/sync-shipments', [AdminOrderController::class, 'syncShipments'])->name('orders.sync-shipments');
     Route::get('orders/{order}/invoice', [AdminOrderController::class, 'invoicePdf'])->name('orders.invoice');
     Route::get('orders/{order}/packing', [AdminOrderController::class, 'packingPdf'])->name('orders.packing');
 
