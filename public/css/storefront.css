@@ -1833,6 +1833,19 @@ button,
   margin-top: 28px;
 }
 
+@media (max-width: 768px) {
+  .sf-award-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sf-award-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
 .sf-award-stat {
   border-left: 2px solid var(--color-gold);
   padding-left: 14px;
@@ -1843,6 +1856,14 @@ button,
   font-size: 26px;
   color: var(--color-gold-light);
   display: block;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+@media (max-width: 768px) {
+  .sf-award-stat-num {
+    font-size: 22px;
+  }
 }
 
 .sf-award-stat-label {
@@ -1861,6 +1882,7 @@ button,
   border-radius: var(--radius-md);
   overflow: hidden;
   height: 160px;
+  min-width: 0;
 }
 
 .sf-award-img-block img {
