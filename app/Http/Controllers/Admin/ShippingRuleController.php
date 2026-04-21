@@ -35,6 +35,14 @@ class ShippingRuleController extends Controller
         $data['is_active'] = $request->boolean('is_active', true);
         $data['priority']  = $data['priority'] ?? 0;
 
+        if (isset($data['config']['raw_json'])) {
+            $decoded = json_decode($data['config']['raw_json'], true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return back()->withInput()->withErrors(['config' => 'Invalid JSON structure provided.']);
+            }
+            $data['config'] = $decoded;
+        }
+
         ShippingRule::query()->create($data);
 
         return redirect()->route('admin.shipping-rules.index')->with('success', 'Shipping rule created.');
@@ -57,6 +65,14 @@ class ShippingRuleController extends Controller
 
         $data['is_active'] = $request->boolean('is_active');
         $data['priority']  = $data['priority'] ?? 0;
+
+        if (isset($data['config']['raw_json'])) {
+            $decoded = json_decode($data['config']['raw_json'], true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return back()->withInput()->withErrors(['config' => 'Invalid JSON structure provided.']);
+            }
+            $data['config'] = $decoded;
+        }
 
         $shippingRule->update($data);
 
