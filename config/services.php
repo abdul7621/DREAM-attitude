@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'phonepe' => [
+        'webhook_username' => env('PHONEPE_WEBHOOK_USERNAME'),
+        'webhook_password' => env('PHONEPE_WEBHOOK_PASSWORD'),
+    ],
+
 ];
