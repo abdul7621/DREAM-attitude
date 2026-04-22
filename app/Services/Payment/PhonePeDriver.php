@@ -100,7 +100,10 @@ class PhonePeDriver implements PaymentGatewayInterface
                 'type' => 'PG_CHECKOUT',
                 'message' => 'Order ' . $order->order_number,
                 'merchantUrls' => [
-                    'redirectUrl' => route('payments.verify', ['gateway' => 'phonepe'])
+                    'redirectUrl' => route('payments.verify', [
+                        'gateway' => 'phonepe',
+                        'transactionId' => $transactionId
+                    ])
                 ]
             ]
         ];
