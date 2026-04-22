@@ -203,14 +203,14 @@ class PhonePeDriver implements PaymentGatewayInterface
                     continue; // Retry
                 }
 
-                $state = $response->json('data.state');
+                $state = $response->json('state');
                 
                 Log::info("PhonePe status API response", ['txn' => $transactionId, 'state' => $state]);
 
                 // Order-Payment Bind Protection (Hash Validation Alternative)
                 // Cryptographically checked via authorized S2S API token
-                if ($response->json('success') === true && $state === 'COMPLETED') {
-                    $paidAmountPaise = (int) $response->json('data.amount');
+                if ($response->successful() && $state === 'COMPLETED') {
+                    $paidAmountPaise = (int) $response->json('amount');
                     $expectedAmountPaise = (int) round($order->grand_total * 100);
 
                     if ($paidAmountPaise === $expectedAmountPaise) {
