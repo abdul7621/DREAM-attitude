@@ -94,16 +94,14 @@ class PhonePeDriver implements PaymentGatewayInterface
         $amountPaise = (int) round($order->grand_total * 100);
 
         $payload = [
-            'merchantId' => $this->clientId,
-            'merchantOrderId' => (string) $order->order_number,
-            'merchantTransactionId' => $transactionId,
+            'merchantOrderId' => $transactionId,
             'amount' => $amountPaise,
-            'redirectUrl' => route('payments.verify', ['gateway' => 'phonepe']),
-            'redirectMode' => 'POST',
-            'callbackUrl' => route('api.webhooks.phonepe'), // Secure S2S Webhook Check
-            'merchantUserId' => 'MUID_' . ($order->user_id ?? preg_replace('/[^A-Za-z0-9]/', '', $order->email ?? uniqid())),
-            'paymentInstrument' => [
-                'type' => 'PAY_PAGE'
+            'paymentFlow' => [
+                'type' => 'PG_CHECKOUT',
+                'message' => 'Order ' . $order->order_number,
+                'merchantUrls' => [
+                    'redirectUrl' => route('payments.verify', ['gateway' => 'phonepe'])
+                ]
             ]
         ];
 
@@ -191,7 +189,7 @@ class PhonePeDriver implements PaymentGatewayInterface
                 $response = Http::withHeaders([
                     'Content-Type' => 'application/json',
                     'Authorization' => "O-Bearer {$token}",
-                ])->get($this->basePgUrl . "/status/{$transactionId}");
+                ])->get($this->basePgUrl . "/order/{$transactionId}/status");
 
                 if ($response->status() === 401) {
                     $forceRefresh = true;
