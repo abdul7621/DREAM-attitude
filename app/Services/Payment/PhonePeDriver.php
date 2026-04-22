@@ -89,8 +89,8 @@ class PhonePeDriver implements PaymentGatewayInterface
 
     public function createOrder(Order $order): array
     {
-        // Payment Idempotency Support (Unique TXN mapping)
-        $transactionId = 'TXN_' . $order->order_number . '_' . time();
+        // Payment Idempotency Support (Unique TXN mapping) - length restricted to PhonePe V2 limits (< 35 chars)
+        $transactionId = 'DA' . time() . $order->id;
         $amountPaise = (int) round($order->grand_total * 100);
 
         $payload = [
@@ -151,11 +151,13 @@ class PhonePeDriver implements PaymentGatewayInterface
                 ];
 
             } catch (Exception $e) {
-                if ($attempts >= $maxAttempts) {
+                // Only retry if it was explicitly a 401 Unauthorized exception
+                if (str_contains($e->getMessage(), '401') && $attempts < $maxAttempts) {
+                    $forceRefresh = true;
+                } else {
                     Log::error("PhonePe order creation failed permanently", ['error' => $e->getMessage()]);
                     throw $e;
                 }
-                $forceRefresh = true;
             }
         }
 
@@ -221,11 +223,12 @@ class PhonePeDriver implements PaymentGatewayInterface
                 return false;
 
             } catch (Exception $e) {
-                if ($attempts >= $maxAttempts) {
+                if (str_contains($e->getMessage(), '401') && $attempts < $maxAttempts) {
+                    $forceRefresh = true;
+                } else {
                     Log::error("PhonePe status verification failed", ['error' => $e->getMessage()]);
                     return false;
                 }
-                $forceRefresh = true;
             }
         }
 
@@ -247,7 +250,7 @@ class PhonePeDriver implements PaymentGatewayInterface
             throw new Exception("Original transaction ID missing for refund");
         }
 
-        $refundTxnId = 'REF_' . $order->order_number . '_' . time();
+        $refundTxnId = 'REF_' . $order->id . '_' . time();
         $amountPaise = (int) round($amount * 100);
 
         $payload = [
