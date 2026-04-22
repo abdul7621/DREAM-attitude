@@ -117,6 +117,7 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
 
 // ── Webhooks ───────────────────────────────────────────────────────────────
 Route::post('/api/shiprocket/webhook', [\App\Http\Controllers\Api\ShiprocketWebhookController::class, 'handle'])->name('webhook.shiprocket');
+Route::post('/api/webhooks/phonepe', [\App\Http\Controllers\Api\PhonePeWebhookController::class, 'handle'])->name('api.webhooks.phonepe');
 Route::post('/api/webhooks/ithink', [\App\Http\Controllers\Api\IthinkWebhookController::class, 'handle'])->name('webhook.ithink');
 
 Route::get('/test-ithink/{orderId}', function ($orderId) {
