@@ -276,8 +276,12 @@
         {{-- ─── SETTINGS ───────────────────────────────────── --}}
         <div class="sidebar-section-label">Settings</div>
         <a href="{{ route('admin.settings.edit') }}"
-           class="sidebar-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+           class="sidebar-link {{ request()->routeIs('admin.settings.edit') ? 'active' : '' }}">
             <i class="bi bi-gear"></i> Store Settings
+        </a>
+        <a href="{{ route('admin.settings.payments') }}"
+           class="sidebar-link {{ request()->routeIs('admin.settings.payments') ? 'active' : '' }}">
+            <i class="bi bi-credit-card"></i> Payment Gateways
         </a>
         <a href="{{ route('admin.notification-templates.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.notification-templates.*') ? 'active' : '' }}">

@@ -133,6 +133,16 @@
 @if ($activeTab === 'payment')
     <h5 class="mb-3">💳 Payment Settings</h5>
     <div class="row g-3">
+        <div class="col-12 mt-2 border p-3 bg-light rounded text-center">
+            <i class="bi bi-rocket-takeoff d-block fs-3 mb-2 text-primary"></i>
+            <h6>Looking for PhonePe, Cashfree, PayU, or Instamojo?</h6>
+            <p class="text-muted small">We have upgraded our payment system. You can now manage multiple advanced gateways from the dedicated panel.</p>
+            <a href="{{ route('admin.settings.payments') }}" class="btn btn-primary px-4">Open Advanced Payment Gateways</a>
+        </div>
+        
+        <div class="col-12 mt-4">
+            <h6 class="fw-bold border-bottom pb-2">Basic COD & Razorpay Settings</h6>
+        </div>
         <div class="col-md-6">
             <label class="form-label">Razorpay Key ID</label>
             <input type="text" name="payment__razorpay_key" class="form-control" value="{{ $groups['payment']['razorpay_key'] ?? '' }}">
