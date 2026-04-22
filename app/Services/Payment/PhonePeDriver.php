@@ -94,10 +94,12 @@ class PhonePeDriver implements PaymentGatewayInterface
         $amountPaise = (int) round($order->grand_total * 100);
 
         $payload = [
+            'merchantId' => $this->clientId,
             'merchantOrderId' => (string) $order->order_number,
             'merchantTransactionId' => $transactionId,
             'amount' => $amountPaise,
             'redirectUrl' => route('payments.verify', ['gateway' => 'phonepe']),
+            'redirectMode' => 'POST',
             'callbackUrl' => route('api.webhooks.phonepe'), // Secure S2S Webhook Check
             'merchantUserId' => 'MUID_' . ($order->user_id ?? preg_replace('/[^A-Za-z0-9]/', '', $order->email ?? uniqid())),
             'paymentInstrument' => [
@@ -251,6 +253,7 @@ class PhonePeDriver implements PaymentGatewayInterface
         $amountPaise = (int) round($amount * 100);
 
         $payload = [
+            'merchantId' => $this->clientId,
             'originalTransactionId' => $originalTxnId,
             'merchantTransactionId' => $refundTxnId,
             'amount' => $amountPaise,
