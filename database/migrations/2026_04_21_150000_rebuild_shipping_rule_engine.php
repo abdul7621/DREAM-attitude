@@ -74,7 +74,7 @@ return new class extends Migration
         // 5. Seed default fallback rule
         DB::transaction(function() {
             // Delete all existing old format rules to prevent broken relations or logic faults
-            DB::table('shipping_rules')->truncate();
+            DB::table('shipping_rules')->delete();
 
             // Insert new default fallback
             $ruleId = DB::table('shipping_rules')->insertGetId([
