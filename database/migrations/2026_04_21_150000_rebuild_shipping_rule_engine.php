@@ -29,13 +29,15 @@ return new class extends Migration
         }
 
         // 2. Create Pincode Cache Table
-        Schema::create('pincode_caches', function (Blueprint $table) {
-            $table->id();
-            $table->string('postal_code', 16)->unique();
-            $table->string('city', 128)->nullable();
-            $table->string('state', 128)->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('pincode_caches')) {
+            Schema::create('pincode_caches', function (Blueprint $table) {
+                $table->id();
+                $table->string('postal_code', 16)->unique();
+                $table->string('city', 128)->nullable();
+                $table->string('state', 128)->nullable();
+                $table->timestamps();
+            });
+        }
 
         // 3. Drop old fields from shipping_rules
         Schema::table('shipping_rules', function (Blueprint $table) {
@@ -48,22 +50,26 @@ return new class extends Migration
         });
 
         // 4. Create new advanced rule tables
-        Schema::create('shipping_conditions', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('rule_id')->constrained('shipping_rules')->cascadeOnDelete();
-            $table->string('type', 64); // order_value, state, city, pincode_prefix, payment_method, weight
-            $table->string('operator', 16); // ==, !=, in, >, <, >=, <=, not_in
-            $table->json('value');
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('shipping_conditions')) {
+            Schema::create('shipping_conditions', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('rule_id')->constrained('shipping_rules')->cascadeOnDelete();
+                $table->string('type', 64); // order_value, state, city, pincode_prefix, payment_method, weight
+                $table->string('operator', 16); // ==, !=, in, >, <, >=, <=, not_in
+                $table->json('value');
+                $table->timestamps();
+            });
+        }
 
-        Schema::create('shipping_actions', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('rule_id')->unique()->constrained('shipping_rules')->cascadeOnDelete();
-            $table->string('type', 32); // flat, free
-            $table->decimal('value', 12, 2)->default(0);
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('shipping_actions')) {
+            Schema::create('shipping_actions', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('rule_id')->unique()->constrained('shipping_rules')->cascadeOnDelete();
+                $table->string('type', 32); // flat, free
+                $table->decimal('value', 12, 2)->default(0);
+                $table->timestamps();
+            });
+        }
 
         // 5. Seed default fallback rule
         DB::transaction(function() {
