@@ -611,7 +611,6 @@
     };
 
     // Listen to Payment Method changes
-    var paymentRadios = document.querySelectorAll('input[name="payment_method"]');
     paymentRadios.forEach(function(radio) {
         radio.addEventListener('change', function() {
             refreshShippingQuote();
