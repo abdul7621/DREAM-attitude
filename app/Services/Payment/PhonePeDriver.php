@@ -129,18 +129,20 @@ class PhonePeDriver implements PaymentGatewayInterface
                     continue; // Retry after fetching fresh token
                 }
 
-                if ($response->failed() || !$response->json('success')) {
+                if ($response->failed()) {
                     throw new Exception('PhonePe order creation failed: ' . $response->body());
                 }
 
                 $responseData = $response->json();
                 
-                $paymentUrl = $responseData['data']['redirectInfo']['url'] 
+                // V2 Response is often flat, but fallback to V1-style nested just in case
+                $paymentUrl = $responseData['redirectUrl'] 
+                           ?? $responseData['data']['redirectInfo']['url'] 
                            ?? $responseData['data']['instrumentResponse']['redirectInfo']['url'] 
                            ?? null;
 
                 if (!$paymentUrl) {
-                    throw new Exception("PhonePe payment URL missing from response: " . json_encode($responseData));
+                    throw new Exception("PhonePe payment URL missing from response: " . $response->body());
                 }
 
                 $order->update(['gateway_order_id' => $transactionId]);
