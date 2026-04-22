@@ -44,9 +44,10 @@ class HomeController extends Controller
 
         $categories = Cache::remember('home_categories', 300, fn () => Category::query()
             ->where('is_active', true)
+            ->where('is_featured', true)
             ->whereNull('parent_id')
             ->orderBy('sort_order')
-            ->take(6)
+            ->take(3)
             ->get());
 
         // For testimonials on home page

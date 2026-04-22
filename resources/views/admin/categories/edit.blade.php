@@ -45,7 +45,13 @@
         <div class="mb-3 form-check">
             <input type="hidden" name="is_active" value="0">
             <input type="checkbox" name="is_active" value="1" class="form-check-input" id="a1" @checked(old('is_active', $category->is_active))>
-            <label class="form-check-label" for="a1">Active</label>
+            <label class="form-check-label" for="a1">Active (Enabled on site)</label>
+        </div>
+        <div class="mb-4 form-check bg-light p-2 border rounded">
+            <input type="hidden" name="is_featured" value="0">
+            <input type="checkbox" name="is_featured" value="1" class="form-check-input ms-1" id="f1" @checked(old('is_featured', $category->is_featured))>
+            <label class="form-check-label ms-2 text-primary fw-bold" for="f1"><i class="bi bi-star-fill text-warning"></i> Show on Homepage (Featured)</label>
+            <div class="form-text ms-2">Check this to display this category specifically on the storefront homepage blocks.</div>
         </div>
         <div class="mb-3">
             <label class="form-label">SEO title</label>

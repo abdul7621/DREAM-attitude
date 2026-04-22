@@ -9,13 +9,14 @@
     </div>
     <div class="table-responsive bg-white shadow-sm rounded">
         <table class="table table-striped mb-0">
-            <thead><tr><th>Name</th><th>Slug</th><th>Active</th><th></th></tr></thead>
+            <thead><tr><th>Name</th><th>Slug</th><th>Featured</th><th>Active</th><th></th></tr></thead>
             <tbody>
             @foreach ($categories as $c)
                 <tr>
                     <td>{{ $c->name }}</td>
                     <td>{{ $c->slug }}</td>
-                    <td>{{ $c->is_active ? 'Yes' : 'No' }}</td>
+                    <td>{!! $c->is_featured ? '<i class="bi bi-star-fill text-warning"></i>' : '' !!}</td>
+                    <td>{!! $c->is_active ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-secondary">No</span>' !!}</td>
                     <td class="text-end">
                         <a class="btn btn-sm btn-outline-info" href="{{ route('category.show', $c->slug) }}" target="_blank">View</a>
                         <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.categories.edit', $c) }}">Edit</a>

@@ -16,6 +16,7 @@ class Category extends Model
         'image_path',
         'sort_order',
         'is_active',
+        'is_featured',
         'seo_title',
         'seo_description',
     ];
@@ -23,7 +24,8 @@ class Category extends Model
     protected function casts(): array
     {
         return [
-            'is_active' => 'boolean',
+            'is_active'   => 'boolean',
+            'is_featured' => 'boolean',
         ];
     }
 

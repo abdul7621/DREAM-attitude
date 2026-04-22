@@ -60,6 +60,7 @@ class CategoryController extends Controller
             'image_path' => $imagePath,
             'sort_order' => $data['sort_order'] ?? 0,
             'is_active' => $request->boolean('is_active'),
+            'is_featured' => $request->boolean('is_featured'),
             'seo_title' => $data['seo_title'] ?? null,
             'seo_description' => $data['seo_description'] ?? null,
         ]);
@@ -97,6 +98,7 @@ class CategoryController extends Controller
             'description' => $data['description'] ?? null,
             'sort_order' => $data['sort_order'] ?? 0,
             'is_active' => $request->boolean('is_active'),
+            'is_featured' => $request->boolean('is_featured'),
             'seo_title' => $data['seo_title'] ?? null,
             'seo_description' => $data['seo_description'] ?? null,
         ];
