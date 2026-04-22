@@ -2,11 +2,11 @@
 # ═══════════════════════════════════════════════════════════════
 #  D2C Business OS — Deploy Script
 # ═══════════════════════════════════════════════════════════════
-#  Remote:   github.com/abdul7621/DREAM-attitude.git
+#  Remote:   github.com/abdul7621/Ikhlas-Fragrance.git
 #  Branch:   main
 #  Server:   Hostinger Shared Hosting
-#  SSH:      ssh -p 65002 u750823523@147.93.17.66
-#  App Path: ~/domains/dreamattitude.al-mhaf.com/dream-app
+#  SSH:      ssh -p 65002 u556611716@147.93.101.148
+#  App Path: ~/domains/mediumaquamarine-jay-552970.hostingersite.com/ikhlas-app
 # ═══════════════════════════════════════════════════════════════
 #
 #  Usage:
@@ -18,11 +18,10 @@
 set -e
 
 # ── Config ────────────────────────────────────────────────────
-REMOTE_USER="u750823523"
-REMOTE_HOST="147.93.17.66"
+REMOTE_USER="u556611716"
+REMOTE_HOST="147.93.101.148"
 REMOTE_PORT="65002"
-# REMOTE_PASS="DreamWorld@2008" # sshpass is not available by default on Git Bash
-APP_DIR="domains/dreamattitude.al-mhaf.com/dream-app"
+APP_DIR="domains/mediumaquamarine-jay-552970.hostingersite.com/ikhlas-app"
 BRANCH="main"
 SSH_CMD="ssh -p ${REMOTE_PORT} ${REMOTE_USER}@${REMOTE_HOST}"
 
@@ -59,7 +58,7 @@ else
     MIGRATE_CMD=""
 fi
 
-PUBLIC_HTML="domains/dreamattitude.al-mhaf.com/public_html"
+PUBLIC_HTML="domains/mediumaquamarine-jay-552970.hostingersite.com/public_html"
 
 ${SSH_CMD} -t "cd ${APP_DIR} && \
     echo '📥 Pulling latest code...' && \
