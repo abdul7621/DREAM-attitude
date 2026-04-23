@@ -1,12 +1,12 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════
-#  D2C Business OS — Deploy Script
+#  D2C Business OS — Deploy Script  [DREAM ATTITUDE]
 # ═══════════════════════════════════════════════════════════════
-#  Remote:   github.com/abdul7621/Ikhlas-Fragrance.git
+#  Remote:   github.com/abdul7621/DREAM-attitude.git
 #  Branch:   main
 #  Server:   Hostinger Shared Hosting
-#  SSH:      ssh -p 65002 u556611716@147.93.101.148
-#  App Path: ~/domains/mediumaquamarine-jay-552970.hostingersite.com/ikhlas-app
+#  SSH:      ssh -p 65002 u750823523@147.93.17.66
+#  App Path: ~/domains/dreamattitude.al-mhaf.com/dream-app
 # ═══════════════════════════════════════════════════════════════
 #
 #  Usage:
@@ -17,11 +17,21 @@
 
 set -e
 
+# ── Safety: verify correct repo before deploying ──────────────
+EXPECTED_REPO="DREAM-attitude"
+ACTUAL_REPO=$(git remote get-url origin 2>/dev/null || echo "unknown")
+if [[ "$ACTUAL_REPO" != *"$EXPECTED_REPO"* ]]; then
+    echo "❌ WRONG REPO! Expected $EXPECTED_REPO but got: $ACTUAL_REPO"
+    echo "   You may be running this deploy script from the wrong project folder."
+    exit 1
+fi
+
 # ── Config ────────────────────────────────────────────────────
-REMOTE_USER="u556611716"
-REMOTE_HOST="147.93.101.148"
+REMOTE_USER="u750823523"
+REMOTE_HOST="147.93.17.66"
 REMOTE_PORT="65002"
-APP_DIR="domains/mediumaquamarine-jay-552970.hostingersite.com/ikhlas-app"
+# REMOTE_PASS="DreamWorld@2008"
+APP_DIR="domains/dreamattitude.al-mhaf.com/dream-app"
 BRANCH="main"
 SSH_CMD="ssh -p ${REMOTE_PORT} ${REMOTE_USER}@${REMOTE_HOST}"
 
@@ -58,7 +68,7 @@ else
     MIGRATE_CMD=""
 fi
 
-PUBLIC_HTML="domains/mediumaquamarine-jay-552970.hostingersite.com/public_html"
+PUBLIC_HTML="domains/dreamattitude.al-mhaf.com/public_html"
 
 ${SSH_CMD} -t "cd ${APP_DIR} && \
     echo '📥 Pulling latest code...' && \
