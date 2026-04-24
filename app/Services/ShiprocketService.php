@@ -27,7 +27,7 @@ class ShiprocketService implements ShippingProviderInterface
         });
     }
 
-    public function createOrder(Order $order): array
+    public function createOrder(Order $order, ?string $forceLogisticName = null): array
     {
         $items = $order->orderItems->map(fn($i) => [
             'name' => $i->product_name_snapshot,
@@ -66,7 +66,7 @@ class ShiprocketService implements ShippingProviderInterface
         return $res->json();
     }
 
-    public function generateAWB(int $shipmentId): array
+    public function generateAWB($shipmentId): array
     {
         $res = Http::withToken($this->token())
             ->post($this->baseUrl . '/courier/assign/awb', [
@@ -80,7 +80,7 @@ class ShiprocketService implements ShippingProviderInterface
         return $res->json();
     }
 
-    public function generateLabel(int $shipmentId): string
+    public function generateLabel($shipmentId): string
     {
         $res = Http::withToken($this->token())
             ->post($this->baseUrl . '/courier/generate/label', [
@@ -98,7 +98,7 @@ class ShiprocketService implements ShippingProviderInterface
         return $res->json() ?? [];
     }
 
-    public function cancelShipment(int $orderId): bool
+    public function cancelShipment($orderId): bool
     {
         $res = Http::withToken($this->token())
             ->post($this->baseUrl . '/orders/cancel', [

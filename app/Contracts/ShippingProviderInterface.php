@@ -12,7 +12,7 @@ interface ShippingProviderInterface
      * @return array Response data containing shipment/order IDs provided by the aggregator.
      * @throws \Exception
      */
-    public function createOrder(Order $order): array;
+    public function createOrder(Order $order, ?string $forceLogisticName = null): array;
 
     /**
      * Requests the generation of the AWB for a specific internal or aggregator shipment ID.
