@@ -164,7 +164,7 @@
                             <td class="small">{{ $order->customer_name }}</td>
                             <td class="text-end">₹{{ number_format($order->grand_total, 0) }}</td>
                             <td><span class="badge bg-{{ $order->statusColor() }}" style="font-size:.65rem;">{{ $order->statusLabel() }}</span></td>
-                            <td class="small text-muted">{{ $order->placed_at?->format('d M') ?? '—' }}</td>
+                            <td class="small text-muted">{{ ($order->placed_at ?? $order->created_at)?->format('d M') ?? '—' }}</td>
                         </tr>
                     @empty
                         <tr><td colspan="5" class="text-center text-muted py-3">No orders yet.</td></tr>

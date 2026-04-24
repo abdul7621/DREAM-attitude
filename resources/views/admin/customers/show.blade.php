@@ -72,7 +72,7 @@
                                 <span class="badge bg-{{ $order->payment_method === 'cod' ? 'warning text-dark' : 'primary' }}" style="font-size:.65rem;">{{ strtoupper($order->payment_method) }}</span>
                             </td>
                             <td><span class="badge bg-{{ $order->statusColor() }}" style="font-size:.65rem;">{{ $order->statusLabel() }}</span></td>
-                            <td class="small text-muted">{{ $order->placed_at?->format('d M Y') ?? '—' }}</td>
+                            <td class="small text-muted">{{ ($order->placed_at ?? $order->created_at)?->format('d M Y') ?? '—' }}</td>
                         </tr>
                     @empty
                         <tr><td colspan="5" class="text-center text-muted py-3">No orders yet.</td></tr>

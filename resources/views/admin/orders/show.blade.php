@@ -10,7 +10,7 @@
                 <span class="badge bg-{{ $order->statusColor() }}">{{ $order->statusLabel() }}</span>
                 <span class="badge bg-{{ $order->paymentColor() }}">{{ $order->paymentLabel() }}</span>
                 <span class="badge bg-{{ $order->payment_method === 'cod' ? 'warning text-dark' : 'primary' }}">{{ strtoupper($order->payment_method) }}</span>
-                <span class="small text-muted">{{ $order->placed_at?->format('d M Y, h:i A') ?? '—' }}</span>
+                <span class="small text-muted">{{ ($order->placed_at ?? $order->created_at)?->format('d M Y, h:i A') ?? '—' }}</span>
             </div>
         </div>
         <div class="d-flex gap-2">

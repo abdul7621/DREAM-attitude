@@ -86,7 +86,7 @@
                                 <span class="badge bg-{{ $o->paymentColor() }}" style="font-size:.65rem;">{{ $o->paymentLabel() }}</span>
                             </td>
                             <td><span class="badge bg-{{ $o->statusColor() }}">{{ $o->statusLabel() }}</span></td>
-                            <td class="small text-muted">{{ $o->placed_at?->format('d M Y, h:i A') ?? '—' }}</td>
+                            <td class="small text-muted">{{ ($o->placed_at ?? $o->created_at)?->format('d M Y, h:i A') ?? '—' }}</td>
                             <td><a href="{{ route('admin.orders.show', $o) }}" class="btn btn-sm btn-outline-primary py-0 px-2"><i class="bi bi-eye"></i></a></td>
                         </tr>
                     @empty
