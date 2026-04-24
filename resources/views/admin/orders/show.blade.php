@@ -87,6 +87,10 @@
                             <div class="d-flex justify-content-between align-items-center border rounded p-2 mb-2">
                                 <div>
                                     <strong>{{ ucfirst($s->carrier) }}</strong>
+                                    @if ($s->meta['selected_courier'] ?? null)
+                                        <span class="text-muted mx-1">→</span>
+                                        <span class="badge bg-info">{{ $s->meta['selected_courier'] }}</span>
+                                    @endif
                                     <span class="text-muted mx-1">•</span>
                                     AWB: <code>{{ $s->awb ?? '—' }}</code>
                                     <span class="badge bg-{{ $s->status === 'delivered' ? 'success' : 'dark' }} ms-2">{{ ucfirst($s->status) }}</span>
@@ -98,6 +102,77 @@
                         @endforeach
                     </div>
                 </div>
+
+                {{-- Shipping Intelligence (Smart Courier Data) --}}
+                @php $smartShipment = $order->shipments->first(fn($s) => $s->meta['smart_courier_used'] ?? false); @endphp
+                @if ($smartShipment && ($smartShipment->meta['carrier_cost'] ?? null))
+                    @php $meta = $smartShipment->meta; @endphp
+                    <div class="card mb-3 border-success">
+                        <div class="card-header bg-success bg-opacity-10 d-flex align-items-center gap-2">
+                            <i class="bi bi-lightning-charge-fill text-success"></i>
+                            <strong>Shipping Intelligence</strong>
+                            <span class="badge bg-success ms-auto">Smart Selection</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-2 text-center mb-3">
+                                <div class="col-4">
+                                    <div class="border rounded p-2">
+                                        <div class="small text-muted">Charged</div>
+                                        <div class="fw-bold text-primary fs-6">₹{{ number_format($meta['shipping_charged'] ?? 0, 2) }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="border rounded p-2">
+                                        <div class="small text-muted">Carrier Cost</div>
+                                        <div class="fw-bold text-danger fs-6">₹{{ number_format($meta['carrier_cost'] ?? 0, 2) }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="border rounded p-2">
+                                        <div class="small text-muted">Margin</div>
+                                        @php $margin = ($meta['shipping_margin'] ?? 0); @endphp
+                                        <div class="fw-bold fs-6 {{ $margin >= 0 ? 'text-success' : 'text-danger' }}">
+                                            {{ $margin >= 0 ? '+' : '' }}₹{{ number_format($margin, 2) }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-2 small">
+                                <div class="col-6">
+                                    <strong>Courier:</strong> {{ $meta['selected_courier'] ?? '—' }}
+                                </div>
+                                <div class="col-6">
+                                    <strong>Zone:</strong> {{ $meta['zone'] ?? '—' }}
+                                </div>
+                                <div class="col-6">
+                                    <strong>Delivery TAT:</strong> {{ $meta['delivery_tat'] ?? '—' }} days
+                                </div>
+                            </div>
+
+                            @if (!empty($meta['all_rates']))
+                                <hr class="my-2">
+                                <div class="small text-muted mb-1"><strong>All Available Couriers:</strong></div>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-borderless mb-0 small">
+                                        <thead class="text-muted">
+                                            <tr><th>Courier</th><th class="text-end">Rate</th><th class="text-end">TAT</th></tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($meta['all_rates'] as $courier)
+                                                <tr class="{{ ($courier['name'] ?? '') === ($meta['selected_courier'] ?? '') ? 'table-success fw-bold' : '' }}">
+                                                    <td>{{ $courier['name'] ?? '—' }} @if(($courier['name'] ?? '') === ($meta['selected_courier'] ?? '')) ✓ @endif</td>
+                                                    <td class="text-end">₹{{ number_format($courier['rate'] ?? 0, 2) }}</td>
+                                                    <td class="text-end">{{ $courier['tat'] ?? '—' }}d</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                @endif
             @endif
 
             {{-- Returns --}}

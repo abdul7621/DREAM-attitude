@@ -234,6 +234,42 @@
             <label class="form-label">Secret Key</label>
             <input type="password" name="shipping__ithink_secret_key" class="form-control" value="{{ $groups['shipping']['ithink_secret_key'] ?? '' }}" autocomplete="new-password">
         </div>
+
+        <div class="col-12 mt-4">
+            <h6 class="fw-bold border-bottom pb-2">🧠 Smart Courier Selection Engine</h6>
+            <div class="form-text mb-3">When enabled, COD orders will auto-select the best courier via iThink Rate API before shipment creation. Admin can see carrier cost vs charged shipping in order details.</div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Smart Courier Selection</label>
+            <select name="shipping__smart_courier_enabled" class="form-select">
+                <option value="0" {{ ($groups['shipping']['smart_courier_enabled'] ?? '0') === '0' ? 'selected' : '' }}>OFF — iThink assigns courier</option>
+                <option value="1" {{ ($groups['shipping']['smart_courier_enabled'] ?? '0') === '1' ? 'selected' : '' }}>ON — Auto-select best courier for COD</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            {{-- Spacer --}}
+        </div>
+
+        <div class="col-12 mt-3">
+            <h6 class="fw-bold text-muted" style="font-size: 13px; text-transform: uppercase;">📦 Default Package Dimensions</h6>
+            <div class="form-text mb-2">Used for rate calculation and shipment creation when product-level dimensions are not set.</div>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Weight (kg)</label>
+            <input type="text" name="shipping__default_weight_kg" class="form-control" value="{{ $groups['shipping']['default_weight_kg'] ?? '0.5' }}" placeholder="0.5">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Length (cm)</label>
+            <input type="text" name="shipping__default_length_cm" class="form-control" value="{{ $groups['shipping']['default_length_cm'] ?? '10' }}" placeholder="10">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Width (cm)</label>
+            <input type="text" name="shipping__default_width_cm" class="form-control" value="{{ $groups['shipping']['default_width_cm'] ?? '10' }}" placeholder="10">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Height (cm)</label>
+            <input type="text" name="shipping__default_height_cm" class="form-control" value="{{ $groups['shipping']['default_height_cm'] ?? '10' }}" placeholder="10">
+        </div>
     </div>
 @endif
 

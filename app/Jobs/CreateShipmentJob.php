@@ -40,16 +40,59 @@ class CreateShipmentJob implements ShouldQueue
             $fallbackApi = $ithink;
         }
 
+        // ── Smart Courier Selection (COD + iThink only) ──────────
+        $smartCourierData = null;
+        $forceLogisticName = null;
+
+        $smartEnabled = $settings->get('shipping.smart_courier_enabled', '0') === '1';
+
+        if ($smartEnabled && $primaryName === 'ithink' && $this->order->payment_method === 'cod') {
+            try {
+                Log::info("[SMART_COURIER] Running smart selection for order {$this->order->order_number}");
+
+                $rateResult = $ithink->getRates(
+                    $this->order->postal_code,
+                    'cod',
+                    (float) $this->order->grand_total
+                );
+
+                $bestCourier = $ithink->selectBestCourier($rateResult, 'cod');
+
+                if ($bestCourier) {
+                    $forceLogisticName = $bestCourier['name'];
+                    $smartCourierData = [
+                        'smart_courier_used' => true,
+                        'selected_courier'   => $bestCourier['name'],
+                        'carrier_cost'       => $bestCourier['rate'],
+                        'delivery_tat'       => $bestCourier['delivery_tat'],
+                        'zone'               => $rateResult['zone'] ?? '',
+                        'all_rates'          => array_map(fn($c) => [
+                            'name' => $c['name'],
+                            'rate' => $c['rate'],
+                            'tat'  => $c['delivery_tat'],
+                        ], $rateResult['couriers']),
+                        'shipping_charged'   => (float) $this->order->shipping_total,
+                        'shipping_margin'    => (float) $this->order->shipping_total - $bestCourier['rate'],
+                    ];
+
+                    Log::info("[SMART_COURIER] Order {$this->order->order_number}: {$bestCourier['name']} ₹{$bestCourier['rate']} (charged ₹{$this->order->shipping_total}, margin ₹" . round($smartCourierData['shipping_margin'], 2) . ")");
+                }
+            } catch (\Exception $e) {
+                Log::warning("[SMART_COURIER] Rate fetch failed, proceeding without smart selection: " . $e->getMessage());
+                // Continue without smart selection — not a blocker
+            }
+        }
+
         try {
             Log::info("Attempting to push order {$this->order->order_number} to Primary: {$primaryName}");
-            $this->pushToProvider($primaryApi, $primaryName);
+            $this->pushToProvider($primaryApi, $primaryName, $smartCourierData, $forceLogisticName);
         } catch (\Exception $e) {
             Log::critical("Primary Shipping Provider [{$primaryName}] FAILED for order {$this->order->order_number}: " . $e->getMessage());
 
             // FAILOVER SYSTEM
             try {
                 Log::info("Attempting to push order {$this->order->order_number} to Fallback: {$fallbackName}");
-                $this->pushToProvider($fallbackApi, $fallbackName);
+                $this->pushToProvider($fallbackApi, $fallbackName, $smartCourierData);
             } catch (\Exception $e2) {
                 Log::critical("Fallback Shipping Provider [{$fallbackName}] ALSO FAILED for order {$this->order->order_number}: " . $e2->getMessage());
                 // Both failed, throw exception to trigger job retry
@@ -58,9 +101,14 @@ class CreateShipmentJob implements ShouldQueue
         }
     }
 
-    private function pushToProvider($providerApi, string $providerName): void
+    private function pushToProvider($providerApi, string $providerName, ?array $smartCourierData = null, ?string $forceLogisticName = null): void
     {
-        $result = $providerApi->createOrder($this->order);
+        // Pass forced courier name only to iThink
+        if ($providerName === 'ithink' && $forceLogisticName) {
+            $result = $providerApi->createOrder($this->order, $forceLogisticName);
+        } else {
+            $result = $providerApi->createOrder($this->order);
+        }
         
         $awb = null;
         $trackingUrl = null;
@@ -91,14 +139,19 @@ class CreateShipmentJob implements ShouldQueue
             $trackingUrl = $awb ? 'https://shiprocket.co/tracking/' . $awb : null;
         }
 
+        // Build meta with smart courier intelligence data
+        $meta = $smartCourierData ?? [];
+
         Shipment::create([
             'order_id' => $this->order->id,
             'carrier'  => $providerName,
             'awb'      => $awb,
             'tracking_url' => $trackingUrl,
             'status'   => 'processing',
+            'meta'     => !empty($meta) ? $meta : null,
         ]);
 
         Log::info("Successfully pushed order {$this->order->order_number} to {$providerName}. AWB: {$awb}");
     }
 }
+
