@@ -221,6 +221,8 @@ class IthinkLogisticsService implements ShippingProviderInterface
 
         $res = Http::post($this->baseUrl . '/order/sync.json', $payload);
 
+        Log::info('iThink API Response', ['status' => $res->status(), 'body' => $res->json()]);
+
         if (!$res->successful()) {
             throw new \Exception('iThink createOrder failed HTTP Error: ' . $res->body());
         }
