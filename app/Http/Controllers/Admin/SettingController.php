@@ -24,6 +24,8 @@ class SettingController extends Controller
             'checkout' => $this->settings->group('checkout'),
             'policies' => $this->settings->group('policies'),
             'conversion_copy' => $this->settings->group('conversion_copy'),
+            'gst'      => $this->settings->group('gst'),
+            'email'    => $this->settings->group('email'),
         ];
 
         return view('admin.settings.edit', compact('groups'));
