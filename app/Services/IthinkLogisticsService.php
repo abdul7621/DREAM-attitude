@@ -158,7 +158,7 @@ class IthinkLogisticsService implements ShippingProviderInterface
             'order'                 => (string) $order->order_number,
             'sub_order'             => '',
             'order_date'            => $order->created_at ? $order->created_at->format('d-m-Y H:i:s') : now()->format('d-m-Y H:i:s'),
-            'total_amount'          => (string) $order->grand_total,
+            'total_amount'          => (string) $order->subtotal,
             'name'                  => $order->customer_name,
             'company_name'          => '',
             'add'                   => $order->address_line1 . ($order->address_line2 ? ', ' . $order->address_line2 : ''),
