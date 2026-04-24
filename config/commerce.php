@@ -112,7 +112,7 @@ return [
             'prepaid_message' => 'Safe and secure payments powered by Razorpay.',
             'prepaid_badge' => 'Recommended',
             'cod_message' => 'Pay when your order is delivered to you.',
-            'cod_fee_message' => '₹0 Additional Fee',
+            'cod_fee_message' => '₹30 Additional Fee',
             'delivery_eta' => 'Estimated: 2-5 Business Days',
             'secure_message' => '100% safe & protected payments with SSL encryption',
             'payment_error' => 'Payment failed — please try again.',
