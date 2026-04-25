@@ -257,6 +257,10 @@
            class="sidebar-link {{ request()->routeIs('admin.pages.*') ? 'active' : '' }}">
             <i class="bi bi-file-earmark-text"></i> Pages
         </a>
+        <a href="{{ route('admin.media.index') }}"
+           class="sidebar-link {{ request()->routeIs('admin.media.*') ? 'active' : '' }}">
+            <i class="bi bi-images"></i> Media Manager
+        </a>
 
         {{-- ─── TOOLS ──────────────────────────────────────── --}}
         <div class="sidebar-section-label">Tools</div>

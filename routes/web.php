@@ -211,6 +211,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // CMS Pages
     Route::resource('pages', AdminPageController::class)->except(['show']);
 
+    // Media Manager
+    Route::get('media', [\App\Http\Controllers\Admin\MediaController::class, 'index'])->name('media.index');
+    Route::post('media', [\App\Http\Controllers\Admin\MediaController::class, 'store'])->name('media.store');
+    Route::put('media/{media}', [\App\Http\Controllers\Admin\MediaController::class, 'update'])->name('media.update');
+    Route::delete('media/{media}', [\App\Http\Controllers\Admin\MediaController::class, 'destroy'])->name('media.destroy');
+
     // Import Wizard
     Route::get('import', [AdminImportController::class, 'index'])->name('import.index');
     Route::post('import/upload', [AdminImportController::class, 'upload'])->name('import.upload');
