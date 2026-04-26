@@ -170,6 +170,10 @@
            class="sidebar-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
             <i class="bi bi-grid-1x2-fill"></i> Dashboard
         </a>
+        <a href="{{ route('admin.analytics.index') }}"
+           class="sidebar-link {{ request()->routeIs('admin.analytics.*') ? 'active' : '' }}">
+            <i class="bi bi-bar-chart-line-fill"></i> Decision Engine
+        </a>
         <a href="{{ route('admin.orders.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
             <i class="bi bi-receipt"></i> All Orders

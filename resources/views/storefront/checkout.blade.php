@@ -312,6 +312,9 @@
                     num_items: {{ (int) $lines->sum(fn ($r) => $r['item']->qty) }}
                 });
             }
+            if (window.Store) {
+                Store.track('checkout_start', { value: {{ (float) $totals['grand'] }} });
+            }
         } catch(e) { console.error('Checkout tracking error:', e); }
     }
 

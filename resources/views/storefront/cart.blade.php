@@ -213,3 +213,11 @@ if (typeof fbq === 'function') {
 </script>
 @endpush
 @endif
+
+@push('scripts')
+<script>
+    if (window.Store) {
+        Store.track('cart_view');
+    }
+</script>
+@endpush

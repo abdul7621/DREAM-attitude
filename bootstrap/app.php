@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\CaptureMarketingAttribution::class,
             \App\Http\Middleware\CheckStoreMode::class,
+            \App\Http\Middleware\TrackVisitor::class,
         ]);
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
@@ -25,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'api/shiprocket/webhook',
             'api/webhooks/ithink',
+            'api/beacon/*',
             'payments/verify/*',
             'payments/callback/*',
         ]);

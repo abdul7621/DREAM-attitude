@@ -13,3 +13,6 @@ Schedule::command('cart:send-reminders --hours=2')->hourly();
 
 // Release reserved stock for abandoned online payment checkouts
 Schedule::command('orders:release-expired')->everyFiveMinutes();
+
+// Decision Engine daily aggregation
+Schedule::command('decision-engine:aggregate')->dailyAt('01:00');

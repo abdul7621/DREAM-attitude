@@ -55,5 +55,12 @@
         }, 250);
     });
 })();
+
+if (window.Store && @json($q)) {
+    Store.track('search', {
+        query: @json($q),
+        results: {{ $products->total() }}
+    });
+}
 </script>
 @endpush

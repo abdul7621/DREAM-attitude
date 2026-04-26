@@ -119,7 +119,7 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
 Route::post('/api/shiprocket/webhook', [\App\Http\Controllers\Api\ShiprocketWebhookController::class, 'handle'])->name('webhook.shiprocket');
 Route::post('/api/webhooks/phonepe', [\App\Http\Controllers\Api\PhonePeWebhookController::class, 'handle'])->name('api.webhooks.phonepe');
 Route::post('/api/webhooks/ithink', [\App\Http\Controllers\Api\IthinkWebhookController::class, 'handle'])->name('webhook.ithink');
-
+Route::post('/api/beacon/track', [\App\Http\Controllers\Api\BeaconController::class, 'track'])->name('api.beacon.track');
 Route::get('/test-ithink/{orderId}', function ($orderId) {
     try {
         $order = \App\Models\Order::findOrFail($orderId);
@@ -134,7 +134,7 @@ Route::get('/test-ithink/{orderId}', function ($orderId) {
 // ── Admin Panel ────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function (): void {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
-
+    Route::get('/decision-engine', [\App\Http\Controllers\Admin\AnalyticsDashboardController::class, 'index'])->name('analytics.index');
     // Orders
     Route::post('orders/bulk', [AdminOrderController::class, 'bulkUpdate'])->name('orders.bulk');
     Route::post('orders/export-csv', [AdminOrderController::class, 'exportCsv'])->name('orders.export-csv');

@@ -395,6 +395,13 @@ if (typeof fbq === 'function') {
         currency: '{{ config('commerce.currency', 'INR') }}'
     });
 }
+if (window.Store) {
+    Store.track('product_view', {
+        product_id: {{ $product->id }},
+        variant_id: {{ $v0?->id ?? 'null' }},
+        value: {{ (float) $vprice }}
+    });
+}
 
 @if($spEnabled)
 (function() {

@@ -53,6 +53,38 @@
         console.debug('[Analytics]', data.event, data);
     });
 
+    // ── Decision Engine Beacon ──────────────────────────────────────────────
+    Store.track = function(eventName, meta = {}) {
+        try {
+            if (!navigator.sendBeacon) return;
+            var payload = {
+                event_name: eventName,
+                page_url: window.location.href,
+                page_type: window.location.pathname === '/' ? 'home' : (window.location.pathname.split('/')[1] || 'page'),
+                meta: meta
+            };
+            navigator.sendBeacon('/api/beacon/track', JSON.stringify(payload));
+        } catch (e) {
+            console.error('Track error', e);
+        }
+    };
+
+    // Auto page_view
+    if (document.readyState === 'complete') {
+        setTimeout(function(){ Store.track('page_view'); }, 100);
+    } else {
+        window.addEventListener('load', function() { setTimeout(function(){ Store.track('page_view'); }, 100); });
+    }
+
+    // Auto scroll tracking (25%, 50%, 75%)
+    var scrollMarks = { 25: false, 50: false, 75: false };
+    window.addEventListener('scroll', function() {
+        var pct = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+        if (pct >= 25 && !scrollMarks[25]) { scrollMarks[25] = true; Store.track('scroll_25'); }
+        if (pct >= 50 && !scrollMarks[50]) { scrollMarks[50] = true; Store.track('scroll_50'); }
+        if (pct >= 75 && !scrollMarks[75]) { scrollMarks[75] = true; Store.track('scroll_75'); }
+    }, { passive: true });
+
     // AJAX Add to Cart Interceptor
     document.addEventListener('submit', function(e) {
         let form = e.target;
@@ -139,6 +171,14 @@
                                     }
                                 }
                             } catch(e) { console.error('fbq AddToCart error:', e); }
+
+                            // Decision Engine AddToCart
+                            try {
+                                Store.track('add_to_cart', {
+                                    product_id: data.analytics.items && data.analytics.items[0] ? data.analytics.items[0].item_id : null,
+                                    value: data.analytics.value
+                                });
+                            } catch(e) {}
                         }
                     }
                 } else {

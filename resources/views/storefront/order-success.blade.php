@@ -45,6 +45,13 @@ if (typeof fbq === 'function') {
         eventID: 'purchase-{{ $order->order_number }}'
     });
 }
+
+if (window.Store) {
+    Store.track('purchase', {
+        order_id: @json($order->order_number),
+        revenue: {{ (float) $order->grand_total }}
+    });
+}
 </script>
 @endif
 @endpush
