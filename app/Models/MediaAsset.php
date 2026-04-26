@@ -13,6 +13,8 @@ class MediaAsset extends Model
         'alt_text',
         'size_bytes',
         'mime_type',
+        'width',
+        'height',
     ];
 
     public function getUrlAttribute(): string
@@ -23,5 +25,13 @@ class MediaAsset extends Model
     public function isImage(): bool
     {
         return str_starts_with((string) $this->mime_type, 'image/');
+    }
+
+    public function getDimensionsAttribute(): string
+    {
+        if ($this->width && $this->height) {
+            return $this->width . ' × ' . $this->height;
+        }
+        return '—';
     }
 }

@@ -213,6 +213,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Media Manager
     Route::get('media', [\App\Http\Controllers\Admin\MediaController::class, 'index'])->name('media.index');
+    Route::get('media/sync/preview', [\App\Http\Controllers\Admin\MediaController::class, 'syncPreview'])->name('media.sync.preview');
+    Route::post('media/sync/execute', [\App\Http\Controllers\Admin\MediaController::class, 'syncExecute'])->name('media.sync.execute');
+    Route::post('media/bulk-delete', [\App\Http\Controllers\Admin\MediaController::class, 'bulkDelete'])->name('media.bulk-delete');
     Route::post('media', [\App\Http\Controllers\Admin\MediaController::class, 'store'])->name('media.store');
     Route::put('media/{media}', [\App\Http\Controllers\Admin\MediaController::class, 'update'])->name('media.update');
     Route::delete('media/{media}', [\App\Http\Controllers\Admin\MediaController::class, 'destroy'])->name('media.destroy');
