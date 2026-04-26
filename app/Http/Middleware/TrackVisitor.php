@@ -72,6 +72,19 @@ class TrackVisitor
             } elseif (preg_match('/Tablet|iPad/i', $userAgent)) {
                 $deviceType = 'tablet';
             }
+            
+            $browser = 'Unknown';
+            if (preg_match('/Edg/i', $userAgent)) $browser = 'Edge';
+            elseif (preg_match('/Chrome/i', $userAgent)) $browser = 'Chrome';
+            elseif (preg_match('/Safari/i', $userAgent)) $browser = 'Safari';
+            elseif (preg_match('/Firefox/i', $userAgent)) $browser = 'Firefox';
+
+            $os = 'Unknown';
+            if (preg_match('/Windows/i', $userAgent)) $os = 'Windows';
+            elseif (preg_match('/Mac/i', $userAgent)) $os = 'MacOS';
+            elseif (preg_match('/Linux/i', $userAgent)) $os = 'Linux';
+            elseif (preg_match('/Android/i', $userAgent)) $os = 'Android';
+            elseif (preg_match('/iPhone|iPad|iPod/i', $userAgent)) $os = 'iOS';
 
             // Visitor Upsert
             $visitor = Visitor::firstOrCreate(
@@ -81,6 +94,8 @@ class TrackVisitor
                     'first_medium' => session('attr_utm_medium') ?: $request->query('utm_medium'),
                     'first_campaign' => session('attr_utm_campaign') ?: $request->query('utm_campaign'),
                     'device_type' => $deviceType,
+                    'browser' => $browser,
+                    'os' => $os,
                     'first_seen_at' => now(),
                 ]
             );
@@ -110,7 +125,13 @@ class TrackVisitor
                 ]);
             } else {
                 // Just update the ended_at to extend session
-                AnalyticsSession::where('session_uuid', $sessionUuid)->update(['ended_at' => now()]);
+                $existingSession = AnalyticsSession::where('session_uuid', $sessionUuid)->first();
+                if ($existingSession) {
+                    $existingSession->update([
+                        'ended_at' => now(),
+                        'duration_seconds' => now()->diffInSeconds($existingSession->started_at)
+                    ]);
+                }
                 $visitor->update(['last_seen_at' => now()]);
             }
 

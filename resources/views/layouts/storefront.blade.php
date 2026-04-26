@@ -61,7 +61,19 @@
             user: @json($jsUser),
             settings: @json($jsSettings),
             emit(event, data) { document.dispatchEvent(new CustomEvent(event, { detail: data })); },
-            on(event, callback) { document.addEventListener(event, (e) => callback(e.detail)); }
+            on(event, callback) { document.addEventListener(event, (e) => callback(e.detail)); },
+            track(eventName, meta = {}) {
+                try {
+                    if (!navigator.sendBeacon) return;
+                    var payload = {
+                        event_name: eventName,
+                        page_url: window.location.href,
+                        page_type: window.location.pathname === '/' ? 'home' : (window.location.pathname.split('/')[1] || 'page'),
+                        meta: meta
+                    };
+                    navigator.sendBeacon('/api/beacon/track', JSON.stringify(payload));
+                } catch (e) { console.error('Track error', e); }
+            }
         };
     </script>
     <script defer src="{{ asset('js/store.js') }}?v={{ filemtime(public_path('js/store.js')) }}"></script>

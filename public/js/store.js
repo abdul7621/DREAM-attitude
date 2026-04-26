@@ -53,22 +53,6 @@
         console.debug('[Analytics]', data.event, data);
     });
 
-    // ── Decision Engine Beacon ──────────────────────────────────────────────
-    Store.track = function(eventName, meta = {}) {
-        try {
-            if (!navigator.sendBeacon) return;
-            var payload = {
-                event_name: eventName,
-                page_url: window.location.href,
-                page_type: window.location.pathname === '/' ? 'home' : (window.location.pathname.split('/')[1] || 'page'),
-                meta: meta
-            };
-            navigator.sendBeacon('/api/beacon/track', JSON.stringify(payload));
-        } catch (e) {
-            console.error('Track error', e);
-        }
-    };
-
     // Auto page_view
     if (document.readyState === 'complete') {
         setTimeout(function(){ Store.track('page_view'); }, 100);

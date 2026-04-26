@@ -63,14 +63,17 @@ class BeaconController extends Controller
                 'event_count' => $session->event_count + 1,
                 'exit_page' => mb_substr($pageUrl, 0, 500),
                 'ended_at' => now(),
+                'duration_seconds' => now()->diffInSeconds($session->started_at),
             ];
 
             // If it's a page_view, update page count and remove bounce flag
             if ($eventName === 'page_view') {
                 $updates['page_count'] = $session->page_count + 1;
-                if ($session->page_count >= 1) {
-                    $updates['is_bounce'] = false;
-                }
+            }
+            
+            // Un-bounce if the user is interacting (scroll, cart, checkout, page_view > 1)
+            if ($session->page_count > 1 || in_array($eventName, ['scroll_25', 'scroll_50', 'scroll_75', 'add_to_cart', 'checkout_start', 'purchase', 'search'])) {
+                $updates['is_bounce'] = false;
             }
 
             if ($eventName === 'product_view') $updates['reached_product'] = true;

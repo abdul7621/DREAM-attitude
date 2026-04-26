@@ -36,7 +36,7 @@
                 @forelse($sessions as $session)
                 <tr>
                     <td class="ps-4">
-                        <div class="fw-medium text-dark">{{ $session->visitor->country ?? 'Unknown' }} • {{ ucfirst($session->device_type) }}</div>
+                        <div class="fw-medium text-dark">{{ $session->visitor->country ?? 'Unknown' }} • {{ $session->visitor->os ?? 'Unknown OS' }} ({{ $session->visitor->browser ?? 'Unknown Browser' }})</div>
                         <div class="text-muted small" title="{{ $session->session_uuid }}">{{ $session->started_at->format('M d, H:i') }} ({{ $session->started_at->diffForHumans() }})</div>
                     </td>
                     <td>
@@ -50,10 +50,17 @@
                     <td>{{ $session->event_count }} events<br><span class="small text-muted">{{ $session->page_count }} pages</span></td>
                     <td>
                         <div class="d-flex gap-1">
-                            <span class="badge bg-{{ $session->reached_product ? 'primary' : 'light text-muted' }}" title="Product View">P</span>
-                            <span class="badge bg-{{ $session->reached_cart ? 'warning text-dark' : 'light text-muted' }}" title="Cart View">C</span>
-                            <span class="badge bg-{{ $session->reached_checkout ? 'info' : 'light text-muted' }}" title="Checkout">Ch</span>
-                            <span class="badge bg-{{ $session->reached_purchase ? 'success' : 'light text-muted' }}" title="Purchase">$$</span>
+                            @if($session->reached_purchase)
+                                <span class="badge bg-success" title="Purchased"><i class="bi bi-check-circle-fill"></i> Purchased</span>
+                            @elseif($session->reached_checkout)
+                                <span class="badge bg-info" title="Reached Checkout"><i class="bi bi-credit-card"></i> Checkout</span>
+                            @elseif($session->reached_cart)
+                                <span class="badge bg-warning text-dark" title="Added to Cart"><i class="bi bi-cart-fill"></i> Cart</span>
+                            @elseif($session->reached_product)
+                                <span class="badge bg-primary" title="Viewed Product"><i class="bi bi-eye-fill"></i> Product</span>
+                            @else
+                                <span class="badge bg-light text-muted" title="Just Browsed">Browsed</span>
+                            @endif
                         </div>
                     </td>
                     <td class="text-end pe-4">
