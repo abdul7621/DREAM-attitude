@@ -69,19 +69,39 @@
         </div>
     </div>
     <div class="col-md-3">
-        <div class="kpi-card">
-            <div class="kpi-title">Avg Session</div>
-            <div class="kpi-value">{{ $overview['avg_duration_formatted'] }}</div>
+        <div class="kpi-card" style="border-left: 4px solid #ef4444;">
+            <div class="kpi-title">Abandoned Carts</div>
+            <div class="kpi-value text-danger">{{ $abandonment['abandonment_rate'] }}%</div>
+            <div class="text-muted small mt-1 text-danger fw-semibold">₹{{ number_format($abandonment['lost_revenue'], 0) }} Lost Revenue</div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="kpi-card">
             <div class="kpi-title">Conversion Rate</div>
             <div class="kpi-value text-success">{{ $overview['conversion_rate'] }}%</div>
-            <div class="text-muted small mt-1">₹{{ number_format($overview['revenue'], 0) }} Revenue</div>
+            <div class="text-muted small mt-1 fw-bold text-success">₹{{ number_format($overview['revenue'], 0) }} Won Revenue</div>
         </div>
     </div>
 </div>
+
+@if(count($flags) > 0)
+<div class="mb-4">
+    <h6 class="mb-3 text-uppercase text-muted" style="letter-spacing: 1px; font-size: 0.75rem; font-weight: 700;">Decision Flags</h6>
+    <div class="row g-3">
+        @foreach($flags as $flag)
+        <div class="col-md-4">
+            <div class="alert alert-{{ $flag['type'] }} d-flex gap-3 mb-0 h-100 border-0" style="background: var(--bs-{{ $flag['type'] }}-bg-subtle);">
+                <i class="bi {{ $flag['icon'] }} fs-4 text-{{ $flag['type'] }}"></i>
+                <div>
+                    <h6 class="alert-heading mb-1 text-{{ $flag['type'] }} fw-bold" style="font-size: 0.9rem;">{{ $flag['title'] }}</h6>
+                    <p class="mb-0 text-dark small" style="opacity: 0.85;">{{ $flag['message'] }}</p>
+                </div>
+            </div>
+        </div>
+        @endforeach
+    </div>
+</div>
+@endif
 
 <div class="row g-4 mb-4">
     <div class="col-lg-8">
@@ -205,7 +225,7 @@
     </div>
     
     <div class="col-lg-4">
-        <div class="table-card h-100 d-flex flex-column">
+        <div class="table-card h-100 d-flex flex-column mb-4">
             <div class="table-card-header">Live Event Feed</div>
             <div class="flex-grow-1" style="overflow-y: auto; max-height: 400px;">
                 @forelse($liveEvents as $e)
@@ -223,6 +243,41 @@
                 @empty
                 <div class="p-4 text-center text-muted">No recent events</div>
                 @endforelse
+            </div>
+            <div class="p-2 border-top text-center bg-light">
+                <a href="{{ route('admin.analytics.sessions') }}" class="btn btn-sm btn-outline-secondary w-100">Open Session Explorer</a>
+            </div>
+        </div>
+
+        <div class="table-card d-flex flex-column">
+            <div class="table-card-header d-flex justify-content-between align-items-center">
+                <span>Search Intelligence</span>
+                <i class="bi bi-search text-muted"></i>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Search Query</th>
+                            <th class="text-end pe-3">Volume</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($search as $s)
+                        <tr>
+                            <td class="ps-3 d-flex align-items-center gap-2">
+                                <span class="fw-medium text-dark">{{ $s['query'] }}</span>
+                                @if($s['zero_results'])
+                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle" style="font-size:0.65rem;">0 Results</span>
+                                @endif
+                            </td>
+                            <td class="text-end pe-3">{{ number_format($s['count']) }}</td>
+                        </tr>
+                        @empty
+                        <tr><td colspan="2" class="text-center py-4 text-muted">No search data recorded</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

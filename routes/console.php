@@ -16,3 +16,6 @@ Schedule::command('orders:release-expired')->everyFiveMinutes();
 
 // Decision Engine daily aggregation
 Schedule::command('decision-engine:aggregate')->dailyAt('01:00');
+
+// Decision Engine event pruning
+Schedule::command('decision-engine:prune')->dailyAt('02:00');
