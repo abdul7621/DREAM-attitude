@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cookie;
 use App\Models\Visitor;
 use App\Models\AnalyticsSession;
-use Browser; // We might not have a browser parser package, so I'll write a simple fallback
 
 class TrackVisitor
 {
@@ -21,9 +20,19 @@ class TrackVisitor
             return $next($request);
         }
 
-        // Basic Bot Protection (Simple User-Agent check)
+        // Bot Protection — filter bots, crawlers, prefetch agents
         $userAgent = strtolower($request->userAgent() ?? '');
-        if (str_contains($userAgent, 'bot') || str_contains($userAgent, 'spider') || str_contains($userAgent, 'crawler')) {
+        $botPatterns = ['bot', 'spider', 'crawler', 'slurp', 'facebookexternalhit', 'facebot', 
+                       'whatsapp', 'telegram', 'preview', 'fetch', 'curl', 'wget', 'python',
+                       'headlesschrome', 'phantomjs', 'lighthouse', 'pagespeed'];
+        foreach ($botPatterns as $pattern) {
+            if (str_contains($userAgent, $pattern)) {
+                return $next($request);
+            }
+        }
+        
+        // Skip if no user agent at all (suspicious)
+        if (empty(trim($userAgent))) {
             return $next($request);
         }
 
@@ -86,6 +95,34 @@ class TrackVisitor
             elseif (preg_match('/Android/i', $userAgent)) $os = 'Android';
             elseif (preg_match('/iPhone|iPad|iPod/i', $userAgent)) $os = 'iOS';
 
+            $city = null;
+            $region = null;
+            $country = null;
+            
+            // Local GeoIP Lookup
+            try {
+                $dbPath = storage_path('app/geoip/GeoLite2-City.mmdb');
+                $ip = $request->ip();
+                
+                // Allow testing on localhost by spoofing IP or skip if local
+                if ($ip === '127.0.0.1' || $ip === '::1') {
+                    // Try to get real IP from headers if behind proxy
+                    $ip = $request->header('X-Forwarded-For', '8.8.8.8'); // Fake IP for local testing
+                    $ip = explode(',', $ip)[0];
+                }
+
+                if (file_exists($dbPath) && $ip) {
+                    $reader = new \GeoIp2\Database\Reader($dbPath);
+                    $record = $reader->city($ip);
+                    $city = $record->city->name;
+                    $region = $record->mostSpecificSubdivision->name;
+                    $country = $record->country->isoCode;
+                }
+            } catch (\Exception $e) {
+                // Ignore geoip errors (e.g. IP not found in DB)
+                \Log::debug('GeoIP lookup failed: ' . $e->getMessage());
+            }
+
             // Visitor Upsert
             $visitor = Visitor::firstOrCreate(
                 ['visitor_uuid' => $visitorUuid],
@@ -96,9 +133,21 @@ class TrackVisitor
                     'device_type' => $deviceType,
                     'browser' => $browser,
                     'os' => $os,
+                    'city' => $city,
+                    'region' => $region,
+                    'country' => $country,
                     'first_seen_at' => now(),
                 ]
             );
+
+            // If visitor exists but city is missing, try updating it
+            if ($visitor->wasRecentlyCreated === false && !$visitor->city && $city) {
+                $visitor->update([
+                    'city' => $city,
+                    'region' => $region,
+                    'country' => $country,
+                ]);
+            }
 
             // Identity Stitching (if user logged in but visitor record has no user_id)
             if ($userId && ! $visitor->user_id) {

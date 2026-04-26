@@ -32,14 +32,15 @@ class AnalyticsDashboardController extends Controller
         $pages = $analytics->getTopLandingPages($startStr, $endStr);
         $products = $analytics->getProductIntelligence($startStr, $endStr);
         $liveEvents = $analytics->getLiveFeed();
-        $liveCount = $analytics->getLiveActiveVisitors();
+        $livePulse = $analytics->getLiveVisitorPulse();
+        $liveProducts = $analytics->getLiveProductInterest();
         
         $abandonment = $analytics->getAbandonmentIntelligence($startStr, $endStr);
         $search = $analytics->getSearchIntelligence($startStr, $endStr);
         $flags = $analytics->getDecisionFlags($startStr, $endStr);
 
         return view('admin.analytics.index', compact(
-            'overview', 'funnel', 'sources', 'pages', 'products', 'liveEvents', 'liveCount', 
+            'overview', 'funnel', 'sources', 'pages', 'products', 'liveEvents', 'livePulse', 'liveProducts', 
             'abandonment', 'search', 'flags', 'range', 'startDate', 'endDate'
         ));
     }

@@ -242,14 +242,98 @@ class AnalyticsService
 
     public function getLiveFeed(): \Illuminate\Support\Collection
     {
-        return AnalyticsEvent::with(['visitor:id,country', 'product:id,name'])
+        return AnalyticsEvent::with(['visitor:id,country,city', 'product:id,name', 'session:id,source'])
             ->latest('created_at')
             ->limit(15)
             ->get();
     }
 
-    public function getLiveActiveVisitors(): int
+    public function getLiveVisitorPulse(): array
     {
-        return AnalyticsSession::where('ended_at', '>=', now()->subMinutes(5))->count();
+        // 5 minute window, must have executed JS (event_count > 0) to filter bots
+        $sessions = AnalyticsSession::with('visitor')
+            ->where('ended_at', '>=', now()->subMinutes(5))
+            ->where('event_count', '>', 0)
+            ->get();
+
+        $pulse = [
+            'total' => $sessions->count(),
+            'sources' => [],
+            'campaigns' => [],
+            'intents' => [
+                'cold_browsers' => 0,
+                'product_evaluators' => 0,
+                'high_intent' => 0,
+                'customers' => 0,
+            ],
+            'geography' => [],
+        ];
+
+        foreach ($sessions as $session) {
+            $visitor = $session->visitor;
+
+            // Sources
+            $source = ucfirst($session->source ?: 'Direct');
+            $pulse['sources'][$source] = ($pulse['sources'][$source] ?? 0) + 1;
+
+            // Campaigns
+            if ($session->campaign) {
+                $pulse['campaigns'][$session->campaign] = ($pulse['campaigns'][$session->campaign] ?? 0) + 1;
+            }
+
+            // Geography
+            $city = $visitor->city ?? 'Unknown';
+            if ($city !== 'Unknown') {
+                $pulse['geography'][$city] = ($pulse['geography'][$city] ?? 0) + 1;
+            }
+
+            // Intents
+            if ($visitor && $visitor->total_orders > 0) {
+                $pulse['intents']['customers']++;
+            } elseif ($session->reached_checkout || $session->reached_cart) {
+                $pulse['intents']['high_intent']++;
+            } elseif ($session->reached_product) {
+                $pulse['intents']['product_evaluators']++;
+            } else {
+                $pulse['intents']['cold_browsers']++;
+            }
+        }
+
+        // Sort arrays desc
+        arsort($pulse['sources']);
+        arsort($pulse['campaigns']);
+        arsort($pulse['geography']);
+
+        return $pulse;
+    }
+
+    public function getLiveProductInterest(): array
+    {
+        // Last 15 minutes for product interest
+        $events = AnalyticsEvent::with('product:id,name')
+            ->where('created_at', '>=', now()->subMinutes(15))
+            ->whereNotNull('product_id')
+            ->whereIn('event_name', ['product_view', 'add_to_cart'])
+            ->get();
+
+        $products = [];
+        foreach ($events as $event) {
+            $pid = $event->product_id;
+            if (!isset($products[$pid])) {
+                $products[$pid] = [
+                    'name' => $event->product->name ?? 'Unknown Product',
+                    'views' => 0,
+                    'atc' => 0,
+                ];
+            }
+            if ($event->event_name === 'add_to_cart') {
+                $products[$pid]['atc']++;
+            } else {
+                $products[$pid]['views']++;
+            }
+        }
+
+        usort($products, fn($a, $b) => ($b['views'] + $b['atc']) <=> ($a['views'] + $a['atc']));
+        return array_slice($products, 0, 5);
     }
 }

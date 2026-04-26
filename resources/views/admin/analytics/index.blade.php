@@ -21,14 +21,27 @@
     .table-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
     .table-card-header { padding: 16px 20px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #111827; font-size: 1rem; }
     
-    .live-indicator { display: inline-flex; align-items: center; gap: 8px; background: #fee2e2; color: #b91c1c; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
-    .live-dot { width: 8px; height: 8px; background: #dc2626; border-radius: 50%; animation: pulse 1.5s infinite; }
+    .live-dot { width: 8px; height: 8px; background: #dc2626; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); } 70% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); } }
     
-    .feed-item { padding: 12px 20px; border-bottom: 1px solid #f3f4f6; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
+    .feed-item { padding: 10px 16px; border-bottom: 1px solid #f3f4f6; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; }
     .feed-item:last-child { border-bottom: none; }
-    .feed-time { color: #9ca3af; font-size: 0.75rem; width: 60px; }
-    .feed-event { font-family: monospace; background: #f3f4f6; padding: 2px 6px; border-radius: 4px; color: #4b5563; }
+    .feed-time { color: #9ca3af; font-size: 0.7rem; width: 40px; flex-shrink: 0; }
+    .feed-event { font-family: monospace; background: #f3f4f6; padding: 2px 6px; border-radius: 4px; color: #4b5563; font-size: 0.75rem; }
+
+    .pulse-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); height: 100%; }
+    .pulse-card .pulse-header { padding: 12px 16px; border-bottom: 1px solid #f3f4f6; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280; }
+    .pulse-card .pulse-body { padding: 12px 16px; }
+    .pulse-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 0.82rem; }
+    .pulse-row .pulse-label { color: #374151; }
+    .pulse-row .pulse-count { font-weight: 700; color: #111827; }
+    .pulse-big { font-size: 2rem; font-weight: 800; color: #111827; line-height: 1; }
+    .pulse-sub { font-size: 0.75rem; color: #6b7280; margin-top: 4px; }
+    .source-badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 0.65rem; font-weight: 600; }
+    .source-facebook { background: #dbeafe; color: #1d4ed8; }
+    .source-direct { background: #f3f4f6; color: #374151; }
+    .source-google { background: #dcfce7; color: #166534; }
+    .source-instagram { background: #fce7f3; color: #9d174d; }
 </style>
 @endpush
 
@@ -39,9 +52,9 @@
         <p class="text-muted mb-0">Storefront Intelligence & Traffic Analytics</p>
     </div>
     <div class="d-flex align-items-center gap-3">
-        <div class="live-indicator">
-            <div class="live-dot"></div> {{ $liveCount }} Active Visitors
-        </div>
+        <a href="{{ route('admin.analytics.sessions') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-clock-history"></i> Sessions
+        </a>
         <form method="GET" class="d-flex align-items-center gap-2">
             <select name="range" class="form-select form-select-sm" onchange="this.form.submit()" style="width: auto; min-width: 140px;">
                 <option value="today" {{ $range == 'today' ? 'selected' : '' }}>Today</option>
@@ -54,6 +67,126 @@
     </div>
 </div>
 
+{{-- ═══════════════════════════════════════════════════════════════════ --}}
+{{-- LIVE VISITOR PULSE                                                 --}}
+{{-- ═══════════════════════════════════════════════════════════════════ --}}
+<div class="mb-4 p-3 rounded-3" style="background: linear-gradient(135deg, #fef2f2, #fff7ed, #fefce8); border: 1px solid #fecaca;">
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="live-dot"></span>
+        <span class="fw-bold" style="font-size: 1.1rem; color: #111827;">{{ $livePulse['total'] }} Live Visitors</span>
+        <span class="text-muted small">(last 5 min, bots excluded)</span>
+    </div>
+    <div class="row g-3">
+        {{-- Card 1: Traffic Sources --}}
+        <div class="col-lg col-sm-6">
+            <div class="pulse-card">
+                <div class="pulse-header"><i class="bi bi-broadcast me-1"></i> Traffic Sources</div>
+                <div class="pulse-body">
+                    @forelse(array_slice($livePulse['sources'], 0, 5, true) as $source => $count)
+                        <div class="pulse-row">
+                            <span class="pulse-label">
+                                @php
+                                    $srcLower = strtolower($source);
+                                    $badgeClass = match(true) {
+                                        str_contains($srcLower, 'facebook') || str_contains($srcLower, 'meta') => 'source-facebook',
+                                        str_contains($srcLower, 'instagram') => 'source-instagram',
+                                        str_contains($srcLower, 'google') => 'source-google',
+                                        default => 'source-direct',
+                                    };
+                                @endphp
+                                <span class="source-badge {{ $badgeClass }}">{{ $source }}</span>
+                            </span>
+                            <span class="pulse-count">{{ $count }}</span>
+                        </div>
+                    @empty
+                        <div class="text-muted small py-2">No active visitors</div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+        {{-- Card 2: Visitor Intent --}}
+        <div class="col-lg col-sm-6">
+            <div class="pulse-card">
+                <div class="pulse-header"><i class="bi bi-bullseye me-1"></i> Visitor Intent</div>
+                <div class="pulse-body">
+                    <div class="pulse-row">
+                        <span class="pulse-label"><i class="bi bi-fire text-danger me-1"></i> High Intent</span>
+                        <span class="pulse-count text-danger">{{ $livePulse['intents']['high_intent'] }}</span>
+                    </div>
+                    <div class="pulse-row">
+                        <span class="pulse-label"><i class="bi bi-eye text-primary me-1"></i> Evaluators</span>
+                        <span class="pulse-count text-primary">{{ $livePulse['intents']['product_evaluators'] }}</span>
+                    </div>
+                    <div class="pulse-row">
+                        <span class="pulse-label"><i class="bi bi-person text-secondary me-1"></i> Cold Browsers</span>
+                        <span class="pulse-count text-secondary">{{ $livePulse['intents']['cold_browsers'] }}</span>
+                    </div>
+                    <div class="pulse-row">
+                        <span class="pulse-label"><i class="bi bi-arrow-repeat text-success me-1"></i> Returning</span>
+                        <span class="pulse-count text-success">{{ $livePulse['intents']['customers'] }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{-- Card 3: Live Products --}}
+        <div class="col-lg col-sm-6">
+            <div class="pulse-card">
+                <div class="pulse-header"><i class="bi bi-box-seam me-1"></i> Live Products</div>
+                <div class="pulse-body">
+                    @forelse($liveProducts as $prod)
+                        <div class="pulse-row">
+                            <span class="pulse-label text-truncate" style="max-width: 140px;" title="{{ $prod['name'] }}">{{ Str::limit($prod['name'], 22) }}</span>
+                            <span class="pulse-count text-nowrap">
+                                <i class="bi bi-eye text-primary"></i> {{ $prod['views'] }}
+                                @if($prod['atc'] > 0)
+                                    <i class="bi bi-cart-plus text-success ms-1"></i> {{ $prod['atc'] }}
+                                @endif
+                            </span>
+                        </div>
+                    @empty
+                        <div class="text-muted small py-2">No product activity</div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+        {{-- Card 4: Geography --}}
+        <div class="col-lg col-sm-6">
+            <div class="pulse-card">
+                <div class="pulse-header"><i class="bi bi-geo-alt me-1"></i> Geography</div>
+                <div class="pulse-body">
+                    @forelse(array_slice($livePulse['geography'], 0, 5, true) as $city => $count)
+                        <div class="pulse-row">
+                            <span class="pulse-label">{{ $city }}</span>
+                            <span class="pulse-count">{{ $count }}</span>
+                        </div>
+                    @empty
+                        <div class="text-muted small py-2">GeoIP pending setup</div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+        {{-- Card 5: Campaign Pulse --}}
+        <div class="col-lg col-sm-6">
+            <div class="pulse-card">
+                <div class="pulse-header"><i class="bi bi-megaphone me-1"></i> Campaign Pulse</div>
+                <div class="pulse-body">
+                    @forelse(array_slice($livePulse['campaigns'], 0, 4, true) as $campaign => $count)
+                        <div class="pulse-row">
+                            <span class="pulse-label text-truncate" style="max-width: 120px;" title="{{ $campaign }}">{{ Str::limit($campaign, 16) }}</span>
+                            <span class="pulse-count">{{ $count }} live</span>
+                        </div>
+                    @empty
+                        <div class="text-muted small py-2">No active campaigns</div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ═══════════════════════════════════════════════════════════════════ --}}
+{{-- KPI CARDS                                                          --}}
+{{-- ═══════════════════════════════════════════════════════════════════ --}}
 <div class="row g-4 mb-4">
     <div class="col-md-3">
         <div class="kpi-card">
@@ -84,6 +217,9 @@
     </div>
 </div>
 
+{{-- ═══════════════════════════════════════════════════════════════════ --}}
+{{-- DECISION FLAGS                                                     --}}
+{{-- ═══════════════════════════════════════════════════════════════════ --}}
 @if(count($flags) > 0)
 <div class="mb-4">
     <h6 class="mb-3 text-uppercase text-muted" style="letter-spacing: 1px; font-size: 0.75rem; font-weight: 700;">Decision Flags</h6>
@@ -103,6 +239,9 @@
 </div>
 @endif
 
+{{-- ═══════════════════════════════════════════════════════════════════ --}}
+{{-- FUNNEL + TRAFFIC SOURCES                                           --}}
+{{-- ═══════════════════════════════════════════════════════════════════ --}}
 <div class="row g-4 mb-4">
     <div class="col-lg-8">
         <div class="funnel-container h-100">
@@ -181,6 +320,9 @@
     </div>
 </div>
 
+{{-- ═══════════════════════════════════════════════════════════════════ --}}
+{{-- PRODUCT INTELLIGENCE + LIVE FEED + SEARCH                         --}}
+{{-- ═══════════════════════════════════════════════════════════════════ --}}
 <div class="row g-4 mb-4">
     <div class="col-lg-8">
         <div class="table-card h-100">
@@ -225,20 +367,50 @@
     </div>
     
     <div class="col-lg-4">
-        <div class="table-card h-100 d-flex flex-column mb-4">
-            <div class="table-card-header">Live Event Feed</div>
-            <div class="flex-grow-1" style="overflow-y: auto; max-height: 400px;">
+        <div class="table-card d-flex flex-column mb-4" style="max-height: 360px;">
+            <div class="table-card-header d-flex justify-content-between align-items-center">
+                <span>Live Event Feed</span>
+                <span class="live-dot"></span>
+            </div>
+            <div class="flex-grow-1" style="overflow-y: auto;">
                 @forelse($liveEvents as $e)
-                <div class="feed-item">
-                    <div class="d-flex align-items-center gap-2" style="flex: 1; overflow: hidden;">
-                        <span class="feed-time">{{ $e->created_at->diffForHumans(null, true, true) }}</span>
-                        <span class="feed-event">{{ $e->event_name }}</span>
-                        @if($e->product)
-                            <span class="text-truncate text-muted small">{{ $e->product->name }}</span>
-                        @elseif($e->page_url)
-                            <span class="text-truncate text-muted small" title="{{ $e->page_url }}">{{ parse_url($e->page_url, PHP_URL_PATH) ?? '/' }}</span>
-                        @endif
-                    </div>
+                @php
+                    $srcBadge = '';
+                    $sessionSource = '';
+                    if ($e->session) {
+                        $sessionSource = strtolower($e->session->source ?? '');
+                    }
+                    
+                    // Build narrative
+                    $narrative = match($e->event_name) {
+                        'page_view' => 'Visited ' . (parse_url($e->page_url ?? '', PHP_URL_PATH) ?: '/'),
+                        'product_view' => 'Viewed ' . ($e->product->name ?? 'a product'),
+                        'add_to_cart' => '🛒 Added ' . ($e->product->name ?? 'item') . ' to cart',
+                        'checkout_start' => '💳 Started checkout',
+                        'purchase' => '✅ Purchased! ₹' . ($e->meta['revenue'] ?? '0'),
+                        'search' => '🔍 Searched "' . ($e->meta['query'] ?? '...') . '"',
+                        'scroll_25' => 'Scrolled 25%',
+                        'scroll_50' => 'Scrolled 50%',
+                        'scroll_75' => 'Scrolled 75%',
+                        default => $e->event_name,
+                    };
+                    
+                    $isSignal = in_array($e->event_name, ['add_to_cart', 'checkout_start', 'purchase', 'search']);
+                @endphp
+                <div class="feed-item {{ $isSignal ? 'bg-warning bg-opacity-10' : '' }}">
+                    <span class="feed-time">{{ $e->created_at->diffForHumans(null, true, true) }}</span>
+                    @if($sessionSource)
+                        @php
+                            $sBadge = match(true) {
+                                str_contains($sessionSource, 'facebook') => 'source-facebook',
+                                str_contains($sessionSource, 'instagram') => 'source-instagram',
+                                str_contains($sessionSource, 'google') => 'source-google',
+                                default => 'source-direct',
+                            };
+                        @endphp
+                        <span class="source-badge {{ $sBadge }}" style="font-size: 0.6rem;">{{ ucfirst($sessionSource ?: 'Direct') }}</span>
+                    @endif
+                    <span class="text-truncate" style="flex: 1;">{{ $narrative }}</span>
                 </div>
                 @empty
                 <div class="p-4 text-center text-muted">No recent events</div>

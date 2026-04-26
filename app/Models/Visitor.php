@@ -18,6 +18,8 @@ class Visitor extends Model
         'browser',
         'os',
         'country',
+        'city',
+        'region',
         'total_sessions',
         'total_orders',
         'total_revenue',
