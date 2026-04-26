@@ -107,17 +107,17 @@
                     {{-- Contact Info --}}
                     <div style="background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); margin-bottom: 24px; padding: 24px;">
                         <div style="font-weight: 600; font-size: 16px; margin-bottom: 24px; color: var(--color-text-primary);"><i class="bi bi-person-circle me-2"></i> Contact Information</div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                            <div style="grid-column: 1 / -1;">
+                        <div class="row g-3">
+                            <div class="col-12">
                                 <label class="sf-label">Full Name *</label>
                                 <input type="text" name="customer_name" id="customer_name" value="{{ old('customer_name') }}" autocomplete="name" class="sf-input @error('customer_name') is-invalid @enderror" required>
                             </div>
-                            <div>
+                            <div class="col-md-6">
                                 <label class="sf-label">Phone Number *</label>
                                 <input type="tel" name="phone" id="phone" value="{{ old('phone') }}" autocomplete="tel" class="sf-input @error('phone') is-invalid @enderror" required>
-                                <small class="sf-inline-err-text d-none" id="phone_err">Enter a valid 10-digit number</small>
+                                <small class="sf-inline-err-text d-none" id="phone_err">Enter a valid phone number</small>
                             </div>
-                            <div>
+                            <div class="col-md-6">
                                 <label class="sf-label">Email (Optional)</label>
                                 <input type="email" name="email" id="email" value="{{ old('email') }}" autocomplete="email" class="sf-input @error('email') is-invalid @enderror">
                             </div>
@@ -135,8 +135,8 @@
                             </select>
                         </div>
                         @endauth
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-                            <div>
+                        <div class="row g-3">
+                            <div class="col-md-4">
                                 <label class="sf-label">PIN Code *</label>
                                 <div style="position: relative;">
                                     <input type="text" id="postal_code" name="postal_code" value="{{ old('postal_code') }}" class="sf-input @error('postal_code') is-invalid @enderror" required maxlength="6" inputmode="numeric" autocomplete="postal-code" pattern="[0-9]{6}">
@@ -144,19 +144,19 @@
                                 </div>
                                 <small class="sf-inline-err-text d-none" id="pin_err">Enter a valid 6-digit PIN code</small>
                             </div>
-                            <div>
+                            <div class="col-md-4">
                                 <label class="sf-label">City *</label>
                                 <input type="text" id="city" name="city" value="{{ old('city') }}" autocomplete="address-level2" class="sf-input @error('city') is-invalid @enderror" required readonly>
                             </div>
-                            <div>
+                            <div class="col-md-4">
                                 <label class="sf-label">State *</label>
                                 <input type="text" id="state" name="state" value="{{ old('state') }}" autocomplete="address-level1" class="sf-input @error('state') is-invalid @enderror" required readonly>
                             </div>
-                            <div style="grid-column: 1 / -1;">
+                            <div class="col-12">
                                 <label class="sf-label">House/Flat No., Building Name *</label>
                                 <input type="text" name="address_line1" id="address_line1" value="{{ old('address_line1') }}" autocomplete="address-line1" class="sf-input @error('address_line1') is-invalid @enderror" required>
                             </div>
-                            <div style="grid-column: 1 / -1;">
+                            <div class="col-12">
                                 <label class="sf-label">Street/Area/Landmark (Optional)</label>
                                 <input type="text" name="address_line2" id="address_line2" value="{{ old('address_line2') }}" class="sf-input">
                             </div>
@@ -218,12 +218,12 @@
                                             <input class="sf-checkout-radio" type="radio" name="payment_method" value="{{ $gw->name }}" @checked(old('payment_method', ($gw->is_default ? $gw->name : '')) === $gw->name) style="margin-top: 4px;">
                                             <div style="flex: 1;">
                                                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                                                    <span style="font-weight: 600; color: var(--color-text-primary);">{{ $gw->label }}</span>
+                                                    <span style="font-weight: 600; color: var(--color-text-primary);">{{ $gw->name === 'phonepe' ? 'Online Payment' : $gw->label }}</span>
                                                     @if($gw->is_default)
                                                         <span style="font-size: 10px; font-weight: 600; color: var(--color-gold); background: rgba(201,168,76,0.1); padding: 4px 8px; border-radius: 12px; text-transform: uppercase;">Recommended</span>
                                                     @endif
                                                 </div>
-                                                <p style="color: var(--color-text-muted); font-size: 12px; margin: 4px 0 0 0;">{{ $gw->name === 'razorpay' ? 'UPI, Cards, NetBanking' : 'Pay via ' . $gw->label }}</p>
+                                                <p style="color: var(--color-text-muted); font-size: 12px; margin: 4px 0 0 0;">{{ in_array($gw->name, ['razorpay', 'phonepe']) ? 'UPI, Cards, NetBanking' : 'Pay via ' . $gw->label }}</p>
                                             </div>
                                         </label>
                                     </div>
@@ -527,10 +527,10 @@
     if (phoneInput) {
         phoneInput.addEventListener('blur', function() {
             var val = this.value.trim().replace(/[^0-9]/g, '');
-            if (val.length < 10) {
-                showError(this, 'Enter a valid 10-digit number');
+            if (val.length < 7) {
+                showError(this, 'Enter a valid phone number');
                 var pe = document.getElementById('phone_err');
-                if(pe) { pe.classList.remove('d-none'); pe.textContent = 'Enter a valid 10-digit number'; }
+                if(pe) { pe.classList.remove('d-none'); pe.textContent = 'Enter a valid phone number'; }
             } else {
                 hideError(this);
                 var pe = document.getElementById('phone_err');
@@ -624,9 +624,8 @@
     form.addEventListener('submit', function (e) {
         // Run validations manually
         var hasError = false;
-        
-        if (phoneInput && phoneInput.value.trim().length < 10) {
-            showError(phoneInput, 'Enter a valid 10-digit phone number');
+        if (phoneInput && phoneInput.value.trim().replace(/[^0-9]/g, '').length < 7) {
+            showError(phoneInput, 'Enter a valid phone number');
             hasError = true;
         }
         if (nameInput && nameInput.value.trim().length < 3) {
