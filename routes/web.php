@@ -119,7 +119,7 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
 Route::post('/api/shiprocket/webhook', [\App\Http\Controllers\Api\ShiprocketWebhookController::class, 'handle'])->name('webhook.shiprocket');
 Route::post('/api/webhooks/phonepe', [\App\Http\Controllers\Api\PhonePeWebhookController::class, 'handle'])->name('api.webhooks.phonepe');
 Route::post('/api/webhooks/ithink', [\App\Http\Controllers\Api\IthinkWebhookController::class, 'handle'])->name('webhook.ithink');
-Route::post('/api/beacon/track', [\App\Http\Controllers\Api\BeaconController::class, 'track'])->name('api.beacon.track');
+Route::post('/api/store/state', [\App\Http\Controllers\Api\BeaconController::class, 'track'])->name('api.beacon.track');
 Route::get('/test-ithink/{orderId}', function ($orderId) {
     try {
         $order = \App\Models\Order::findOrFail($orderId);

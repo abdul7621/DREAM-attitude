@@ -26,7 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'api/shiprocket/webhook',
             'api/webhooks/ithink',
-            'api/beacon/*',
+            'api/store/*',
             'payments/verify/*',
             'payments/callback/*',
         ]);

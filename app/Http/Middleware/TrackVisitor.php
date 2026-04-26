@@ -127,10 +127,33 @@ class TrackVisitor
                 // Just update the ended_at to extend session
                 $existingSession = AnalyticsSession::where('session_uuid', $sessionUuid)->first();
                 if ($existingSession) {
-                    $existingSession->update([
-                        'ended_at' => now(),
-                        'duration_seconds' => now()->diffInSeconds($existingSession->started_at)
-                    ]);
+                    $duration = 0;
+                    try {
+                        $start = $existingSession->started_at ?: $existingSession->created_at;
+                        if ($start) {
+                            $diff = now()->getTimestamp() - $start->getTimestamp();
+                            $duration = max(0, (int) $diff);
+                        }
+                    } catch (\Exception $e) {
+                        // Ignore
+                    }
+                    
+                    $updates = ['ended_at' => now()];
+                    if ($duration > 0 || $existingSession->duration_seconds == 0) {
+                        $updates['duration_seconds'] = $duration;
+                    }
+                    
+                    try {
+                        $existingSession->update($updates);
+                    } catch (\Exception $e) {
+                        \Log::error('TrackVisitor session update failed: ' . $e->getMessage());
+                        unset($updates['duration_seconds']);
+                        try {
+                            $existingSession->update($updates);
+                        } catch (\Exception $e2) {
+                            // Give up
+                        }
+                    }
                 }
                 $visitor->update(['last_seen_at' => now()]);
             }

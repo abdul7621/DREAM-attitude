@@ -58,13 +58,27 @@ class BeaconController extends Controller
                 Visitor::where('id', $visitorId)->increment('total_revenue', (float) $meta['revenue']);
             }
 
+            $duration = 0;
+            try {
+                $start = $session->started_at ?: $session->created_at;
+                if ($start) {
+                    $diff = now()->getTimestamp() - $start->getTimestamp();
+                    $duration = max(0, (int) $diff);
+                }
+            } catch (\Exception $e) {
+                // Ignore duration errors
+            }
+
             // Update Funnel Flags
             $updates = [
                 'event_count' => $session->event_count + 1,
                 'exit_page' => mb_substr($pageUrl, 0, 500),
                 'ended_at' => now(),
-                'duration_seconds' => now()->diffInSeconds($session->started_at),
             ];
+
+            if ($duration > 0 || $session->duration_seconds == 0) {
+                $updates['duration_seconds'] = $duration;
+            }
 
             // If it's a page_view, update page count and remove bounce flag
             if ($eventName === 'page_view') {
@@ -80,7 +94,18 @@ class BeaconController extends Controller
             if ($eventName === 'cart_view' || $eventName === 'add_to_cart') $updates['reached_cart'] = true;
             if ($eventName === 'checkout_start') $updates['reached_checkout'] = true;
 
-            $session->update($updates);
+            try {
+                $session->update($updates);
+            } catch (\Exception $e) {
+                Log::error('Session update failed: ' . $e->getMessage());
+                // Try updating without duration_seconds just in case
+                unset($updates['duration_seconds']);
+                try {
+                    $session->update($updates);
+                } catch (\Exception $e2) {
+                    Log::error('Session fallback update failed: ' . $e2->getMessage());
+                }
+            }
 
             // Record Event
             AnalyticsEvent::create([

@@ -71,7 +71,7 @@
                         page_type: window.location.pathname === '/' ? 'home' : (window.location.pathname.split('/')[1] || 'page'),
                         meta: meta
                     };
-                    navigator.sendBeacon('/api/beacon/track', JSON.stringify(payload));
+                    navigator.sendBeacon('/api/store/state', JSON.stringify(payload));
                 } catch (e) { console.error('Track error', e); }
             }
         };
