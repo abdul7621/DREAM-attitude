@@ -60,7 +60,7 @@ class CheckoutController extends Controller
             $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
                 'customer_name' => ['required', 'string', 'max:255'],
                 'email' => ['nullable', 'email', 'max:255'],
-                'phone' => ['required', 'regex:/^\+?[0-9\s\-]{7,15}$/'],
+                'phone' => ['required', 'regex:/^(?:(?:\+|00)?91[\-\s]?)?[6-9]\d{9}$/'],
                 'address_line1' => ['required', 'string', 'max:255'],
                 'address_line2' => ['nullable', 'string', 'max:255'],
                 'city' => ['required', 'string', 'max:128'],

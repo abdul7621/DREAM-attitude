@@ -526,11 +526,12 @@
 
     if (phoneInput) {
         phoneInput.addEventListener('blur', function() {
-            var val = this.value.trim().replace(/[^0-9]/g, '');
-            if (val.length < 7) {
-                showError(this, 'Enter a valid phone number');
+            var val = this.value.trim().replace(/[\s\-]/g, '');
+            var isValid = /^(?:(?:\+|00)?91)?[6-9]\d{9}$/.test(val);
+            if (!isValid) {
+                showError(this, 'Enter a valid 10-digit phone number');
                 var pe = document.getElementById('phone_err');
-                if(pe) { pe.classList.remove('d-none'); pe.textContent = 'Enter a valid phone number'; }
+                if(pe) { pe.classList.remove('d-none'); pe.textContent = 'Enter a valid 10-digit phone number'; }
             } else {
                 hideError(this);
                 var pe = document.getElementById('phone_err');
@@ -624,8 +625,9 @@
     form.addEventListener('submit', function (e) {
         // Run validations manually
         var hasError = false;
-        if (phoneInput && phoneInput.value.trim().replace(/[^0-9]/g, '').length < 7) {
-            showError(phoneInput, 'Enter a valid phone number');
+        var phoneVal = phoneInput ? phoneInput.value.trim().replace(/[\s\-]/g, '') : '';
+        if (phoneInput && !(/^(?:(?:\+|00)?91)?[6-9]\d{9}$/.test(phoneVal))) {
+            showError(phoneInput, 'Enter a valid 10-digit phone number');
             hasError = true;
         }
         if (nameInput && nameInput.value.trim().length < 3) {
