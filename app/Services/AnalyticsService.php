@@ -97,6 +97,57 @@ class AnalyticsService
             ->get();
     }
 
+    public function getGeographyReport(string $startDate, string $endDate): array
+    {
+        $start = Carbon::parse($startDate)->startOfDay();
+        $end = Carbon::parse($endDate)->endOfDay();
+
+        // City breakdown with sessions, conversions, revenue
+        $cities = DB::table('analytics_sessions')
+            ->join('visitors', 'analytics_sessions.visitor_id', '=', 'visitors.id')
+            ->whereBetween('analytics_sessions.started_at', [$start, $end])
+            ->whereNotNull('visitors.city')
+            ->where('visitors.city', '!=', '')
+            ->selectRaw('
+                visitors.city,
+                visitors.region,
+                COUNT(analytics_sessions.id) as sessions,
+                COUNT(DISTINCT analytics_sessions.visitor_id) as unique_visitors,
+                SUM(CASE WHEN analytics_sessions.reached_product = 1 THEN 1 ELSE 0 END) as product_views,
+                SUM(CASE WHEN analytics_sessions.reached_cart = 1 THEN 1 ELSE 0 END) as add_to_cart,
+                SUM(CASE WHEN analytics_sessions.reached_purchase = 1 THEN 1 ELSE 0 END) as purchases,
+                SUM(analytics_sessions.revenue) as revenue,
+                ROUND(AVG(analytics_sessions.duration_seconds)) as avg_duration
+            ')
+            ->groupBy('visitors.city', 'visitors.region')
+            ->orderByDesc('sessions')
+            ->limit(20)
+            ->get();
+
+        // State/Region summary
+        $regions = DB::table('analytics_sessions')
+            ->join('visitors', 'analytics_sessions.visitor_id', '=', 'visitors.id')
+            ->whereBetween('analytics_sessions.started_at', [$start, $end])
+            ->whereNotNull('visitors.region')
+            ->where('visitors.region', '!=', '')
+            ->selectRaw('
+                visitors.region,
+                COUNT(analytics_sessions.id) as sessions,
+                COUNT(DISTINCT analytics_sessions.visitor_id) as unique_visitors,
+                SUM(CASE WHEN analytics_sessions.reached_purchase = 1 THEN 1 ELSE 0 END) as purchases,
+                SUM(analytics_sessions.revenue) as revenue
+            ')
+            ->groupBy('visitors.region')
+            ->orderByDesc('sessions')
+            ->limit(15)
+            ->get();
+
+        return [
+            'cities' => $cities,
+            'regions' => $regions,
+        ];
+    }
+
     public function getProductIntelligence(string $startDate, string $endDate): \Illuminate\Support\Collection
     {
         $start = Carbon::parse($startDate)->toDateString();

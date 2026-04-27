@@ -62,6 +62,7 @@
                 <option value="7d" {{ $range == '7d' ? 'selected' : '' }}>Last 7 Days</option>
                 <option value="14d" {{ $range == '14d' ? 'selected' : '' }}>Last 14 Days</option>
                 <option value="30d" {{ $range == '30d' ? 'selected' : '' }}>Last 30 Days</option>
+                <option value="90d" {{ $range == '90d' ? 'selected' : '' }}>Last 90 Days</option>
             </select>
         </form>
     </div>
@@ -447,6 +448,79 @@
                         </tr>
                         @empty
                         <tr><td colspan="2" class="text-center py-4 text-muted">No search data recorded</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ═══════════════════════════════════════════════════════════════════ --}}
+{{-- GEOGRAPHY INTELLIGENCE                                             --}}
+{{-- ═══════════════════════════════════════════════════════════════════ --}}
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="table-card h-100">
+            <div class="table-card-header">Top Cities ({{ $range == 'today' ? 'Today' : ($range == 'yesterday' ? 'Yesterday' : 'Last ' . str_replace('d', ' Days', $range)) }})</div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">City</th>
+                            <th class="text-center">Sessions</th>
+                            <th class="text-center">Unique Users</th>
+                            <th class="text-center">ATC</th>
+                            <th class="text-center">Purchases</th>
+                            <th class="text-end pe-3">Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($geography['cities'] as $city)
+                        <tr>
+                            <td class="ps-3 fw-medium text-dark">
+                                {{ $city->city }}
+                                <span class="d-block text-muted small" style="font-size: 0.7rem;">{{ $city->region }}</span>
+                            </td>
+                            <td class="text-center">{{ number_format($city->sessions) }}</td>
+                            <td class="text-center">{{ number_format($city->unique_visitors) }}</td>
+                            <td class="text-center">{{ number_format($city->add_to_cart) }}</td>
+                            <td class="text-center text-primary fw-semibold">{{ number_format($city->purchases) }}</td>
+                            <td class="text-end pe-3 fw-bold text-success">₹{{ number_format($city->revenue, 0) }}</td>
+                        </tr>
+                        @empty
+                        <tr><td colspan="6" class="text-center py-4 text-muted">No geographic data for this period. Ensure GeoIP is configured.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="table-card h-100">
+            <div class="table-card-header d-flex justify-content-between align-items-center">
+                <span>Top Regions / States</span>
+                <i class="bi bi-geo-alt text-muted"></i>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Region</th>
+                            <th class="text-center">Sessions</th>
+                            <th class="text-end pe-3">Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($geography['regions'] as $region)
+                        <tr>
+                            <td class="ps-3 fw-medium text-dark">{{ $region->region }}</td>
+                            <td class="text-center">{{ number_format($region->sessions) }}</td>
+                            <td class="text-end pe-3 text-success">₹{{ number_format($region->revenue, 0) }}</td>
+                        </tr>
+                        @empty
+                        <tr><td colspan="3" class="text-center py-4 text-muted">No region data recorded</td></tr>
                         @endforelse
                     </tbody>
                 </table>

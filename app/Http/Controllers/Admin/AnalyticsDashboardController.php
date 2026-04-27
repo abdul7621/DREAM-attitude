@@ -20,6 +20,7 @@ class AnalyticsDashboardController extends Controller
             '7d' => now()->subDays(6),
             '14d' => now()->subDays(13),
             '30d' => now()->subDays(29),
+            '90d' => now()->subDays(89),
             default => now()->subDays(6),
         };
 
@@ -38,10 +39,11 @@ class AnalyticsDashboardController extends Controller
         $abandonment = $analytics->getAbandonmentIntelligence($startStr, $endStr);
         $search = $analytics->getSearchIntelligence($startStr, $endStr);
         $flags = $analytics->getDecisionFlags($startStr, $endStr);
+        $geography = $analytics->getGeographyReport($startStr, $endStr);
 
         return view('admin.analytics.index', compact(
             'overview', 'funnel', 'sources', 'pages', 'products', 'liveEvents', 'livePulse', 'liveProducts', 
-            'abandonment', 'search', 'flags', 'range', 'startDate', 'endDate'
+            'abandonment', 'search', 'flags', 'geography', 'range', 'startDate', 'endDate'
         ));
     }
 }
