@@ -148,6 +148,11 @@ class NotificationService
         ]);
     }
 
+    public function sendRawWhatsApp(string $phone, string $event, string $messageBody, array $vars = []): void
+    {
+        $this->sendWhatsApp($phone, $event, $messageBody, $vars);
+    }
+
     private function sendEmail(string $to, string $subject, string $messageBody, string $event, array $vars): void
     {
         $status = 'skipped';

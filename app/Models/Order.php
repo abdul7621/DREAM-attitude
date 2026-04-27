@@ -94,6 +94,8 @@ class Order extends Model
         'guest_token',
         'review_request_sent_at',
         'replenishment_reminder_sent_at',
+        'recovered_from_cart',
+        'lead_source',
     ];
 
     protected function casts(): array
@@ -107,6 +109,7 @@ class Order extends Model
             'placed_at' => 'datetime',
             'review_request_sent_at' => 'datetime',
             'replenishment_reminder_sent_at' => 'datetime',
+            'recovered_from_cart' => 'boolean',
         ];
     }
 

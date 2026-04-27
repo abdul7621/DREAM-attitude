@@ -66,6 +66,7 @@ Route::put('/cart/items/{item}', [CartController::class, 'update'])->name('cart.
 Route::delete('/cart/items/{item}', [CartController::class, 'destroy'])->name('cart.items.destroy');
 Route::post('/cart/coupon', [CartController::class, 'applyCoupon'])->name('cart.coupon.apply');
 Route::delete('/cart/coupon', [CartController::class, 'removeCoupon'])->name('cart.coupon.remove');
+Route::post('/cart/capture', [CartController::class, 'capture'])->name('cart.capture');
 
 // ── Checkout ───────────────────────────────────────────────────────────────
 Route::get('/checkout', [CheckoutController::class, 'create'])->name('checkout.create');

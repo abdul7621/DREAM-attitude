@@ -219,6 +219,51 @@
 </div>
 
 {{-- ═══════════════════════════════════════════════════════════════════ --}}
+{{-- CAPTURE ENGINE & RECOVERY OS                                       --}}
+{{-- ═══════════════════════════════════════════════════════════════════ --}}
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <h5 class="mb-3" style="font-weight: 600;">Capture Engine & Recovery Intelligence</h5>
+    </div>
+    <div class="col-md-4">
+        <div class="kpi-card" style="background: linear-gradient(135deg, var(--color-bg-surface), rgba(201,168,76,0.1)); border: 1px solid var(--color-gold);">
+            <div class="kpi-title" style="color: var(--color-gold);">Recovered Revenue</div>
+            <div class="kpi-value text-gold">₹{{ number_format($captureStats['recovered_revenue'], 0) }}</div>
+            <div class="text-muted small mt-1"><i class="bi bi-arrow-repeat me-1"></i> From {{ number_format($captureStats['recovered_count']) }} recovered carts</div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card h-100 border-0 shadow-sm" style="background: var(--color-bg-surface);">
+            <div class="card-body p-4">
+                <h6 class="mb-4 text-muted text-uppercase" style="font-size: 0.75rem; font-weight: 700; letter-spacing: 1px;">Checkout Offer A/B Lift</h6>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div style="flex: 1;">
+                        <div class="text-muted small mb-1">Variant A (Modal Offer)</div>
+                        <div class="fw-bold fs-5">{{ $captureStats['variant_a_conv'] }}% <span class="text-muted fs-6 fw-normal">({{ $captureStats['variant_a_orders'] }} orders)</span></div>
+                    </div>
+                    <div style="width: 1px; height: 40px; background: var(--color-border); margin: 0 20px;"></div>
+                    <div style="flex: 1;">
+                        <div class="text-muted small mb-1">Control (Standard Checkout)</div>
+                        <div class="fw-bold fs-5">{{ $captureStats['control_conv'] }}% <span class="text-muted fs-6 fw-normal">({{ $captureStats['control_orders'] }} orders)</span></div>
+                    </div>
+                    <div style="width: 1px; height: 40px; background: var(--color-border); margin: 0 20px;"></div>
+                    <div style="flex: 1; text-align: right;">
+                        <div class="text-muted small mb-1">Variant Lift</div>
+                        @if($captureStats['lift_pct'] > 0)
+                            <div class="fw-bold fs-4 text-success">+{{ $captureStats['lift_pct'] }}%</div>
+                        @elseif($captureStats['lift_pct'] < 0)
+                            <div class="fw-bold fs-4 text-danger">{{ $captureStats['lift_pct'] }}%</div>
+                        @else
+                            <div class="fw-bold fs-4 text-muted">0%</div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ═══════════════════════════════════════════════════════════════════ --}}
 {{-- DECISION FLAGS                                                     --}}
 {{-- ═══════════════════════════════════════════════════════════════════ --}}
 @if(count($flags) > 0)

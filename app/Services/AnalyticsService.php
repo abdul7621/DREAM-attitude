@@ -387,4 +387,66 @@ class AnalyticsService
         usort($products, fn($a, $b) => ($b['views'] + $b['atc']) <=> ($a['views'] + $a['atc']));
         return array_slice($products, 0, 5);
     }
+
+    public function getCaptureAnalytics(string $startDate, string $endDate): array
+    {
+        $start = Carbon::parse($startDate)->startOfDay();
+        $end = Carbon::parse($endDate)->endOfDay();
+
+        // Orders that converted after being captured
+        $recoveredOrders = \App\Models\Order::whereBetween('placed_at', [$start, $end])
+            ->where('recovered_from_cart', true)
+            ->where('payment_status', '!=', \App\Models\Order::PAYMENT_STATUS_FAILED)
+            ->where('order_status', '!=', \App\Models\Order::ORDER_STATUS_CANCELLED)
+            ->selectRaw('
+                COUNT(id) as total_recovered,
+                SUM(grand_total) as recovered_revenue
+            ')->first();
+
+        // A/B Lift metrics
+        $abStats = \App\Models\Order::whereBetween('placed_at', [$start, $end])
+            ->whereNotNull('lead_source')
+            ->where('payment_status', '!=', \App\Models\Order::PAYMENT_STATUS_FAILED)
+            ->where('order_status', '!=', \App\Models\Order::ORDER_STATUS_CANCELLED)
+            ->selectRaw('
+                lead_source,
+                COUNT(id) as total_orders,
+                SUM(grand_total) as revenue
+            ')
+            ->groupBy('lead_source')
+            ->get()
+            ->keyBy('lead_source');
+
+        $variantA = $abStats->get('variant_a');
+        $control = $abStats->get('control');
+
+        // We also need total carts in each cohort to calculate true conversion rate
+        $cartCohorts = \App\Models\Cart::whereBetween('created_at', [$start, $end])
+            ->whereNotNull('lead_source')
+            ->selectRaw('lead_source, COUNT(id) as total_carts')
+            ->groupBy('lead_source')
+            ->get()
+            ->keyBy('lead_source');
+
+        $variantACarts = $cartCohorts->get('variant_a')?->total_carts ?? 1;
+        $controlCarts = $cartCohorts->get('control')?->total_carts ?? 1;
+
+        // Analytics (Impressions/Submits/Skips) - for now we just use the Carts as the total "submits/qualifiers"
+        // since full impression tracking requires a separate table or Redis.
+
+        $variantAConv = $variantA ? ($variantA->total_orders / $variantACarts) * 100 : 0;
+        $controlConv = $control ? ($control->total_orders / $controlCarts) * 100 : 0;
+
+        $liftPct = $controlConv > 0 ? (($variantAConv - $controlConv) / $controlConv) * 100 : 0;
+
+        return [
+            'recovered_revenue' => (float) ($recoveredOrders->recovered_revenue ?? 0),
+            'recovered_count' => (int) ($recoveredOrders->total_recovered ?? 0),
+            'variant_a_orders' => (int) ($variantA->total_orders ?? 0),
+            'control_orders' => (int) ($control->total_orders ?? 0),
+            'variant_a_conv' => round($variantAConv, 2),
+            'control_conv' => round($controlConv, 2),
+            'lift_pct' => round($liftPct, 2),
+        ];
+    }
 }

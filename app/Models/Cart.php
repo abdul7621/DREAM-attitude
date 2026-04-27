@@ -11,6 +11,11 @@ class Cart extends Model
     protected $fillable = [
         'user_id',
         'currency',
+        'guest_phone',
+        'lead_source',
+        'captured_at',
+        'offer_claimed',
+        'abandoned_reminder_step',
     ];
 
     public function user(): BelongsTo

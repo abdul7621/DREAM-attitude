@@ -25,11 +25,16 @@ class Visitor extends Model
         'total_revenue',
         'first_seen_at',
         'last_seen_at',
+        'normalized_phone',
+        'phone_hash',
+        'first_capture_source',
+        'last_capture_at',
     ];
 
     protected $casts = [
         'first_seen_at' => 'datetime',
         'last_seen_at' => 'datetime',
+        'last_capture_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

@@ -116,4 +116,65 @@ class CartController extends Controller
 
         return redirect()->route('cart.index')->with('status', __('Coupon removed.'));
     }
+
+    public function capture(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $data = $request->validate([
+            'guest_phone' => ['required', 'string', 'min:10', 'max:15'],
+            'lead_source' => ['nullable', 'string', 'max:64'],
+            'variant_id' => ['nullable', 'exists:product_variants,id'],
+            'qty' => ['nullable', 'integer', 'min:1', 'max:9999'],
+        ]);
+
+        $phone = preg_replace('/[^0-9]/', '', $data['guest_phone']);
+        // Basic normalization for India (assume 10 digits if 10, otherwise just take last 10)
+        if (strlen($phone) > 10) {
+            $phone = substr($phone, -10);
+        }
+        $hash = hash('sha256', $phone);
+
+        // Check abuse: Has this phone completed an order?
+        $hasOrdered = \App\Models\Order::where('phone', 'like', "%{$phone}%")->exists();
+
+        if (isset($data['variant_id'])) {
+            $this->cart->add((int) $data['variant_id'], (int) ($data['qty'] ?? 1));
+        }
+
+        $cartModel = $this->cart->getModel();
+        if ($cartModel) {
+            $cartModel->update([
+                'guest_phone' => $phone,
+                'lead_source' => $data['lead_source'] ?? 'capture_modal',
+                'captured_at' => now(),
+            ]);
+
+            // Auto-apply coupon if configured and not abused
+            $engine = config('commerce.conversion_engine.capture_offer', []);
+            if (!empty($engine['offer_coupon_code']) && !$hasOrdered) {
+                try {
+                    $this->cart->applyCouponCode($engine['offer_coupon_code']);
+                    $cartModel->update(['offer_claimed' => $engine['offer_coupon_code']]);
+                    session(['offer_unlocked_freeship' => true]);
+                } catch (\Exception $e) {
+                    // Ignore coupon errors silently during capture
+                }
+            }
+        }
+
+        // Tag visitor
+        $visitorId = request()->cookie('da_vid');
+        if ($visitorId) {
+            \App\Models\Visitor::where('visitor_uuid', $visitorId)->update([
+                'normalized_phone' => $phone,
+                'phone_hash' => $hash,
+                'first_capture_source' => $data['lead_source'] ?? 'capture_modal',
+                'last_capture_at' => now(),
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'redirect' => route('checkout.create')
+        ]);
+    }
 }

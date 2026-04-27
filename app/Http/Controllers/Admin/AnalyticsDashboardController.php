@@ -40,10 +40,11 @@ class AnalyticsDashboardController extends Controller
         $search = $analytics->getSearchIntelligence($startStr, $endStr);
         $flags = $analytics->getDecisionFlags($startStr, $endStr);
         $geography = $analytics->getGeographyReport($startStr, $endStr);
+        $captureStats = $analytics->getCaptureAnalytics($startStr, $endStr);
 
         return view('admin.analytics.index', compact(
             'overview', 'funnel', 'sources', 'pages', 'products', 'liveEvents', 'livePulse', 'liveProducts', 
-            'abandonment', 'search', 'flags', 'geography', 'range', 'startDate', 'endDate'
+            'abandonment', 'search', 'flags', 'geography', 'captureStats', 'range', 'startDate', 'endDate'
         ));
     }
 }

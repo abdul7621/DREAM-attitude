@@ -186,6 +186,9 @@
         @endif
     </div>
 </section>
+
+@include('components.capture-modal')
+
 @endsection
 
 @if (session('analytics_add_to_cart'))

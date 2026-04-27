@@ -128,4 +128,43 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Conversion Engine (Proprietary Capture & Trust OS)
+    |--------------------------------------------------------------------------
+    */
+    'conversion_engine' => [
+        'capture_offer' => [
+            'enabled' => true,
+            'trigger' => 'checkout_start', // or 'atc'
+            'cooldown_days' => 14,
+            'traffic_split_percent' => 80, // % of visitors who see the offer
+            'min_cart_value' => 400, // Margin protection
+            'offer_coupon_code' => 'FREESHIP',
+            'ui_headline' => '🚚 Unlock Free Priority Shipping',
+            'ui_subtext' => 'Save your mobile number to get free shipping and save your cart.',
+            'ui_button_text' => 'Unlock Free Shipping'
+        ],
+        'checkout_os' => [
+            'cod_badge_enabled' => true,
+            'trust_badges' => ['Secure Checkout', 'UPI/Cards', 'Fast Delivery'],
+            'reassurance_copy' => 'Your information is secure. No advance payment required for COD orders.',
+            'cta_text' => 'Complete My Order'
+        ],
+        'abandonment_sequence' => [
+            [
+                'delay_minutes' => 30, 
+                'template' => "Hi {name}, you left something behind in your cart! Complete your order now and enjoy your items: {link}"
+            ],
+            [
+                'delay_minutes' => 360, // 6 hours (Escalation / Benefit reminder)
+                'template' => "Your free shipping offer is waiting! The items in your cart are selling out fast. Claim your free shipping here: {link}"
+            ],
+            [
+                'delay_minutes' => 1440, // 24 hours (Loss aversion)
+                'template' => "Final reminder! We will be clearing your cart soon. Complete your order now before your items are gone forever: {link}"
+            ]
+        ]
+    ],
+
 ];

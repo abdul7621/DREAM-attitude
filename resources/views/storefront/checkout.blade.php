@@ -247,18 +247,41 @@
                         </div>
                     </div>
 
-                    {{-- Fix #6: Trust badges BEFORE Place Order button --}}
-                    <div class="sf-trust-row" style="margin-bottom: 16px; padding: 16px 20px; background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); justify-content: center;">
-                        <span style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-shield-lock-fill" style="color: var(--color-success); font-size: 16px;"></i> Secure Checkout</span>
-                        <span style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-phone-fill" style="color: var(--color-gold); font-size: 16px;"></i> UPI</span>
-                        <span style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-credit-card-2-front-fill" style="color: var(--color-gold); font-size: 16px;"></i> Cards</span>
-                        <span style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-cash-coin" style="color: var(--color-gold); font-size: 16px;"></i> COD</span>
-                        <span style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-truck" style="color: var(--color-gold); font-size: 16px;"></i> Fast Delivery</span>
+                    {{-- Checkout OS: Configurable Trust Section --}}
+                    @php
+                        $checkoutOs = config('commerce.conversion_engine.checkout_os', []);
+                        $trustBadges = $checkoutOs['trust_badges'] ?? ['Secure Checkout', 'UPI/Cards', 'Fast Delivery'];
+                        $isCodEnabled = $checkoutOs['cod_badge_enabled'] ?? true;
+                    @endphp
+                    
+                    @if(session('offer_unlocked_freeship') || auth()->user()?->cart?->offer_claimed)
+                    <div style="margin-bottom: 16px; padding: 12px 16px; background: rgba(39,103,73,0.1); border: 1px solid var(--color-success); border-radius: var(--radius-md); text-align: center;">
+                        <span style="color: var(--color-success); font-weight: 600;"><i class="bi bi-gift-fill me-2"></i> Free Shipping Unlocked!</span>
+                    </div>
+                    @endif
+
+                    <div class="sf-trust-row" style="margin-bottom: 16px; padding: 16px 20px; background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); justify-content: center; flex-wrap: wrap;">
+                        @foreach($trustBadges as $badge)
+                            <span style="display: flex; align-items: center; gap: 8px; margin: 4px 8px;">
+                                <i class="bi bi-check-circle-fill" style="color: var(--color-success); font-size: 14px;"></i> {{ $badge }}
+                            </span>
+                        @endforeach
+                        @if($isCodEnabled)
+                            <span style="display: flex; align-items: center; gap: 8px; margin: 4px 8px;">
+                                <i class="bi bi-cash-coin" style="color: var(--color-gold); font-size: 14px;"></i> Pay on Delivery
+                            </span>
+                        @endif
                     </div>
 
                     <button type="submit" class="sf-btn-primary" id="submitBtn">
-                        <span id="submitBtnText" style="display:flex;align-items:center;justify-content:center;">{{ $copy['place_order_cta'] ?: 'Place Order' }} <i class="bi bi-arrow-right ms-2"></i></span>
+                        <span id="submitBtnText" style="display:flex;align-items:center;justify-content:center;">{{ $checkoutOs['cta_text'] ?? 'Complete My Order' }} <i class="bi bi-arrow-right ms-2"></i></span>
                     </button>
+                    
+                    @if(!empty($checkoutOs['reassurance_copy']))
+                        <div style="text-align: center; margin-top: 12px; font-size: 12px; color: var(--color-text-muted);">
+                            <i class="bi bi-shield-lock-fill me-1"></i> {{ $checkoutOs['reassurance_copy'] }}
+                        </div>
+                    @endif
                 </form>
             </div>
         </div>

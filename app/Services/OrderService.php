@@ -64,6 +64,8 @@ class OrderService
                 'placed_at' => now(),
                 'coupon_id' => $totals['coupon']?->id,
                 'coupon_code_snapshot' => $totals['coupon']?->code,
+                'recovered_from_cart' => $cart->abandoned_reminder_step > 0,
+                'lead_source' => $cart->lead_source,
             ], $this->attributionAttributes()));
 
             foreach ($lines as $row) {
@@ -179,6 +181,8 @@ class OrderService
                 'placed_at' => null,
                 'coupon_id' => $totals['coupon']?->id,
                 'coupon_code_snapshot' => $totals['coupon']?->code,
+                'recovered_from_cart' => $cart->abandoned_reminder_step > 0,
+                'lead_source' => $cart->lead_source,
             ], $this->attributionAttributes()));
 
             foreach ($lines as $row) {
