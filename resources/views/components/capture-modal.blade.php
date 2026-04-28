@@ -53,56 +53,7 @@
     let originalFormToSubmit = null;
     let cohort = 'control';
     
-    function initCaptureModalForForm(form) {
-        if (!captureConfig.enabled || !captureConfig.engine_enabled) return;
-        if (!form) return;
 
-        const splitPercent = captureConfig.traffic_split_percent || 100;
-        const cooldownDays = captureConfig.cooldown_days || 14;
-        
-        // 1. Session frequency check (Once per browsing session)
-        if (sessionStorage.getItem('da_capture_shown_session')) {
-            return;
-        }
-
-        // 2. Cross-session fatigue check
-        const lastSeen = localStorage.getItem('da_capture_seen_at');
-        if (lastSeen) {
-            const daysSince = (new Date() - new Date(parseInt(lastSeen))) / (1000 * 60 * 60 * 24);
-            if (daysSince < cooldownDays) return; 
-        }
-
-        // Sticky Cohort logic
-        cohort = localStorage.getItem('da_capture_cohort');
-        if (!cohort) {
-            cohort = (Math.random() * 100 <= splitPercent) ? 'variant_a' : 'control';
-            localStorage.setItem('da_capture_cohort', cohort);
-        }
-
-        // If Control, we don't intercept.
-        if (cohort === 'control') return;
-
-        form.addEventListener('submit', function(e) {
-            // Check if it's already been bypassed
-            if (form.getAttribute('data-capture-bypassed') === 'true') {
-                return; // Let standard submit happen
-            }
-
-            // Check which button triggered the submit
-            const submitter = e.submitter;
-            if (submitter) {
-                const isBuyNow = submitter.id === 'buyNowBtn' || submitter.innerText.toLowerCase().includes('buy now');
-                if (isBuyNow) {
-                    return; // Buy Now bypasses interception
-                }
-            }
-
-            // Intercept ATC
-            e.preventDefault();
-            originalFormToSubmit = form;
-            showCaptureModal();
-        });
-    }
 
     function showCaptureModal() {
         const modal = document.getElementById('conversionCaptureModal');
@@ -131,7 +82,9 @@
     function resumeOriginalForm() {
         if (originalFormToSubmit) {
             originalFormToSubmit.setAttribute('data-capture-bypassed', 'true');
-            originalFormToSubmit.submit();
+            // Dispatch a bubbling submit event so store.js intercepts it for AJAX cart add
+            const event = new Event('submit', { bubbles: true, cancelable: true });
+            originalFormToSubmit.dispatchEvent(event);
         }
     }
 
@@ -185,16 +138,64 @@
         });
     }
 
-    // Initialize on all product forms across the site
-    document.addEventListener('DOMContentLoaded', function() {
-        // Main product page form
-        const mainForm = document.getElementById('productForm');
-        if (mainForm) initCaptureModalForForm(mainForm);
+    // Global delegated listener (Capture Phase)
+    document.addEventListener('submit', function(e) {
+        if (!captureConfig.enabled || !captureConfig.engine_enabled) return;
 
-        // Product cards on homepage / category pages
-        document.querySelectorAll('.form-add-to-cart').forEach(form => {
-            initCaptureModalForForm(form);
-        });
-    });
+        let form = e.target;
+        while(form && form.tagName !== 'FORM') {
+            form = form.parentElement;
+        }
+        if (!form) return;
+
+        // Check if it's an ATC form
+        if (form.id === 'productForm' || form.classList.contains('form-add-to-cart')) {
+            
+            // Check if it's already been bypassed
+            if (form.getAttribute('data-capture-bypassed') === 'true') {
+                return; // Let it continue to store.js
+            }
+
+            const splitPercent = captureConfig.traffic_split_percent || 100;
+            const cooldownDays = captureConfig.cooldown_days || 14;
+            
+            // 1. Session frequency check
+            if (sessionStorage.getItem('da_capture_shown_session')) return;
+
+            // 2. Cross-session fatigue check
+            const lastSeen = localStorage.getItem('da_capture_seen_at');
+            if (lastSeen) {
+                const daysSince = (new Date() - new Date(parseInt(lastSeen))) / (1000 * 60 * 60 * 24);
+                if (daysSince < cooldownDays) return; 
+            }
+
+            // Sticky Cohort
+            cohort = localStorage.getItem('da_capture_cohort');
+            if (!cohort) {
+                cohort = (Math.random() * 100 <= splitPercent) ? 'variant_a' : 'control';
+                localStorage.setItem('da_capture_cohort', cohort);
+            }
+
+            if (cohort === 'control') return;
+
+            // Check which button triggered the submit
+            const submitter = e.submitter;
+            if (submitter) {
+                const isBuyNow = submitter.id === 'buyNowBtn' || submitter.innerText.toLowerCase().includes('buy now');
+                if (isBuyNow) return; 
+            }
+            
+            // Check redirect input for buy now (mobile sticky etc)
+            const redirectInput = form.querySelector('input[name="redirect"]');
+            if (redirectInput && redirectInput.value === 'checkout') return;
+
+            // INTERCEPT!
+            e.preventDefault();
+            e.stopPropagation(); // Stop store.js from seeing this event!
+            
+            originalFormToSubmit = form;
+            showCaptureModal();
+        }
+    }, true); // true = Capture phase (runs before store.js bubbling phase)
 </script>
 @endif
