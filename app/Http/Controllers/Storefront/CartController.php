@@ -140,7 +140,7 @@ class CartController extends Controller
             $this->cart->add((int) $data['variant_id'], (int) ($data['qty'] ?? 1));
         }
 
-        $cartModel = $this->cart->getModel();
+        $cartModel = $this->cart->getCart();
         if ($cartModel) {
             $cartModel->update([
                 'guest_phone' => $phone,
