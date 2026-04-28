@@ -439,6 +439,16 @@ class AnalyticsService
 
         $liftPct = $controlConv > 0 ? (($variantAConv - $controlConv) / $controlConv) * 100 : 0;
 
+        $impressions = \App\Models\AnalyticsEvent::whereBetween('created_at', [$start, $end])
+            ->where('event_name', 'capture_impression')->count();
+        $submits = \App\Models\AnalyticsEvent::whereBetween('created_at', [$start, $end])
+            ->where('event_name', 'capture_submit')->count();
+        $skips = \App\Models\AnalyticsEvent::whereBetween('created_at', [$start, $end])
+            ->where('event_name', 'capture_skip')->count();
+
+        $submitPct = $impressions > 0 ? ($submits / $impressions) * 100 : 0;
+        $skipPct = $impressions > 0 ? ($skips / $impressions) * 100 : 0;
+
         return [
             'recovered_revenue' => (float) ($recoveredOrders->recovered_revenue ?? 0),
             'recovered_count' => (int) ($recoveredOrders->total_recovered ?? 0),
@@ -447,6 +457,11 @@ class AnalyticsService
             'variant_a_conv' => round($variantAConv, 2),
             'control_conv' => round($controlConv, 2),
             'lift_pct' => round($liftPct, 2),
+            'impressions' => $impressions,
+            'submits' => $submits,
+            'skips' => $skips,
+            'submit_pct' => round($submitPct, 1),
+            'skip_pct' => round($skipPct, 1),
         ];
     }
 }

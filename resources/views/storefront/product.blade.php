@@ -233,6 +233,7 @@
 #sfSocialProof.show { transform: translateY(0) !important; opacity: 1 !important; }
 </style>
 @endif
+@include('components.capture-modal')
 @endsection
 
 @push('scripts')

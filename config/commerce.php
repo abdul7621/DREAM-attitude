@@ -135,8 +135,11 @@ return [
     */
     'conversion_engine' => [
         'capture_offer' => [
+            'engine_enabled' => true,
+            'recovery_enabled' => false,
+            'recovery_dry_run' => true,
             'enabled' => true,
-            'trigger' => 'checkout_start', // or 'atc'
+            'trigger' => 'add_to_cart', // forced to ATC as per feedback
             'cooldown_days' => 14,
             'traffic_split_percent' => 80, // % of visitors who see the offer
             'min_cart_value' => 400, // Margin protection

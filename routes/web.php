@@ -67,6 +67,7 @@ Route::delete('/cart/items/{item}', [CartController::class, 'destroy'])->name('c
 Route::post('/cart/coupon', [CartController::class, 'applyCoupon'])->name('cart.coupon.apply');
 Route::delete('/cart/coupon', [CartController::class, 'removeCoupon'])->name('cart.coupon.remove');
 Route::post('/cart/capture', [CartController::class, 'capture'])->name('cart.capture');
+Route::post('/cart/capture/log', [CartController::class, 'captureLog'])->name('cart.capture.log');
 
 // ── Checkout ───────────────────────────────────────────────────────────────
 Route::get('/checkout', [CheckoutController::class, 'create'])->name('checkout.create');
@@ -196,6 +197,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::put('settings', [AdminSettingController::class, 'update'])->name('settings.update');
     Route::get('settings/payments', [\App\Http\Controllers\Admin\PaymentSettingsController::class, 'index'])->name('settings.payments');
     Route::post('settings/payments', [\App\Http\Controllers\Admin\PaymentSettingsController::class, 'update'])->name('settings.payments.update');
+    
+    // Conversion Engine OS Settings
+    Route::get('settings/conversion-engine', [\App\Http\Controllers\Admin\ConversionEngineSettingsController::class, 'index'])->name('settings.conversion-engine');
+    Route::post('settings/conversion-engine', [\App\Http\Controllers\Admin\ConversionEngineSettingsController::class, 'store'])->name('settings.conversion-engine.store');
 
     // Theme Engine Operations
     Route::get('theme', [\App\Http\Controllers\Admin\ThemeController::class, 'index'])->name('theme.index');

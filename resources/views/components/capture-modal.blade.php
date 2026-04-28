@@ -1,12 +1,18 @@
 @php
     $engine = config('commerce.conversion_engine.capture_offer', []);
-    $enabled = $engine['enabled'] ?? false;
+    $enabled = $engine['engine_enabled'] ?? false;
 @endphp
 
 @if($enabled)
 <div id="conversionCaptureModal" class="sf-modal" style="display: none;">
     <div class="sf-modal-overlay"></div>
-    <div class="sf-modal-content" style="max-width: 400px; padding: 0; overflow: hidden;">
+    <div class="sf-modal-content" style="max-width: 400px; padding: 0; overflow: hidden; position: relative;">
+        
+        {{-- Close X Button --}}
+        <button type="button" onclick="skipCaptureModal()" style="position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 24px; color: var(--color-text-muted); cursor: pointer; z-index: 15;">
+            &times;
+        </button>
+
         <div style="background: var(--color-bg-elevated); padding: 32px 24px; text-align: center;">
             <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(201,168,76,0.1); color: var(--color-gold); display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 16px;">
                 <i class="bi bi-truck"></i>
@@ -27,8 +33,8 @@
                     {{ $engine['ui_button_text'] ?? 'Unlock Free Shipping' }}
                 </button>
                 
-                <button type="button" onclick="continueAsGuest()" style="background: none; border: none; color: var(--color-text-muted); font-size: 13px; text-decoration: underline; cursor: pointer;">
-                    No thanks, continue as guest
+                <button type="button" onclick="skipCaptureModal()" style="background: none; border: none; color: var(--color-text-muted); font-size: 13px; text-decoration: underline; cursor: pointer;">
+                    No thanks, continue to cart
                 </button>
             </form>
         </div>
@@ -44,49 +50,72 @@
 
 <script>
     const captureConfig = @json($engine);
-    const checkoutUrl = '{{ route("checkout.create") }}';
+    let originalFormToSubmit = null;
+    let cohort = 'control';
     
-    function initCaptureModal(triggerSelector) {
-        if (!captureConfig.enabled) return;
+    function initCaptureModalForATC(formId) {
+        if (!captureConfig.enabled || !captureConfig.engine_enabled) return;
+
+        const form = document.getElementById(formId);
+        if (!form) return;
 
         const splitPercent = captureConfig.traffic_split_percent || 100;
         const cooldownDays = captureConfig.cooldown_days || 14;
         
-        // Fatigue check
+        // 1. Session frequency check (Once per browsing session)
+        if (sessionStorage.getItem('da_capture_shown_session')) {
+            return;
+        }
+
+        // 2. Cross-session fatigue check
         const lastSeen = localStorage.getItem('da_capture_seen_at');
         if (lastSeen) {
             const daysSince = (new Date() - new Date(parseInt(lastSeen))) / (1000 * 60 * 60 * 24);
-            if (daysSince < cooldownDays) return; // In cooldown
+            if (daysSince < cooldownDays) return; 
         }
 
         // Sticky Cohort logic
-        let cohort = localStorage.getItem('da_capture_cohort');
+        cohort = localStorage.getItem('da_capture_cohort');
         if (!cohort) {
             cohort = (Math.random() * 100 <= splitPercent) ? 'variant_a' : 'control';
             localStorage.setItem('da_capture_cohort', cohort);
         }
 
-        const btn = document.querySelector(triggerSelector);
-        if (btn) {
-            btn.addEventListener('click', function(e) {
-                if (cohort === 'control') {
-                    // Control group goes straight to checkout
-                    return; 
+        // If Control, we don't intercept.
+        if (cohort === 'control') return;
+
+        form.addEventListener('submit', function(e) {
+            // Check if it's already been bypassed
+            if (form.getAttribute('data-capture-bypassed') === 'true') {
+                return; // Let standard submit happen
+            }
+
+            // Check which button triggered the submit
+            const submitter = e.submitter;
+            if (submitter) {
+                const isBuyNow = submitter.id === 'buyNowBtn' || submitter.innerText.toLowerCase().includes('buy now');
+                if (isBuyNow) {
+                    return; // Buy Now bypasses interception
                 }
-                
-                // Show modal, prevent default
-                e.preventDefault();
-                showCaptureModal();
-            });
-        }
+            }
+
+            // Intercept ATC
+            e.preventDefault();
+            originalFormToSubmit = form;
+            showCaptureModal();
+        });
     }
 
     function showCaptureModal() {
         const modal = document.getElementById('conversionCaptureModal');
         modal.style.display = 'flex';
-        // Small delay to allow display:flex to apply before adding class for animation
         setTimeout(() => modal.classList.add('show'), 10);
+        
+        sessionStorage.setItem('da_capture_shown_session', 'true');
         localStorage.setItem('da_capture_seen_at', Date.now());
+
+        // Fire impression analytic
+        logCaptureAction('impression');
     }
 
     function hideCaptureModal() {
@@ -95,8 +124,30 @@
         setTimeout(() => modal.style.display = 'none', 300);
     }
 
-    function continueAsGuest() {
-        window.location.href = checkoutUrl;
+    function skipCaptureModal() {
+        hideCaptureModal();
+        logCaptureAction('skip');
+        resumeOriginalForm();
+    }
+
+    function resumeOriginalForm() {
+        if (originalFormToSubmit) {
+            originalFormToSubmit.setAttribute('data-capture-bypassed', 'true');
+            originalFormToSubmit.submit();
+        }
+    }
+
+    function logCaptureAction(actionType) {
+        // Fire and forget simple tracking
+        fetch('{{ route("cart.capture.log") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ action: actionType })
+        }).catch(() => {});
     }
 
     function handleCaptureSubmit(e) {
@@ -105,6 +156,7 @@
         if (!phone || phone.length < 10) return;
 
         const btn = e.target.querySelector('button[type="submit"]');
+        const ogText = btn.innerHTML;
         btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Processing...';
         btn.disabled = true;
 
@@ -117,26 +169,28 @@
             },
             body: JSON.stringify({
                 guest_phone: phone,
-                lead_source: 'checkout_start_modal'
+                lead_source: 'variant_a'
             })
         })
         .then(res => res.json())
         .then(data => {
-            if (data.redirect) {
-                window.location.href = data.redirect;
-            } else {
-                window.location.href = checkoutUrl;
-            }
+            logCaptureAction('submit');
+            // If they successfully gave their number, set a very long cooldown so we never bother them again
+            localStorage.setItem('da_capture_seen_at', Date.now() + (1000 * 60 * 60 * 24 * 365)); 
+            hideCaptureModal();
+            resumeOriginalForm();
         })
         .catch(err => {
             console.error('Capture Error:', err);
-            window.location.href = checkoutUrl; // Failsafe
+            hideCaptureModal();
+            resumeOriginalForm(); // Failsafe
         });
     }
 
-    // Initialize if on cart page
+    // Initialize on product page
     document.addEventListener('DOMContentLoaded', function() {
-        initCaptureModal('.btn-checkout');
+        // Find product form
+        initCaptureModalForATC('productForm');
     });
 </script>
 @endif

@@ -291,6 +291,11 @@
            class="sidebar-link {{ request()->routeIs('admin.settings.payments') ? 'active' : '' }}">
             <i class="bi bi-credit-card"></i> Payment Gateways
         </a>
+        <a href="{{ route('admin.settings.conversion-engine') }}"
+           class="sidebar-link {{ request()->routeIs('admin.settings.conversion-engine') ? 'active' : '' }}"
+           style="background: rgba(201,168,76,0.1); border-left: 3px solid var(--color-gold);">
+            <i class="bi bi-truck" style="color: var(--color-gold);"></i> Checkout OS
+        </a>
         <a href="{{ route('admin.notification-templates.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.notification-templates.*') ? 'active' : '' }}">
             <i class="bi bi-envelope-paper"></i> Email Templates

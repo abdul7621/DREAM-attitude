@@ -18,6 +18,18 @@ class SendAbandonedCartReminders extends Command
 
     public function handle(): int
     {
+        $engineConfig = config('commerce.conversion_engine.capture_offer', []);
+        
+        if (!($engineConfig['engine_enabled'] ?? true) || !($engineConfig['recovery_enabled'] ?? false)) {
+            $this->info("Recovery Engine is disabled in settings.");
+            return self::SUCCESS;
+        }
+
+        $isDryRun = $engineConfig['recovery_dry_run'] ?? true;
+        if ($isDryRun) {
+            $this->warn("⚙️ RUNNING IN DRY-RUN MODE: No messages will be sent, no steps incremented.");
+        }
+
         $sequence = config('commerce.conversion_engine.abandonment_sequence', []);
         if (empty($sequence)) {
             $this->info("No abandonment sequence configured.");
@@ -61,17 +73,25 @@ class SendAbandonedCartReminders extends Command
                 );
 
                 try {
-                    $this->notifier->sendRawWhatsApp($phone, 'abandoned_sequence_step_'.$stepIndex, $messageBody, [
-                        'cart_id' => $cart->id,
-                        'recovery_url' => $recoveryUrl
-                    ]);
-                    
-                    $cart->update([
-                        'abandoned_reminder_step' => $stepIndex + 1,
-                        // update the timestamp so the next step's delay starts from NOW
-                        'updated_at' => now(), 
-                    ]);
-                    $sent++;
+                    if ($isDryRun) {
+                        \Illuminate\Support\Facades\Log::info("[DRY RUN] Would send Step {$stepIndex} to {$phone}", [
+                            'cart_id' => $cart->id,
+                            'name' => $name,
+                            'template_preview' => $messageBody
+                        ]);
+                        $sent++;
+                    } else {
+                        $this->notifier->sendRawWhatsApp($phone, 'abandoned_sequence_step_'.$stepIndex, $messageBody, [
+                            'cart_id' => $cart->id,
+                            'recovery_url' => $recoveryUrl
+                        ]);
+                        
+                        $cart->update([
+                            'abandoned_reminder_step' => $stepIndex + 1,
+                            'updated_at' => now(), 
+                        ]);
+                        $sent++;
+                    }
                 } catch (\Throwable $e) {
                     $this->error('Cart '.$cart->id.': '.$e->getMessage());
                 }

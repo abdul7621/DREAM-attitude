@@ -177,4 +177,18 @@ class CartController extends Controller
             'redirect' => route('checkout.create')
         ]);
     }
+
+    public function captureLog(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $action = $request->input('action');
+        \Illuminate\Support\Facades\Log::info("Capture Engine Log: {$action}");
+        
+        try {
+            app(\App\Services\AnalyticsTracker::class)->trackEvent('capture_'.$action, []);
+        } catch (\Exception $e) {
+            // silent
+        }
+        
+        return response()->json(['success' => true]);
+    }
 }
