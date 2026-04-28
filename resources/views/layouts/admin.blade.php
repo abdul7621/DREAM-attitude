@@ -296,6 +296,11 @@
            style="background: rgba(201,168,76,0.1); border-left: 3px solid var(--color-gold);">
             <i class="bi bi-truck" style="color: var(--color-gold);"></i> Checkout OS
         </a>
+        <a href="{{ route('admin.captured-leads.index') }}"
+           class="sidebar-link {{ request()->routeIs('admin.captured-leads.*') ? 'active' : '' }}"
+           style="padding-left: 3rem;">
+            <i class="bi bi-people" style="color: var(--color-gold);"></i> Recovery Leads
+        </a>
         <a href="{{ route('admin.notification-templates.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.notification-templates.*') ? 'active' : '' }}">
             <i class="bi bi-envelope-paper"></i> Email Templates

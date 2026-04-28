@@ -16,6 +16,8 @@ class Cart extends Model
         'captured_at',
         'offer_claimed',
         'abandoned_reminder_step',
+        'lead_status',
+        'lead_notes',
     ];
 
     public function user(): BelongsTo

@@ -53,10 +53,8 @@
     let originalFormToSubmit = null;
     let cohort = 'control';
     
-    function initCaptureModalForATC(formId) {
+    function initCaptureModalForForm(form) {
         if (!captureConfig.enabled || !captureConfig.engine_enabled) return;
-
-        const form = document.getElementById(formId);
         if (!form) return;
 
         const splitPercent = captureConfig.traffic_split_percent || 100;
@@ -187,10 +185,16 @@
         });
     }
 
-    // Initialize on product page
+    // Initialize on all product forms across the site
     document.addEventListener('DOMContentLoaded', function() {
-        // Find product form
-        initCaptureModalForATC('productForm');
+        // Main product page form
+        const mainForm = document.getElementById('productForm');
+        if (mainForm) initCaptureModalForForm(mainForm);
+
+        // Product cards on homepage / category pages
+        document.querySelectorAll('.form-add-to-cart').forEach(form => {
+            initCaptureModalForForm(form);
+        });
     });
 </script>
 @endif

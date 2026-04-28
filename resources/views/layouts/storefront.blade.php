@@ -244,6 +244,8 @@
     @yield('content')
 </main>
 
+@include('components.capture-modal')
+
 {{-- ── Footer ──────────────────────────────────────────── --}}
 <footer class="sf-footer">
     <div class="sf-container">

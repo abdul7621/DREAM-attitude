@@ -15,24 +15,23 @@ class ConversionEngineSettingsController extends Controller
 
     public function store(Request $request, SettingsService $settingsService)
     {
-        $settings = $request->input('settings', []);
+        $all = $request->except(['_token', '_method']);
 
         // Default toggles to false if unchecked
-        $settings['commerce.conversion_engine.capture_offer.engine_enabled'] = isset($settings['commerce.conversion_engine.capture_offer.engine_enabled']);
-        $settings['commerce.conversion_engine.capture_offer.recovery_enabled'] = isset($settings['commerce.conversion_engine.capture_offer.recovery_enabled']);
-        $settings['commerce.conversion_engine.capture_offer.recovery_dry_run'] = isset($settings['commerce.conversion_engine.capture_offer.recovery_dry_run']);
+        $all['commerce__conversion_engine__capture_offer__engine_enabled'] = isset($all['commerce__conversion_engine__capture_offer__engine_enabled']) ? '1' : '0';
+        $all['commerce__conversion_engine__capture_offer__recovery_enabled'] = isset($all['commerce__conversion_engine__capture_offer__recovery_enabled']) ? '1' : '0';
+        $all['commerce__conversion_engine__capture_offer__recovery_dry_run'] = isset($all['commerce__conversion_engine__capture_offer__recovery_dry_run']) ? '1' : '0';
 
         // Handle the abandonment sequence array structure
-        if (isset($settings['commerce.conversion_engine.abandonment_sequence'])) {
-            // It comes in as an array of steps. We need to save the whole array.
-            $sequence = array_values($settings['commerce.conversion_engine.abandonment_sequence']);
+        if (isset($all['abandonment_sequence'])) {
+            $sequence = array_values($all['abandonment_sequence']);
             $settingsService->set('commerce.conversion_engine.abandonment_sequence', $sequence);
-            unset($settings['commerce.conversion_engine.abandonment_sequence']);
+            unset($all['abandonment_sequence']);
         }
 
-        // Save flat settings
-        foreach ($settings as $key => $value) {
-            $settingsService->set($key, $value);
+        foreach ($all as $key => $value) {
+            $dotKey = str_replace('__', '.', (string) $key);
+            $settingsService->set($dotKey, $value);
         }
 
         return redirect()->back()->with('success', 'Conversion Engine settings updated successfully.');

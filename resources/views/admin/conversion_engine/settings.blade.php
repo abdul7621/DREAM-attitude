@@ -26,21 +26,21 @@
                 <div class="row g-4">
                     <div class="col-md-4">
                         <div class="form-check form-switch fs-5">
-                            <input class="form-check-input" type="checkbox" role="switch" id="engine_enabled" name="settings[commerce.conversion_engine.capture_offer.engine_enabled]" value="1" {{ config('commerce.conversion_engine.capture_offer.engine_enabled') ? 'checked' : '' }}>
+                            <input class="form-check-input" type="checkbox" role="switch" id="engine_enabled" name="commerce__conversion_engine__capture_offer__engine_enabled" value="1" {{ config('commerce.conversion_engine.capture_offer.engine_enabled') ? 'checked' : '' }}>
                             <label class="form-check-label fs-6 fw-bold ms-2" for="engine_enabled">Capture Engine (Modal)</label>
                         </div>
                         <div class="text-muted small ms-5 mt-1">Enable the ATC capture modal across the store.</div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-check form-switch fs-5">
-                            <input class="form-check-input" type="checkbox" role="switch" id="recovery_enabled" name="settings[commerce.conversion_engine.capture_offer.recovery_enabled]" value="1" {{ config('commerce.conversion_engine.capture_offer.recovery_enabled') ? 'checked' : '' }}>
+                            <input class="form-check-input" type="checkbox" role="switch" id="recovery_enabled" name="commerce__conversion_engine__capture_offer__recovery_enabled" value="1" {{ config('commerce.conversion_engine.capture_offer.recovery_enabled') ? 'checked' : '' }}>
                             <label class="form-check-label fs-6 fw-bold ms-2" for="recovery_enabled">Recovery Engine</label>
                         </div>
                         <div class="text-muted small ms-5 mt-1">Enable automated WhatsApp reminders for abandoned carts.</div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-check form-switch fs-5">
-                            <input class="form-check-input" type="checkbox" role="switch" id="recovery_dry_run" name="settings[commerce.conversion_engine.capture_offer.recovery_dry_run]" value="1" {{ config('commerce.conversion_engine.capture_offer.recovery_dry_run') ? 'checked' : '' }}>
+                            <input class="form-check-input" type="checkbox" role="switch" id="recovery_dry_run" name="commerce__conversion_engine__capture_offer__recovery_dry_run" value="1" {{ config('commerce.conversion_engine.capture_offer.recovery_dry_run') ? 'checked' : '' }}>
                             <label class="form-check-label fs-6 fw-bold ms-2" for="recovery_dry_run">Recovery Dry Run Mode</label>
                         </div>
                         <div class="text-muted small ms-5 mt-1 text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Safe mode. Will only write to logs, will NOT send real messages or increment steps.</div>
@@ -59,7 +59,7 @@
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Traffic Split (Variant A %)</label>
                         <div class="input-group">
-                            <input type="number" class="form-control" name="settings[commerce.conversion_engine.capture_offer.traffic_split_percent]" value="{{ config('commerce.conversion_engine.capture_offer.traffic_split_percent', 80) }}" min="0" max="100">
+                            <input type="number" class="form-control" name="commerce__conversion_engine__capture_offer__traffic_split_percent" value="{{ config('commerce.conversion_engine.capture_offer.traffic_split_percent', 80) }}" min="0" max="100">
                             <span class="input-group-text">%</span>
                         </div>
                         <div class="form-text">Percentage of visitors who will see the capture offer. The rest act as the Control group.</div>
@@ -67,14 +67,14 @@
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Fatigue Cooldown</label>
                         <div class="input-group">
-                            <input type="number" class="form-control" name="settings[commerce.conversion_engine.capture_offer.cooldown_days]" value="{{ config('commerce.conversion_engine.capture_offer.cooldown_days', 14) }}" min="1">
+                            <input type="number" class="form-control" name="commerce__conversion_engine__capture_offer__cooldown_days" value="{{ config('commerce.conversion_engine.capture_offer.cooldown_days', 14) }}" min="1">
                             <span class="input-group-text">Days</span>
                         </div>
                         <div class="form-text">If a user closes the modal without submitting, how long before we ask again?</div>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Offer Coupon Code</label>
-                        <input type="text" class="form-control" name="settings[commerce.conversion_engine.capture_offer.offer_coupon_code]" value="{{ config('commerce.conversion_engine.capture_offer.offer_coupon_code') }}">
+                        <input type="text" class="form-control" name="commerce__conversion_engine__capture_offer__offer_coupon_code" value="{{ config('commerce.conversion_engine.capture_offer.offer_coupon_code') }}">
                         <div class="form-text">The coupon automatically applied when they submit their number.</div>
                     </div>
                 </div>
@@ -90,15 +90,15 @@
                 <div class="row g-4">
                     <div class="col-md-12">
                         <label class="form-label fw-bold">Headline</label>
-                        <input type="text" class="form-control" name="settings[commerce.conversion_engine.capture_offer.ui_headline]" value="{{ config('commerce.conversion_engine.capture_offer.ui_headline') }}">
+                        <input type="text" class="form-control" name="commerce__conversion_engine__capture_offer__ui_headline" value="{{ config('commerce.conversion_engine.capture_offer.ui_headline') }}">
                     </div>
                     <div class="col-md-12">
                         <label class="form-label fw-bold">Subtext</label>
-                        <input type="text" class="form-control" name="settings[commerce.conversion_engine.capture_offer.ui_subtext]" value="{{ config('commerce.conversion_engine.capture_offer.ui_subtext') }}">
+                        <input type="text" class="form-control" name="commerce__conversion_engine__capture_offer__ui_subtext" value="{{ config('commerce.conversion_engine.capture_offer.ui_subtext') }}">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Button Text</label>
-                        <input type="text" class="form-control" name="settings[commerce.conversion_engine.capture_offer.ui_button_text]" value="{{ config('commerce.conversion_engine.capture_offer.ui_button_text') }}">
+                        <input type="text" class="form-control" name="commerce__conversion_engine__capture_offer__ui_button_text" value="{{ config('commerce.conversion_engine.capture_offer.ui_button_text') }}">
                     </div>
                 </div>
             </div>
@@ -128,11 +128,11 @@
                         <div class="row g-3">
                             <div class="col-md-3">
                                 <label class="form-label small text-muted">Delay (Minutes)</label>
-                                <input type="number" class="form-control" name="settings[commerce.conversion_engine.abandonment_sequence][{{ $index }}][delay_minutes]" value="{{ $step['delay_minutes'] }}">
+                                <input type="number" class="form-control" name="abandonment_sequence[{{ $index }}][delay_minutes]" value="{{ $step['delay_minutes'] }}">
                             </div>
                             <div class="col-md-9">
                                 <label class="form-label small text-muted">Message Template</label>
-                                <textarea class="form-control" rows="2" name="settings[commerce.conversion_engine.abandonment_sequence][{{ $index }}][template]">{{ $step['template'] }}</textarea>
+                                <textarea class="form-control" rows="2" name="abandonment_sequence[{{ $index }}][template]">{{ $step['template'] }}</textarea>
                             </div>
                         </div>
                     </div>
