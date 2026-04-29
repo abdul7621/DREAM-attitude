@@ -44,9 +44,9 @@ class BeaconController extends Controller
             $pageUrl = $payload['page_url'] ?? null;
             $pageType = $payload['page_type'] ?? null;
             
-            // Extract product/variant id from meta if present
-            $productId = $meta['product_id'] ?? null;
-            $variantId = $meta['variant_id'] ?? null;
+            // Extract product/variant id from meta if present (ensure numeric)
+            $productId = isset($meta['product_id']) && is_numeric($meta['product_id']) ? (int) $meta['product_id'] : null;
+            $variantId = isset($meta['variant_id']) && is_numeric($meta['variant_id']) ? (int) $meta['variant_id'] : null;
 
             // Identity Stitching & Revenue Tracking
             if ($eventName === 'purchase' && isset($meta['revenue'])) {
