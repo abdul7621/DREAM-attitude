@@ -765,22 +765,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
-// ── Meta Pixel: Scroll-based ViewContent (fire once at 30% scroll) ──
-(function() {
-    var vcFired = false;
-    window.addEventListener('scroll', function() {
-        if (vcFired) return;
-        var scrollPct = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-        if (scrollPct >= 30) {
-            vcFired = true;
-            if (typeof fbq === 'function') {
-                fbq('track', 'ViewContent', {
-                    content_name: 'Homepage Engagement',
-                    content_type: 'page'
-                });
-            }
-        }
-    });
-})();
+
+
 </script>
 @endpush

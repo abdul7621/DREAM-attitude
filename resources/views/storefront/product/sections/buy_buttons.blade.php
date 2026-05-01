@@ -80,7 +80,6 @@
                     if (typeof fbq === 'function') {
                         var p = document.getElementById('priceLabel') ? document.getElementById('priceLabel').innerText.replace(/[^0-9.]/g, '') : 0;
                         fbq('track', 'AddToCart', { value: parseFloat(p), currency: 'INR', content_ids: [document.getElementById('hidden_variant_id').value], content_type: 'product' });
-                        fbq('track', 'InitiateCheckout', { value: parseFloat(p), currency: 'INR', num_items: document.querySelector('[name=qty]').value });
                     }
                     document.getElementById('redirectInput').value='checkout'; 
                     setTimeout(() => document.getElementById('productForm').submit(), 150);

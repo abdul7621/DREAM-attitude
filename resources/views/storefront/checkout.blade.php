@@ -333,6 +333,8 @@
                     value: {{ (float) $totals['grand'] }},
                     currency: '{{ config('commerce.currency', 'INR') }}',
                     num_items: {{ (int) $lines->sum(fn ($r) => $r['item']->qty) }}
+                }, {
+                    eventID: 'ic-{{ session()->getId() }}-{{ now()->timestamp }}'
                 });
             }
             if (window.Store) {

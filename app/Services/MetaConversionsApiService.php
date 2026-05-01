@@ -10,8 +10,9 @@ class MetaConversionsApiService
 {
     public function sendPurchase(Order $order): void
     {
-        $pixelId = config('commerce.meta.pixel_id');
-        $token = config('commerce.meta.capi_token');
+        $ss = app(\App\Services\SettingsService::class);
+        $pixelId = $ss->get('tracking.pixel_id', config('commerce.meta.pixel_id'));
+        $token = $ss->get('tracking.capi_token', config('commerce.meta.capi_token'));
         if (! $pixelId || ! $token) {
             return;
         }

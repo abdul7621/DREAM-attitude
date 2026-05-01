@@ -9,7 +9,7 @@ use App\Listeners\SendOrderShippedNotification;
 use App\Services\CartService;
 use App\Services\CouponService;
 use App\Services\ImageFetchPipeline;
-use App\Services\MetaConversationsApiService;
+use App\Services\MetaConversionsApiService;
 use App\Services\NotificationService;
 use App\Services\OrderService;
 use App\Services\PricingService;
@@ -40,7 +40,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(ShippingService::class);
         $this->app->singleton(RazorpayService::class);
         $this->app->singleton(OrderService::class);
-        $this->app->singleton(MetaConversationsApiService::class);
+        $this->app->singleton(MetaConversionsApiService::class);
         $this->app->singleton(NotificationService::class);
         $this->app->singleton(ImageFetchPipeline::class);
         $this->app->singleton(ShopifyImporter::class);
