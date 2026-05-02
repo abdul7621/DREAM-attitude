@@ -138,6 +138,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
     Route::get('/decision-engine', [\App\Http\Controllers\Admin\AnalyticsDashboardController::class, 'index'])->name('analytics.index');
     Route::get('/decision-engine/sessions', [\App\Http\Controllers\Admin\AnalyticsSessionController::class, 'index'])->name('analytics.sessions');
+    Route::get('/decision-engine/sessions/export-csv', [\App\Http\Controllers\Admin\AnalyticsSessionController::class, 'exportCsv'])->name('analytics.sessions.export-csv');
     Route::get('/decision-engine/sessions/{id}', [\App\Http\Controllers\Admin\AnalyticsSessionController::class, 'show'])->name('analytics.sessions.show');
     // Orders
     Route::post('orders/bulk', [AdminOrderController::class, 'bulkUpdate'])->name('orders.bulk');

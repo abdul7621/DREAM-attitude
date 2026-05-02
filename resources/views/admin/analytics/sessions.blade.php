@@ -12,10 +12,33 @@
         </nav>
         <h1 class="h3 mb-0" style="font-weight: 700; color: #111827;">User Sessions</h1>
     </div>
-    <div class="d-flex gap-2">
-        <a href="{{ route('admin.analytics.sessions') }}" class="btn btn-outline-secondary btn-sm">All</a>
-        <a href="{{ route('admin.analytics.sessions', ['purchase' => 1]) }}" class="btn btn-outline-success btn-sm">Purchased</a>
-        <a href="{{ route('admin.analytics.sessions', ['cart' => 1, 'purchase' => 0]) }}" class="btn btn-outline-warning btn-sm">Abandoned Cart</a>
+    <div class="d-flex gap-2 flex-wrap align-items-center">
+        {{-- Filter Buttons --}}
+        <a href="{{ route('admin.analytics.sessions', request()->only('per_page')) }}" class="btn btn-outline-secondary btn-sm {{ !request('purchase') && !request('cart') ? 'active' : '' }}">All</a>
+        <a href="{{ route('admin.analytics.sessions', array_merge(request()->only('per_page'), ['purchase' => 1])) }}" class="btn btn-outline-success btn-sm {{ request('purchase') ? 'active' : '' }}">Purchased</a>
+        <a href="{{ route('admin.analytics.sessions', array_merge(request()->only('per_page'), ['cart' => 1, 'purchase' => 0])) }}" class="btn btn-outline-warning btn-sm {{ request('cart') && !request('purchase') ? 'active' : '' }}">Abandoned Cart</a>
+
+        <div class="vr mx-1"></div>
+
+        {{-- Per-Page Selector --}}
+        <form method="get" class="d-flex align-items-center gap-1">
+            @foreach(request()->except(['per_page', 'page']) as $k => $v)
+                <input type="hidden" name="{{ $k }}" value="{{ $v }}">
+            @endforeach
+            <label class="form-label mb-0 small text-muted" for="perPageSelect">Show</label>
+            <select name="per_page" id="perPageSelect" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                @foreach([30, 50, 100, 200] as $opt)
+                    <option value="{{ $opt }}" {{ $perPage == $opt ? 'selected' : '' }}>{{ $opt }}</option>
+                @endforeach
+            </select>
+        </form>
+
+        <div class="vr mx-1"></div>
+
+        {{-- CSV Export --}}
+        <a href="{{ route('admin.analytics.sessions.export-csv', request()->except('page')) }}" class="btn btn-outline-dark btn-sm">
+            <i class="bi bi-download me-1"></i> CSV Export
+        </a>
     </div>
 </div>
 
@@ -25,6 +48,8 @@
             <thead class="table-light">
                 <tr>
                     <th class="ps-4">Session & Visitor</th>
+                    <th>City / Region</th>
+                    <th>Phone</th>
                     <th>Source / Campaign</th>
                     <th>Duration</th>
                     <th>Events</th>
@@ -38,6 +63,29 @@
                     <td class="ps-4">
                         <div class="fw-medium text-dark">{{ $session->visitor->country ?? 'Unknown' }} • {{ $session->visitor->os ?? 'Unknown OS' }} ({{ $session->visitor->browser ?? 'Unknown Browser' }})</div>
                         <div class="text-muted small" title="{{ $session->session_uuid }}">{{ $session->started_at->format('M d, H:i') }} ({{ $session->started_at->diffForHumans() }})</div>
+                        @if($session->visitor?->user)
+                            <div class="small mt-1"><a href="{{ route('admin.customers.show', $session->visitor->user_id) }}" class="text-primary fw-medium"><i class="bi bi-person-fill me-1"></i>{{ $session->visitor->user->name }}</a></div>
+                        @endif
+                    </td>
+                    <td>
+                        @if($session->visitor?->city)
+                            <div class="small fw-medium">{{ $session->visitor->city }}</div>
+                            <div class="small text-muted">{{ $session->visitor->region ?? '' }}</div>
+                        @else
+                            <span class="text-muted small">—</span>
+                        @endif
+                    </td>
+                    <td>
+                        @php
+                            $phone = $session->visitor?->normalized_phone ?: ($session->visitor?->user?->phone ?? null);
+                        @endphp
+                        @if($phone)
+                            <a href="https://wa.me/{{ preg_replace('/\D/', '', $phone) }}" target="_blank" class="small text-success text-decoration-none" title="WhatsApp">
+                                <i class="bi bi-whatsapp me-1"></i>{{ $phone }}
+                            </a>
+                        @else
+                            <span class="text-muted small">—</span>
+                        @endif
                     </td>
                     <td>
                         <div><span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle">{{ $session->source ?? 'Direct' }}</span></div>
@@ -68,13 +116,14 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="6" class="text-center py-5 text-muted">No sessions found matching your criteria.</td></tr>
+                <tr><td colspan="8" class="text-center py-5 text-muted">No sessions found matching your criteria.</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 </div>
-<div class="mt-4">
+<div class="mt-3 d-flex justify-content-between align-items-center">
+    <div class="small text-muted">Showing {{ $sessions->firstItem() ?? 0 }} to {{ $sessions->lastItem() ?? 0 }} of {{ $sessions->total() }} sessions</div>
     {{ $sessions->links() }}
 </div>
 @endsection

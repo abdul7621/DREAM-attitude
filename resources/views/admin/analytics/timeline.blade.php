@@ -66,10 +66,35 @@
                         <span class="text-muted">Source</span>
                         <strong>{{ $session->source ?? 'Direct' }}</strong>
                     </li>
+                    @if($session->visitor?->city || $session->visitor?->region)
+                    <li class="list-group-item px-0 d-flex justify-content-between">
+                        <span class="text-muted">Location</span>
+                        <strong>{{ collect([$session->visitor->city, $session->visitor->region, $session->visitor->country])->filter()->implode(', ') }}</strong>
+                    </li>
+                    @endif
                     @if($session->visitor->user)
                     <li class="list-group-item px-0 d-flex justify-content-between">
                         <span class="text-muted">Customer</span>
                         <strong><a href="{{ route('admin.customers.show', $session->visitor->user_id) }}">{{ $session->visitor->user->name }}</a></strong>
+                    </li>
+                    @endif
+                    @php
+                        $phone = $session->visitor?->normalized_phone ?: ($session->visitor?->user?->phone ?? null);
+                    @endphp
+                    @if($phone)
+                    <li class="list-group-item px-0 d-flex justify-content-between">
+                        <span class="text-muted">Phone</span>
+                        <strong>
+                            <a href="https://wa.me/{{ preg_replace('/\D/', '', $phone) }}" target="_blank" class="text-success text-decoration-none">
+                                <i class="bi bi-whatsapp me-1"></i>{{ $phone }}
+                            </a>
+                        </strong>
+                    </li>
+                    @endif
+                    @if($session->visitor?->user?->email)
+                    <li class="list-group-item px-0 d-flex justify-content-between">
+                        <span class="text-muted">Email</span>
+                        <strong class="text-truncate" style="max-width: 180px;" title="{{ $session->visitor->user->email }}">{{ $session->visitor->user->email }}</strong>
                     </li>
                     @endif
                     <li class="list-group-item px-0 d-flex justify-content-between">
@@ -84,6 +109,14 @@
                             <span class="badge bg-secondary">Browsed</span>
                         @endif
                     </li>
+                    @if($session->landing_page)
+                    <li class="list-group-item px-0 d-flex justify-content-between">
+                        <span class="text-muted">Landing Page</span>
+                        <a href="{{ url($session->landing_page) }}" target="_blank" class="text-truncate small" style="max-width: 180px;" title="{{ $session->landing_page }}">
+                            {{ $session->landing_page }}
+                        </a>
+                    </li>
+                    @endif
                 </ul>
             </div>
         </div>
@@ -106,19 +139,29 @@
                             <div class="timeline-content">
                                 <div class="timeline-time">
                                     {{ $event->created_at->format('h:i:s A') }} 
-                                    <span class="text-muted fw-normal ms-2">(+{{ $event->created_at->diffInSeconds($session->started_at) }}s from start)</span>
+                                    <span class="text-muted fw-normal ms-2">(+-{{ $event->created_at->diffInSeconds($session->started_at) }}s from start)</span>
                                 </div>
                                 <div class="timeline-event-name">{{ $event->event_name }}</div>
                                 
                                 @if($event->page_url)
-                                    <div class="small text-muted mt-1 text-truncate" title="{{ $event->page_url }}">
-                                        <i class="bi bi-link-45deg"></i> {{ parse_url($event->page_url, PHP_URL_PATH) ?? '/' }}
+                                    @php
+                                        $pagePath = parse_url($event->page_url, PHP_URL_PATH) ?? '/';
+                                        $fullUrl = str_starts_with($event->page_url, 'http') ? $event->page_url : url($event->page_url);
+                                    @endphp
+                                    <div class="small mt-1">
+                                        <a href="{{ $fullUrl }}" target="_blank" class="text-muted text-decoration-none" title="Open {{ $pagePath }}">
+                                            <i class="bi bi-link-45deg"></i> {{ $pagePath }}
+                                            <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.7rem;"></i>
+                                        </a>
                                     </div>
                                 @endif
 
                                 @if($event->product)
                                     <div class="small fw-medium text-primary mt-1">
-                                        <i class="bi bi-box-seam"></i> {{ $event->product->name }}
+                                        <a href="{{ route('product.show', $event->product->slug) }}" target="_blank" class="text-decoration-none">
+                                            <i class="bi bi-box-seam"></i> {{ $event->product->name }}
+                                            <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.7rem;"></i>
+                                        </a>
                                     </div>
                                 @endif
 
