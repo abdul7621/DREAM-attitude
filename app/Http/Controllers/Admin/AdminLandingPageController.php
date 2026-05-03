@@ -18,7 +18,7 @@ class AdminLandingPageController extends Controller
 
     public function create()
     {
-        $products = Product::with('variants')->where('is_active', true)->orderBy('name')->get();
+        $products = Product::with('variants')->where('status', 'active')->orderBy('name')->get();
         return view('admin.landing-pages.form', ['page' => null, 'products' => $products]);
     }
 
@@ -35,7 +35,7 @@ class AdminLandingPageController extends Controller
 
     public function edit(LandingPage $landing_page)
     {
-        $products = Product::with('variants')->where('is_active', true)->orderBy('name')->get();
+        $products = Product::with('variants')->where('status', 'active')->orderBy('name')->get();
         return view('admin.landing-pages.form', ['page' => $landing_page, 'products' => $products]);
     }
 
