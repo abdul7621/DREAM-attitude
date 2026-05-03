@@ -231,6 +231,20 @@
             color: #fbbf24;
         }
 
+        /* ── Trust Description ────────────────────── */
+        .lp-trust-desc {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 28px 20px;
+            text-align: center;
+        }
+        .lp-trust-desc p {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.7;
+            margin: 0;
+        }
+
         /* ── Offer Box ────────────────────────────── */
         .lp-offer {
             background: #fff;
@@ -493,6 +507,13 @@
             @if(!empty($parts[1])) {{ trim($parts[1]) }} @endif
         </div>
     @endforeach
+</div>
+@endif
+
+{{-- ═══ TRUST DESCRIPTION (NR Beauty World paragraph) ═══ --}}
+@if($page->trust_description)
+<div class="lp-trust-desc">
+    <p>{!! nl2br(e($page->trust_description)) !!}</p>
 </div>
 @endif
 
