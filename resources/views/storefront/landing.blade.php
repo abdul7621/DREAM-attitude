@@ -17,401 +17,511 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"></noscript>
-    <style>
+        /* ── Premium Color Palette & Variables ── */
+        :root {
+            --primary-dark: #0a0a0a;
+            --primary-gold: #d4af37; /* Richer, classic gold */
+            --light-gold: #fdfbf7;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --text-main: #1c1c1c;
+            --text-muted: #6b7280;
+            --bg-offwhite: #fafafa;
+            --surface-white: #ffffff;
+            --shadow-soft: 0 4px 20px rgba(0,0,0,0.03);
+            --shadow-elevated: 0 10px 30px rgba(0,0,0,0.06);
+        }
+
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
-            color: #1a1a1a;
-            background: #fff;
-            line-height: 1.5;
+            color: var(--text-main);
+            background: var(--bg-offwhite);
+            line-height: 1.6;
             -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
         img { max-width: 100%; height: auto; display: block; }
 
-        /* ── Trust Top Bar ────────────────────────── */
+        /* ── Trust Top Bar ── */
         .lp-topbar {
-            background: #111;
+            background: var(--primary-dark);
             color: #fff;
             text-align: center;
             padding: 10px 16px;
             font-size: 12px;
             font-weight: 500;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
-        .lp-topbar span { opacity: 0.7; }
-        .lp-topbar strong { color: #fbbf24; }
+        .lp-topbar span { opacity: 0.7; font-weight: 400; text-transform: none; }
+        .lp-topbar strong { color: var(--primary-gold); letter-spacing: 1px;}
 
-        /* ── Hero ─────────────────────────────────── */
+        /* ── Hero Section ── */
         .lp-hero {
-            padding: 32px 20px 40px;
+            padding: 40px 20px 48px;
             text-align: center;
-            background: linear-gradient(180deg, #fefce8 0%, #fff 100%);
+            background: linear-gradient(135deg, var(--light-gold) 0%, #fff 100%);
+            position: relative;
+            overflow: hidden;
         }
+        .lp-hero::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(212,175,55,0.05) 0%, transparent 50%);
+            z-index: 0; pointer-events: none;
+        }
+        .lp-hero > * { position: relative; z-index: 1; }
+
         .lp-hero-img {
-            max-width: 340px;
-            margin: 0 auto 24px;
-            border-radius: 16px;
+            max-width: 320px;
+            margin: 0 auto 28px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-elevated);
+            transition: transform 0.3s ease;
         }
+        .lp-hero-img:hover { transform: translateY(-5px); }
+        
         .lp-hero h1 {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 800;
-            line-height: 1.2;
-            margin-bottom: 10px;
-            color: #111;
+            line-height: 1.15;
+            margin-bottom: 12px;
+            color: var(--primary-dark);
+            letter-spacing: -0.5px;
         }
         .lp-hero .lp-sub {
-            font-size: 15px;
-            color: #555;
-            margin-bottom: 20px;
-            max-width: 380px;
+            font-size: 16px;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            max-width: 400px;
             margin-left: auto;
             margin-right: auto;
+            font-weight: 400;
         }
         .lp-price-row {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            margin-bottom: 16px;
+            gap: 14px;
+            margin-bottom: 20px;
         }
         .lp-price-old {
             font-size: 18px;
-            color: #999;
+            color: #9ca3af;
             text-decoration: line-through;
+            font-weight: 500;
         }
         .lp-price-new {
-            font-size: 32px;
+            font-size: 36px;
             font-weight: 800;
-            color: #111;
+            color: var(--primary-dark);
+            letter-spacing: -1px;
         }
         .lp-badge {
-            display: inline-block;
-            background: #dc2626;
-            color: #fff;
+            background: var(--primary-dark);
+            color: var(--primary-gold);
             font-size: 11px;
-            font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 20px;
+            font-weight: 800;
+            padding: 5px 12px;
+            border-radius: 30px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
-        /* ── CTA Button ──────────────────────────── */
+        /* ── Buttons (Sales Focused) ── */
         .lp-cta {
             display: block;
             width: 100%;
-            max-width: 360px;
-            margin: 0 auto 12px;
-            padding: 16px 24px;
-            background: #111;
+            max-width: 380px;
+            margin: 0 auto 16px;
+            padding: 18px 24px;
+            background: linear-gradient(180deg, #1f1f1f 0%, #000000 100%);
             color: #fff;
-            font-size: 17px;
+            font-size: 18px;
             font-weight: 700;
-            border: none;
-            border-radius: 12px;
+            border: 1px solid #333;
+            border-radius: 14px;
             cursor: pointer;
             text-align: center;
             text-decoration: none;
-            transition: transform 0.15s, box-shadow 0.15s;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+            transition: all 0.2s ease;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.1);
+            position: relative;
+            overflow: hidden;
         }
-        .lp-cta:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
+        .lp-cta::after {
+            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: skewX(-20deg); animation: shimmer 3s infinite;
+        }
+        @keyframes shimmer { 100% { left: 200%; } }
+        .lp-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0,0,0,0.2); border-color: var(--primary-gold); }
         .lp-cta:active { transform: scale(0.98); }
 
         .lp-wa-btn {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            color: #25D366;
-            font-size: 14px;
+            color: #15803d;
+            font-size: 15px;
             font-weight: 600;
             text-decoration: none;
-            margin-top: 4px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: rgba(37, 211, 102, 0.1);
+            transition: background 0.2s;
         }
-        .lp-wa-btn i { font-size: 18px; }
+        .lp-wa-btn:hover { background: rgba(37, 211, 102, 0.15); }
+        .lp-wa-btn i { font-size: 18px; color: #25D366; }
 
-        /* ── Section Base ─────────────────────────── */
+        /* ── Layout Sections ── */
         .lp-section {
-            padding: 40px 20px;
-            max-width: 480px;
+            padding: 48px 20px;
+            max-width: 500px;
             margin: 0 auto;
         }
-        .lp-section-alt { background: #f9fafb; }
+        .lp-section-alt { background: var(--surface-white); }
         .lp-section-title {
-            font-size: 20px;
-            font-weight: 700;
+            font-size: 24px;
+            font-weight: 800;
             text-align: center;
-            margin-bottom: 20px;
-            color: #111;
+            margin-bottom: 28px;
+            color: var(--primary-dark);
+            letter-spacing: -0.5px;
+        }
+        .lp-section-title::after {
+            content: ''; display: block; width: 40px; height: 3px;
+            background: var(--primary-gold); margin: 12px auto 0; border-radius: 2px;
         }
 
-        /* ── Pain Section ─────────────────────────── */
+        /* ── Pain Points (Elegant Cards) ── */
         .lp-pain-list {
             list-style: none;
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 16px;
         }
         .lp-pain-list li {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
             font-size: 16px;
             font-weight: 500;
-            color: #333;
-            padding: 14px 16px;
-            background: #fff;
-            border-radius: 12px;
-            border: 1px solid #f0f0f0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            color: var(--text-main);
+            padding: 18px 20px;
+            background: var(--surface-white);
+            border-radius: 16px;
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: var(--shadow-soft);
+            transition: transform 0.2s;
         }
+        .lp-pain-list li:hover { transform: translateX(5px); border-color: rgba(239,68,68,0.2); }
         .lp-pain-list li i {
-            font-size: 20px;
-            color: #dc2626;
+            font-size: 22px;
+            color: var(--accent-red);
             flex-shrink: 0;
+            background: rgba(239,68,68,0.1);
+            width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%;
         }
 
-        /* ── Steps ────────────────────────────────── */
+        /* ── The System Steps ── */
         .lp-steps {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 24px;
+            position: relative;
+        }
+        .lp-steps::before {
+            content: ''; position: absolute; top: 30px; bottom: 30px; left: 34px;
+            width: 2px; background: rgba(0,0,0,0.05); z-index: 0;
         }
         .lp-step {
             display: flex;
-            gap: 16px;
+            gap: 20px;
             align-items: center;
-            padding: 16px;
-            background: #fff;
-            border-radius: 14px;
-            border: 1px solid #e5e7eb;
+            padding: 20px;
+            background: var(--surface-white);
+            border-radius: 20px;
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(0,0,0,0.02);
         }
         .lp-step-num {
-            width: 48px;
-            height: 48px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            background: #111;
+            background: var(--primary-gold);
             color: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 800;
-            font-size: 18px;
+            font-size: 14px;
             flex-shrink: 0;
+            box-shadow: 0 0 0 6px #fff, 0 4px 10px rgba(212,175,55,0.3);
         }
         .lp-step-img {
-            width: 72px;
-            height: 72px;
-            border-radius: 10px;
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
             object-fit: cover;
             flex-shrink: 0;
+            background: #f8f8f8;
         }
-        .lp-step-body h3 { font-size: 15px; font-weight: 700; color: #111; margin-bottom: 2px; }
-        .lp-step-body p { font-size: 13px; color: #666; }
+        .lp-step-body h3 { font-size: 16px; font-weight: 700; color: var(--primary-dark); margin-bottom: 4px; }
+        .lp-step-body p { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
 
-        /* ── Trust Bar ────────────────────────────── */
+        /* ── Trust Bar & Description ── */
+        .lp-trust-wrapper {
+            background: var(--primary-dark);
+            color: #fff;
+            padding: 40px 20px;
+            text-align: center;
+            background-image: radial-gradient(circle at top right, rgba(212,175,55,0.1), transparent 40%);
+        }
         .lp-trust-bar {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 16px 24px;
-            padding: 24px 20px;
-            background: #111;
-            color: #fff;
+            gap: 24px 32px;
+            max-width: 500px;
+            margin: 0 auto;
         }
         .lp-trust-item {
             text-align: center;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.9;
         }
         .lp-trust-item strong {
             display: block;
-            font-size: 20px;
+            font-size: 28px;
             font-weight: 800;
-            color: #fbbf24;
+            color: var(--primary-gold);
+            margin-bottom: 2px;
+            letter-spacing: -0.5px;
+            text-transform: none;
         }
-
-        /* ── Trust Description ────────────────────── */
         .lp-trust-desc {
-            max-width: 480px;
-            margin: 0 auto;
-            padding: 28px 20px;
-            text-align: center;
+            max-width: 420px;
+            margin: 32px auto 0;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255,255,255,0.1);
         }
         .lp-trust-desc p {
             font-size: 14px;
-            color: #555;
-            line-height: 1.7;
+            color: rgba(255,255,255,0.7);
+            line-height: 1.8;
             margin: 0;
+            font-weight: 400;
         }
 
-        /* ── Offer Box ────────────────────────────── */
+        /* ── Offer Box (Premium Checkout Feel) ── */
         .lp-offer {
-            background: #fff;
-            border: 2px solid #111;
-            border-radius: 16px;
-            padding: 24px;
+            background: var(--surface-white);
+            border: 2px solid var(--primary-gold);
+            border-radius: 24px;
+            padding: 32px 24px;
             text-align: center;
-            max-width: 380px;
+            max-width: 420px;
             margin: 0 auto;
+            position: relative;
+            box-shadow: var(--shadow-elevated);
         }
-        .lp-offer h3 { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
+        .lp-offer::before {
+            content: 'LIMITED TIME OFFER';
+            position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+            background: var(--primary-gold); color: #fff;
+            font-size: 10px; font-weight: 800; letter-spacing: 1px; padding: 4px 12px;
+            border-radius: 20px;
+        }
+        .lp-offer h3 { font-size: 20px; font-weight: 800; margin-bottom: 20px; color: var(--primary-dark); }
         .lp-offer-items {
             list-style: none;
-            margin-bottom: 16px;
+            margin-bottom: 24px;
+            text-align: left;
+            background: var(--bg-offwhite);
+            padding: 16px;
+            border-radius: 12px;
         }
         .lp-offer-items li {
             padding: 6px 0;
             font-size: 14px;
-            color: #333;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            font-weight: 500;
         }
-        .lp-offer-items li i { color: #16a34a; margin-right: 6px; }
+        .lp-offer-items li i { color: var(--primary-gold); margin-right: 10px; font-size: 16px; }
         .lp-offer-badges {
             display: flex;
             justify-content: center;
             gap: 16px;
-            margin-top: 12px;
+            margin-top: 16px;
             font-size: 12px;
-            color: #666;
+            color: var(--text-muted);
+            font-weight: 500;
         }
-        .lp-offer-badges span i { margin-right: 4px; color: #16a34a; }
+        .lp-offer-badges span { display: flex; align-items: center; }
+        .lp-offer-badges span i { margin-right: 6px; color: var(--accent-green); font-size: 14px; }
 
-        /* ── Reviews ──────────────────────────────── */
+        /* ── Reviews (Testimonials) ── */
         .lp-reviews {
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 20px;
         }
         .lp-review {
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 14px;
-            padding: 16px;
+            background: var(--surface-white);
+            border: none;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow-soft);
+            position: relative;
+        }
+        .lp-review::before {
+            content: '\201C'; position: absolute; top: 10px; right: 20px;
+            font-size: 60px; color: rgba(212,175,55,0.1); font-family: serif; line-height: 1;
         }
         .lp-review-header {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 8px;
+            gap: 14px;
+            margin-bottom: 12px;
         }
         .lp-review-avatar {
-            width: 40px;
-            height: 40px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             object-fit: cover;
-            background: #f3f4f6;
+            background: var(--bg-offwhite);
+            border: 2px solid #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-        .lp-review-name { font-weight: 600; font-size: 14px; }
-        .lp-review-stars { color: #fbbf24; font-size: 13px; }
-        .lp-review-text { font-size: 14px; color: #444; line-height: 1.5; }
+        .lp-review-name { font-weight: 700; font-size: 15px; color: var(--primary-dark); }
+        .lp-review-stars { color: var(--primary-gold); font-size: 12px; margin-top: 2px; }
+        .lp-review-text { font-size: 15px; color: var(--text-muted); line-height: 1.6; font-style: italic; }
 
-        /* ── FAQ ──────────────────────────────────── */
+        /* ── FAQ ── */
         .lp-faq-item {
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            margin-bottom: 10px;
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 16px;
+            margin-bottom: 12px;
             overflow: hidden;
-            background: #fff;
+            background: var(--surface-white);
+            transition: all 0.3s;
         }
+        .lp-faq-item:hover { border-color: rgba(0,0,0,0.1); }
         .lp-faq-q {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 14px 16px;
+            padding: 18px 20px;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 15px;
             cursor: pointer;
             background: none;
             border: none;
             width: 100%;
             text-align: left;
-            color: #111;
+            color: var(--primary-dark);
         }
-        .lp-faq-q i { transition: transform 0.2s; font-size: 14px; color: #999; }
+        .lp-faq-q i { transition: transform 0.3s; font-size: 16px; color: var(--primary-gold); }
         .lp-faq-a {
-            padding: 0 16px 14px;
-            font-size: 13px;
-            color: #555;
+            padding: 0 20px 20px;
+            font-size: 14px;
+            color: var(--text-muted);
             display: none;
+            line-height: 1.6;
         }
+        .lp-faq-item.open { box-shadow: var(--shadow-soft); }
         .lp-faq-item.open .lp-faq-a { display: block; }
         .lp-faq-item.open .lp-faq-q i { transform: rotate(180deg); }
 
-        /* ── Sticky Bottom Bar ────────────────────── */
+        /* ── Sticky Bottom Bar ── */
         .lp-sticky {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
             z-index: 999;
-            background: #111;
-            padding: 10px 16px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            padding: 12px 16px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+            gap: 12px;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.08);
+            border-top: 1px solid rgba(0,0,0,0.05);
         }
         .lp-sticky-cta {
             flex: 1;
             display: block;
-            padding: 12px;
-            background: #fbbf24;
-            color: #111;
-            font-size: 15px;
-            font-weight: 700;
+            padding: 14px;
+            background: var(--primary-dark);
+            color: var(--primary-gold);
+            font-size: 16px;
+            font-weight: 800;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
             text-align: center;
             text-decoration: none;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
+        .lp-sticky-cta:active { transform: scale(0.98); }
         .lp-sticky-wa {
-            width: 44px;
-            height: 44px;
+            width: 50px;
+            height: 50px;
             background: #25D366;
             color: #fff;
-            border-radius: 50%;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            font-size: 24px;
             text-decoration: none;
             flex-shrink: 0;
+            box-shadow: 0 4px 15px rgba(37,211,102,0.3);
+            transition: transform 0.2s;
         }
+        .lp-sticky-wa:active { transform: scale(0.95); }
 
-        /* ── Floating WhatsApp ────────────────────── */
+        /* ── Floating WhatsApp (Desktop) ── */
         .lp-float-wa {
             position: fixed;
-            bottom: 76px;
-            right: 16px;
+            bottom: 86px;
+            right: 24px;
             z-index: 998;
-            width: 56px;
-            height: 56px;
+            width: 60px;
+            height: 60px;
             background: #25D366;
             color: #fff;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
+            font-size: 30px;
             text-decoration: none;
-            box-shadow: 0 4px 14px rgba(37,211,102,0.4);
-            animation: lp-pulse 2s infinite;
+            box-shadow: 0 8px 25px rgba(37,211,102,0.4);
+            transition: transform 0.3s;
         }
-        @keyframes lp-pulse {
-            0%, 100% { box-shadow: 0 4px 14px rgba(37,211,102,0.4); }
-            50% { box-shadow: 0 4px 24px rgba(37,211,102,0.6); }
-        }
+        .lp-float-wa:hover { transform: scale(1.05); }
 
-        /* ── Spacer for sticky bar ────────────────── */
-        .lp-bottom-spacer { height: 70px; }
+        .lp-bottom-spacer { height: 80px; }
 
-        /* ── Desktop tweaks ───────────────────────── */
         @media (min-width: 640px) {
-            .lp-hero h1 { font-size: 36px; }
-            .lp-section { max-width: 560px; }
+            .lp-hero h1 { font-size: 42px; }
+            .lp-section { max-width: 600px; padding: 64px 20px; }
             .lp-hero-img { max-width: 400px; }
-            .lp-float-wa { bottom: 84px; right: 24px; }
+            .lp-float-wa { bottom: 30px; }
         }
     </style>
 </head>
@@ -452,7 +562,7 @@
     <form action="{{ route('landing.buy', $page->slug) }}" method="POST" id="lpBuyForm">
         @csrf
         <button type="submit" class="lp-cta" id="lpBuyBtn">
-            {{ $page->hero_cta_text ?? 'Abhi Order Karo' }} — ₹{{ number_format($page->offer_price) }}
+            {{ $page->hero_cta_text ?? 'Abhi Order Karo' }}
         </button>
     </form>
 
@@ -495,27 +605,27 @@
 </section>
 @endif
 
-{{-- ═══ SECTION 4: TRUST BAR ═══ --}}
-@if($page->trust_points && count($page->trust_points) > 0)
-<div class="lp-trust-bar">
-    @foreach($page->trust_points as $tp)
-        @php
-            $parts = explode('|', $tp, 2);
-        @endphp
-        <div class="lp-trust-item">
-            <strong>{{ trim($parts[0]) }}</strong>
-            @if(!empty($parts[1])) {{ trim($parts[1]) }} @endif
-        </div>
-    @endforeach
-</div>
-@endif
+{{-- ═══ SECTION 4: TRUST BAR & DESCRIPTION ═══ --}}
+<div class="lp-trust-wrapper">
+    @if($page->trust_points && count($page->trust_points) > 0)
+    <div class="lp-trust-bar">
+        @foreach($page->trust_points as $tp)
+            @php $parts = explode('|', $tp, 2); @endphp
+            <div class="lp-trust-item">
+                <strong>{{ trim($parts[0]) }}</strong>
+                @if(!empty($parts[1])) {{ trim($parts[1]) }} @endif
+            </div>
+        @endforeach
+    </div>
+    @endif
 
-{{-- ═══ TRUST DESCRIPTION (NR Beauty World paragraph) ═══ --}}
-@if($page->trust_description)
-<div class="lp-trust-desc">
-    <p>{!! nl2br(e($page->trust_description)) !!}</p>
+    {{-- ═══ TRUST DESCRIPTION ═══ --}}
+    @if($page->trust_description)
+    <div class="lp-trust-desc">
+        <p>{!! nl2br(e($page->trust_description)) !!}</p>
+    </div>
+    @endif
 </div>
-@endif
 
 {{-- ═══ SECTION 5: OFFER BOX + CTA ═══ --}}
 <section class="lp-section">
@@ -537,7 +647,7 @@
         </div>
         <form action="{{ route('landing.buy', $page->slug) }}" method="POST">
             @csrf
-            <button type="submit" class="lp-cta">{{ $page->hero_cta_text ?? 'Abhi Order Karo' }} — ₹{{ number_format($page->offer_price) }}</button>
+            <button type="submit" class="lp-cta">{{ $page->hero_cta_text ?? 'Abhi Order Karo' }}</button>
         </form>
         <div class="lp-offer-badges">
             @if($page->show_free_ship)
