@@ -227,6 +227,10 @@
            class="sidebar-link {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}">
             <i class="bi bi-bell"></i> Notifications
         </a>
+        <a href="{{ route('admin.landing-pages.index') }}"
+           class="sidebar-link {{ request()->routeIs('admin.landing-pages.*') ? 'active' : '' }}">
+            <i class="bi bi-rocket-takeoff"></i> Landing Pages
+        </a>
 
         {{-- ─── ANALYTICS ──────────────────────────────────── --}}
         <div class="sidebar-section-label">Analytics</div>

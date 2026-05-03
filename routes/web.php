@@ -41,6 +41,10 @@ Route::view('/coming-soon', 'storefront.coming_soon')->name('coming_soon');
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
+// Landing Pages (standalone — no layout)
+Route::get('/offer/{slug}', [\App\Http\Controllers\Storefront\LandingPageController::class, 'show'])->name('landing.show');
+Route::post('/offer/{slug}/buy', [\App\Http\Controllers\Storefront\LandingPageController::class, 'buy'])->name('landing.buy');
+
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/robots.txt', [RobotsController::class, 'index'])->name('robots');
 
@@ -141,6 +145,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/decision-engine/sessions/export-csv', [\App\Http\Controllers\Admin\AnalyticsSessionController::class, 'exportCsv'])->name('analytics.sessions.export-csv');
     Route::get('/decision-engine/sessions/{id}', [\App\Http\Controllers\Admin\AnalyticsSessionController::class, 'show'])->name('analytics.sessions.show');
     // Orders
+
+    // Landing Pages
+    Route::resource('landing-pages', \App\Http\Controllers\Admin\AdminLandingPageController::class)->except(['show']);
+
     Route::post('orders/bulk', [AdminOrderController::class, 'bulkUpdate'])->name('orders.bulk');
     Route::post('orders/export-csv', [AdminOrderController::class, 'exportCsv'])->name('orders.export-csv');
     Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
