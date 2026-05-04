@@ -72,7 +72,17 @@
                             <div style="flex: 1;">
                                 <div class="sf-cart-name">{{ $product->name }}</div>
                                 <div class="sf-cart-variant">{{ $variant->title }} @if($variant->sku) · {{ $variant->sku }} @endif</div>
-                                <div class="sf-cart-price" style="margin-top: 4px;">{{ config('commerce.currency_symbol', '₹') }}{{ number_format((float) $row['unit_price'], 0) }}</div>
+                                <div class="sf-cart-price" style="margin-top: 4px; display: flex; gap: 8px; align-items: center;">
+                                    @php
+                                        $compareAt = $row['variant']->compare_at_price;
+                                        $unitPrice = (float) $row['unit_price'];
+                                        $showMrp = $compareAt && (float) $compareAt > $unitPrice;
+                                    @endphp
+                                    <span style="font-weight: 600;">{{ config('commerce.currency_symbol', '₹') }}{{ number_format((float) $row['unit_price'], 0) }}</span>
+                                    @if($showMrp)
+                                        <span style="text-decoration: line-through; color: var(--color-text-muted); font-size: 11px;">{{ config('commerce.currency_symbol', '₹') }}{{ number_format((float) $compareAt, 0) }}</span>
+                                    @endif
+                                </div>
                             </div>
                             <div class="sf-qty">
                                 <form action="{{ route('cart.items.update', $item) }}" method="post" style="display: flex;">
@@ -83,7 +93,12 @@
                                     <button type="button" onclick="const inpv=this.previousElementSibling; inpv.value++; this.form.submit();"><i class="bi bi-plus"></i></button>
                                 </form>
                             </div>
-                            <div class="sf-cart-price" style="font-weight: 600; width: 60px; text-align: right;">{{ config('commerce.currency_symbol', '₹') }}{{ number_format((float) $row['line_total'], 0) }}</div>
+                            <div style="width: 80px; text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
+                                @if($showMrp)
+                                    <span style="text-decoration: line-through; color: var(--color-text-muted); font-size: 11px;">{{ config('commerce.currency_symbol', '₹') }}{{ number_format((float) $compareAt * $item->qty, 0) }}</span>
+                                @endif
+                                <span class="sf-cart-price" style="font-weight: 600; color: var(--color-gold);">{{ config('commerce.currency_symbol', '₹') }}{{ number_format((float) $row['line_total'], 0) }}</span>
+                            </div>
                             <form method="POST" action="{{ route('cart.items.destroy', $item->id) }}" style="margin-left: 12px;">
                                 @csrf
                                 @method('DELETE')

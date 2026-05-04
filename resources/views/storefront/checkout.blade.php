@@ -46,7 +46,17 @@
                                         </div>
                                         <span style="font-weight: 500; color: var(--color-text-primary);">{{ $row['product']->name }} <span style="display: block; color: var(--color-text-muted); font-size: 11px; margin-top: 4px;">{{ Str::limit($row['variant']->title, 20) }}</span></span>
                                     </div>
-                                    <span style="font-weight: 600; color: var(--color-gold);">₹{{ number_format((float) $row['line_total'], 2) }}</span>
+                                    <span style="text-align: right;">
+                                        @php
+                                            $compareAt = $row['variant']->compare_at_price;
+                                            $unitPrice = (float) $row['unit_price'];
+                                            $showMrp = $compareAt && (float) $compareAt > $unitPrice;
+                                        @endphp
+                                        @if($showMrp)
+                                            <span style="text-decoration: line-through; color: var(--color-text-muted); font-size: 11px; display: block;">₹{{ number_format((float) $compareAt * $row['item']->qty, 2) }}</span>
+                                        @endif
+                                        <span style="font-weight: 600; color: var(--color-gold);">₹{{ number_format((float) $row['line_total'], 2) }}</span>
+                                    </span>
                                 </li>
                             @endforeach
                         </ul>
