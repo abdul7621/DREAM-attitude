@@ -158,7 +158,8 @@
         <div class="sf-trust-strip" data-aos="fade-up">
             @foreach($trustItems as $item)
             <div class="sf-trust-item" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
-                <div class="sf-trust-val counter" data-target="{{ intval(preg_replace('/[^0-9]/', '', $item['val'] ?? '0')) }}" data-suffix="{{ preg_replace('/[0-9]/', '', $item['val'] ?? '') }}">{{ $item['val'] ?? '' }}</div>
+                @php $hasDigits = preg_match('/[0-9]/', $item['val'] ?? ''); @endphp
+                <div class="sf-trust-val {{ $hasDigits ? 'counter' : '' }}" {!! $hasDigits ? 'data-target="'.intval(preg_replace('/[^0-9]/', '', $item['val'])).'" data-suffix="'.preg_replace('/[0-9]/', '', $item['val']).'"' : '' !!}>{{ $item['val'] ?? '' }}</div>
                 <div class="sf-trust-label">{{ $item['label'] ?? '' }}</div>
             </div>
             @endforeach
@@ -549,7 +550,8 @@
                     <div class="sf-award-stats">
                         @foreach(array_slice($awardStats, 0, 3) as $stat)
                         <div class="sf-award-stat">
-                            <div class="sf-award-stat-num counter" data-target="{{ intval(preg_replace('/[^0-9]/', '', $stat['num'])) }}" data-suffix="{{ preg_replace('/[0-9]/', '', $stat['num']) }}">{{ $stat['num'] }}</div>
+                            @php $hasDigits = preg_match('/[0-9]/', $stat['num']); @endphp
+                            <div class="sf-award-stat-num {{ $hasDigits ? 'counter' : '' }}" {!! $hasDigits ? 'data-target="'.intval(preg_replace('/[^0-9]/', '', $stat['num'])).'" data-suffix="'.preg_replace('/[0-9]/', '', $stat['num']).'"' : '' !!}>{{ $stat['num'] }}</div>
                             <div class="sf-award-stat-label">{{ $stat['label'] }}</div>
                         </div>
                         @endforeach
