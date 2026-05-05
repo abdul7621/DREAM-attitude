@@ -155,10 +155,10 @@
                 ];
             }
         @endphp
-        <div class="sf-trust-strip">
+        <div class="sf-trust-strip" data-aos="fade-up">
             @foreach($trustItems as $item)
-            <div class="sf-trust-item">
-                <div class="sf-trust-val">{{ $item['val'] ?? '' }}</div>
+            <div class="sf-trust-item" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
+                <div class="sf-trust-val counter" data-target="{{ intval(preg_replace('/[^0-9]/', '', $item['val'] ?? '0')) }}" data-suffix="{{ preg_replace('/[0-9]/', '', $item['val'] ?? '') }}">{{ $item['val'] ?? '' }}</div>
                 <div class="sf-trust-label">{{ $item['label'] ?? '' }}</div>
             </div>
             @endforeach
@@ -210,13 +210,13 @@
         {{-- ══ CATEGORIES — 3 Big Cards Layout ═════════════════ --}}
         <section class="sf-section" style="background:var(--color-bg-primary); padding: 48px 0;">
             <div class="sf-container">
-                <div style="text-align:center; margin-bottom:40px;" class="sf-animate">
+                <div style="text-align:center; margin-bottom:40px;" data-aos="fade-up">
                     <p class="sf-section-eyebrow">{{ $section['eyebrow'] ?? 'Curated For You' }}</p>
                     <h2 class="sf-section-title" style="margin:0 auto; color:var(--color-text-primary);">{{ $sTitle ?? 'Shop by Category' }}</h2>
                 </div>
                 <div class="sf-category-grid">
                     @foreach ($categories->take(3) as $cat)
-                    <a href="{{ route('category.show', $cat) }}" class="sf-category-banner">
+                    <a href="{{ route('category.show', $cat) }}" class="sf-category-banner" data-aos="zoom-in" data-aos-delay="{{ $loop->index * 100 }}">
                         @if ($cat->image_path)
                             <img src="{{ asset('storage/'.$cat->image_path) }}" alt="{{ $cat->name }}" loading="lazy">
                         @else
@@ -239,8 +239,8 @@
     @if ($sectionKey === 'usp_strip')
         {{-- ══ BRAND AUTHORITY BLOCK — Hardcoded (Not admin-configurable generic USP) ═══════════════ --}}
         <div class="sf-usp-strip">
-            <h2 class="sf-usp-section-title sf-animate">45+ Years of Beauty Expertise. Trusted by Thousands.</h2>
-            <p class="sf-usp-section-sub">Powered by NR Beauty World — a name dominating the beauty market for over 45 years.</p>
+            <h2 class="sf-usp-section-title" data-aos="fade-up">45+ Years of Beauty Expertise. Trusted by Thousands.</h2>
+            <p class="sf-usp-section-sub" data-aos="fade-up" data-aos-delay="100">Powered by NR Beauty World — a name dominating the beauty market for over 45 years.</p>
             <div class="sf-usp-grid">
                 <div class="sf-usp-item">
                     <div class="sf-usp-icon-wrap"><i class="bi bi-clock-history"></i></div>
@@ -537,9 +537,9 @@
                 ];
             }
         @endphp
-        <div class="sf-award-section">
+        <div class="sf-award-section" data-aos="fade-up">
             <div class="sf-award-inner">
-                <div class="sf-award-left sf-animate">
+                <div class="sf-award-left">
                     <p class="sf-award-eyebrow">Our Story</p>
                     <h2 class="sf-award-title">{{ $awardTitle }}</h2>
                     <p class="sf-award-desc">{{ $awardText }}</p>
@@ -549,7 +549,7 @@
                     <div class="sf-award-stats">
                         @foreach(array_slice($awardStats, 0, 3) as $stat)
                         <div class="sf-award-stat">
-                            <div class="sf-award-stat-num">{{ $stat['num'] }}</div>
+                            <div class="sf-award-stat-num counter" data-target="{{ intval(preg_replace('/[^0-9]/', '', $stat['num'])) }}" data-suffix="{{ preg_replace('/[0-9]/', '', $stat['num']) }}">{{ $stat['num'] }}</div>
                             <div class="sf-award-stat-label">{{ $stat['label'] }}</div>
                         </div>
                         @endforeach

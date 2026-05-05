@@ -48,6 +48,7 @@
     <link rel="preload" as="image" href="{{ $__heroPreload }}">
     @endif
     
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     @stack('styles')
     
     @php
@@ -451,6 +452,52 @@
     });
 })();
 </script>
+
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        AOS.init({
+            duration: 800,
+            once: true,
+            easing: 'ease-out-cubic',
+            offset: 50
+        });
+
+        /* Number Counter Animation */
+        const counters = document.querySelectorAll('.counter');
+        const observerOptions = { root: null, threshold: 0.1 };
+        
+        if (counters.length > 0) {
+            const observer = new IntersectionObserver(function(entries, observer) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const target = parseInt(entry.target.getAttribute('data-target'));
+                        const duration = 2000;
+                        let startTime = null;
+
+                        function step(timestamp) {
+                            if (!startTime) startTime = timestamp;
+                            const progress = Math.min((timestamp - startTime) / duration, 1);
+                            const eased = 1 - Math.pow(1 - progress, 3); // ease-out-cubic
+                            entry.target.innerText = Math.floor(eased * target) + (entry.target.getAttribute('data-suffix') || '');
+                            
+                            if (progress < 1) {
+                                window.requestAnimationFrame(step);
+                            } else {
+                                entry.target.innerText = target + (entry.target.getAttribute('data-suffix') || '');
+                            }
+                        }
+                        window.requestAnimationFrame(step);
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            counters.forEach(counter => observer.observe(counter));
+        }
+    });
+</script>
+
 @stack('scripts')
 </body>
 </html>
