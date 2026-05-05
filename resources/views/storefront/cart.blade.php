@@ -145,7 +145,7 @@
                                                 <input type="hidden" name="variant_id" value="{{ $defaultVariant->id }}">
                                                 <input type="hidden" name="qty" value="1">
                                                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                                                    <span style="color: var(--color-gold); font-size: 13px; font-weight: 600;">{{ config('commerce.currency_symbol', '₹') }}{{ number_format((float)$defaultVariant->price, 0) }}</span>
+                                                    <span style="color: var(--color-gold); font-size: 13px; font-weight: 600;">{{ config('commerce.currency_symbol', '₹') }}{{ number_format((float)$defaultVariant->price_retail, 0) }}</span>
                                                     <button type="submit" style="background: none; border: none; color: var(--color-gold); font-size: 18px; padding: 0; cursor: pointer;"><i class="bi bi-plus-circle-fill"></i></button>
                                                 </div>
                                             @endif

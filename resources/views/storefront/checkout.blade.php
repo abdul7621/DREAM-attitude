@@ -339,6 +339,16 @@
                 }
             });
             if (typeof fbq === 'function') {
+                @if(session('analytics_add_to_cart'))
+                @php $a = session('analytics_add_to_cart'); @endphp
+                fbq('track', 'AddToCart', {
+                    value: {{ $a['value'] }},
+                    currency: @json($a['currency']),
+                    content_ids: [@json($a['items'][0]['item_id'] ?? '')],
+                    content_type: 'product'
+                }, { eventID: 'atc-{{ session()->getId() }}-{{ now()->timestamp }}' });
+                @endif
+
                 fbq('track', 'InitiateCheckout', {
                     value: {{ (float) $totals['grand'] }},
                     currency: '{{ config('commerce.currency', 'INR') }}',
