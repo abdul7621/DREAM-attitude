@@ -27,9 +27,8 @@
     @include('partials.tracking-head')
     <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"></noscript>
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=playfair-display:400,400i,600,600i|dm-sans:300,400,500&display=swap" rel="stylesheet">
     <link href="{{ asset('css/storefront.css') }}?v={{ filemtime(public_path('css/storefront.css')) }}" rel="stylesheet">
     @php
         // Preload hero image for homepage
@@ -386,23 +385,31 @@
 
     // Hydrate hearts from server
     if (isLoggedIn) {
-        fetch('{{ route("account.api.wishlist-ids") }}', {
-            credentials: 'same-origin'
-        })
-            .then(function(r) { return r.json(); })
-            .then(function(ids) {
-                var hearts = document.querySelectorAll('.wishlist-heart');
-                for (var h = 0; h < hearts.length; h++) {
-                    var btn = hearts[h];
-                    var pid = parseInt(btn.dataset.productId);
-                    if (ids.indexOf(pid) !== -1) {
-                        btn.classList.add('active');
-                        var icon = btn.querySelector('i');
-                        if (icon) icon.className = 'bi bi-heart-fill';
-                        btn.dataset.wishlisted = '1';
+        var hydrateWishlist = function() {
+            fetch('{{ route("account.api.wishlist-ids") }}', {
+                credentials: 'same-origin'
+            })
+                .then(function(r) { return r.json(); })
+                .then(function(ids) {
+                    var hearts = document.querySelectorAll('.wishlist-heart');
+                    for (var h = 0; h < hearts.length; h++) {
+                        var btn = hearts[h];
+                        var pid = parseInt(btn.dataset.productId);
+                        if (ids.indexOf(pid) !== -1) {
+                            btn.classList.add('active');
+                            var icon = btn.querySelector('i');
+                            if (icon) icon.className = 'bi bi-heart-fill';
+                            btn.dataset.wishlisted = '1';
+                        }
                     }
-                }
-            }).catch(function() {});
+                }).catch(function() {});
+        };
+
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(hydrateWishlist);
+        } else {
+            setTimeout(hydrateWishlist, 1000);
+        }
     }
 
     // Toggle click handler (safe for all browsers - no closest())
@@ -457,12 +464,22 @@
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        AOS.init({
-            duration: 800,
-            once: true,
-            easing: 'ease-out-cubic',
-            offset: 50
-        });
+        var initAOS = function() {
+            if (typeof AOS !== 'undefined') {
+                AOS.init({
+                    duration: 800,
+                    once: true,
+                    easing: 'ease-out-cubic',
+                    offset: 50
+                });
+            }
+        };
+
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(initAOS);
+        } else {
+            setTimeout(initAOS, 500);
+        }
 
         /* Number Counter Animation */
         const counters = document.querySelectorAll('.counter');
