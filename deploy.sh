@@ -3,7 +3,7 @@
 #  D2C Business OS — Deploy Script  [DREAM ATTITUDE]
 # ═══════════════════════════════════════════════════════════════
 #  Remote:   github.com/abdul7621/DREAM-attitude.git
-#  Branch:   main
+#  Branch:   rollback-a985fce
 #  Server:   Hostinger Shared Hosting
 #  SSH:      ssh -p 65002 u750823523@147.93.17.66
 #  App Path: ~/domains/dreamattitude.al-mhaf.com/dream-app
@@ -32,7 +32,7 @@ REMOTE_HOST="147.93.17.66"
 REMOTE_PORT="65002"
 # REMOTE_PASS="DreamWorld@2008"
 APP_DIR="domains/dreamattitude.al-mhaf.com/dream-app"
-BRANCH="main"
+BRANCH="rollback-a985fce"
 SSH_CMD="ssh -p ${REMOTE_PORT} ${REMOTE_USER}@${REMOTE_HOST}"
 
 RUN_MIGRATE=true
