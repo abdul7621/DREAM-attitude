@@ -63,38 +63,45 @@ echo ""
 echo "🌐 [SERVER] Executing remote deployment commands..."
 
 if [ "$RUN_MIGRATE" = true ]; then
-    MIGRATE_CMD="php artisan migrate --force && "
+    MIGRATE_CMD="echo '🗄  Running migrations...' && php artisan migrate --force;"
 else
-    MIGRATE_CMD=""
+    MIGRATE_CMD="echo '⏩ Skipping migrations';"
 fi
 
 PUBLIC_HTML="domains/dreamattitude.al-mhaf.com/public_html"
 
-${SSH_CMD} -t "cd ${APP_DIR} && \
-    echo '📥 Pulling latest code...' && \
-    git pull origin ${BRANCH} && \
-    echo '🗄  Running migrations (if any)...' && \
-    ${MIGRATE_CMD} \
-    echo '📂 Syncing public assets to public_html...' && \
-    rsync -av --delete \
-        --exclude='storage' \
-        --exclude='.htaccess' \
-        --exclude='index.php' \
-        public/ ~/${PUBLIC_HTML}/ && \
-    cp -n public/.htaccess ~/${PUBLIC_HTML}/.htaccess 2>/dev/null || true && \
-    echo '🔄 Rebuilding caches...' && \
-    php artisan optimize:clear && \
-    php artisan config:cache && \
-    php artisan route:cache && \
-    php artisan view:cache && \
-    php artisan event:cache && \
-    php artisan queue:restart && \
-    chmod -R 755 storage bootstrap/cache && \
-    echo '✅ All remote tasks completed successfully!'"
-    
+${SSH_CMD} bash <<REMOTE_SCRIPT
+cd ${APP_DIR} || { echo '❌ Failed to cd into app dir'; exit 1; }
+
+echo '📥 Pulling latest code...'
+git pull origin ${BRANCH}
+
+${MIGRATE_CMD}
+
+echo '📂 Syncing public assets to public_html...'
+rsync -a --delete \
+    --exclude='storage' \
+    --exclude='.htaccess' \
+    --exclude='index.php' \
+    public/ ~/${PUBLIC_HTML}/
+cp -n public/.htaccess ~/${PUBLIC_HTML}/.htaccess 2>/dev/null || true
+
+echo '🔄 Rebuilding caches...'
+php artisan optimize:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan event:cache 2>/dev/null || true
+php artisan queue:restart 2>/dev/null || true
+chmod -R 755 storage bootstrap/cache
+
+echo '✅ All remote tasks completed successfully!'
+REMOTE_SCRIPT
+
 echo ""
 
 echo "═══════════════════════════════════════════════════"
 echo "  ✅ Deploy complete! Check your live site."
 echo "═══════════════════════════════════════════════════"
 echo ""
+
