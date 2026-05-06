@@ -10,18 +10,19 @@
 # ═══════════════════════════════════════════════════════════════
 #
 #  Usage:
-#    bash deploy.sh              → Normal deploy
-#    bash deploy.sh --no-migrate → Skip migrations
+#    bash deploy.sh              → Normal deploy (pull + cache)
+#    bash deploy.sh --migrate    → Deploy + run migrations
 #
 # ═══════════════════════════════════════════════════════════════
 
 set -e
 
-# ── Safety: verify correct repo ───────────────────────────────
+# ── Safety: verify correct repo before deploying ──────────────
 EXPECTED_REPO="DREAM-attitude"
 ACTUAL_REPO=$(git remote get-url origin 2>/dev/null || echo "unknown")
 if [[ "$ACTUAL_REPO" != *"$EXPECTED_REPO"* ]]; then
     echo "❌ WRONG REPO! Expected $EXPECTED_REPO but got: $ACTUAL_REPO"
+    echo "   You may be running this deploy script from the wrong project folder."
     exit 1
 fi
 
@@ -30,14 +31,12 @@ REMOTE_USER="u750823523"
 REMOTE_HOST="147.93.17.66"
 REMOTE_PORT="65002"
 APP_DIR="domains/dreamattitude.al-mhaf.com/dream-app"
-PUBLIC_HTML="domains/dreamattitude.al-mhaf.com/public_html"
 BRANCH="main"
-SITE_URL="https://dreamattitude.com"
 SSH_CMD="ssh -p ${REMOTE_PORT} ${REMOTE_USER}@${REMOTE_HOST}"
 
-RUN_MIGRATE=true
-if [ "$1" = "--no-migrate" ]; then
-    RUN_MIGRATE=false
+RUN_MIGRATE=false
+if [ "$1" = "--migrate" ]; then
+    RUN_MIGRATE=true
 fi
 
 echo ""
@@ -59,24 +58,27 @@ git push origin ${BRANCH}
 echo "  ✓ Push complete"
 echo ""
 
-# ── Step 2: Remote Deploy ─────────────────────────────────────
-echo "🌐 [SERVER] Deploying..."
+# ── Step 2-4: Remote Execution ────────────────────────────────
+echo "🌐 [SERVER] Executing remote deployment commands..."
 
-MIGRATE_FLAG="$RUN_MIGRATE"
+if [ "$RUN_MIGRATE" = true ]; then
+    MIGRATE_CMD="php artisan migrate --force && "
+else
+    MIGRATE_CMD=""
+fi
 
-${SSH_CMD} -t "cd ~/${APP_DIR} && \
+PUBLIC_HTML="domains/dreamattitude.al-mhaf.com/public_html"
+
+${SSH_CMD} -t "cd ${APP_DIR} && \
     echo '📥 Pulling latest code...' && \
     git pull origin ${BRANCH} && \
-    echo '📦 Syncing composer...' && \
-    composer install --no-dev --optimize-autoloader --no-interaction 2>&1 | tail -3 && \
-    echo '🗄  Running migrations...' && \
-    php artisan migrate --force && \
-    echo '📂 Syncing public assets...' && \
-    rsync -a --delete \
+    echo '🗄  Running migrations (if any)...' && \
+    ${MIGRATE_CMD} \
+    echo '📂 Syncing public assets to public_html...' && \
+    rsync -av --delete \
         --exclude='storage' \
         --exclude='.htaccess' \
         --exclude='index.php' \
-        --exclude='.user.ini' \
         public/ ~/${PUBLIC_HTML}/ && \
     cp -n public/.htaccess ~/${PUBLIC_HTML}/.htaccess 2>/dev/null || true && \
     echo '🔄 Rebuilding caches...' && \
@@ -84,17 +86,13 @@ ${SSH_CMD} -t "cd ~/${APP_DIR} && \
     php artisan config:cache && \
     php artisan route:cache && \
     php artisan view:cache && \
-    php artisan event:cache 2>/dev/null || true && \
-    php artisan queue:restart 2>/dev/null || true && \
+    php artisan event:cache && \
+    php artisan queue:restart && \
     chmod -R 755 storage bootstrap/cache && \
-    echo '🧹 Clearing OPcache...' && \
-    echo '<?php opcache_reset(); echo \"cleared\"; @unlink(__FILE__);' > ~/${PUBLIC_HTML}/_op.php && \
-    curl -skL ${SITE_URL}/_op.php 2>/dev/null && \
-    rm -f ~/${PUBLIC_HTML}/_op.php 2>/dev/null || true && \
-    echo '' && \
-    echo '✅ All done!'"
-
+    echo '✅ All remote tasks completed successfully!'"
+    
 echo ""
+
 echo "═══════════════════════════════════════════════════"
 echo "  ✅ Deploy complete! Check your live site."
 echo "═══════════════════════════════════════════════════"
