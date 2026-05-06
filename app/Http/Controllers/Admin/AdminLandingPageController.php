@@ -101,7 +101,9 @@ class AdminLandingPageController extends Controller
     private function processUploads(Request $request, array $data, ?LandingPage $existing = null): array
     {
         if ($request->hasFile('hero_image_file')) {
-            $data['hero_image'] = $request->file('hero_image_file')->store('landing-pages', 'public');
+            $path = $request->file('hero_image_file')->store('landing-pages', 'public');
+            $data['hero_image'] = app(\App\Services\ImageOptimizerService::class)
+                ->optimize($path, \App\Services\ImageOptimizerService::MAX_HERO);
         } elseif ($existing) {
             $data['hero_image'] = $existing->hero_image;
         }

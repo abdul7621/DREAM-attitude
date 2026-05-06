@@ -5,4 +5,4 @@ Disallow: /account
 Disallow: /admin
 Disallow: /*?sort=
 
-Sitemap: /sitemap.xml
+Sitemap: https://dreamattitude.com/sitemap.xml

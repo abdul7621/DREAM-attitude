@@ -11,6 +11,9 @@
     @if($page->hero_image)
     <meta property="og:image" content="{{ asset('storage/' . $page->hero_image) }}">
     @endif
+    @if($page->hero_image)
+    <link rel="preload" as="image" href="{{ asset('storage/' . $page->hero_image) }}">
+    @endif
     @include('partials.tracking-head')
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -527,6 +530,7 @@
     </style>
 </head>
 <body>
+<main>
 @include('partials.tracking-body')
 
 @php
@@ -541,7 +545,8 @@
 {{-- ═══ SECTION 1: HERO ═══ --}}
 <section class="lp-hero">
     @if($page->hero_image)
-        <img src="{{ asset('storage/' . $page->hero_image) }}" alt="{{ $page->hero_headline }}" class="lp-hero-img">
+        <img src="{{ asset('storage/' . $page->hero_image) }}" alt="{{ $page->hero_headline }}" class="lp-hero-img"
+             width="320" height="320" loading="eager" fetchpriority="high">
     @endif
 
     <h1>{{ $page->hero_headline }}</h1>
@@ -594,7 +599,8 @@
             <div class="lp-step">
                 <div class="lp-step-num">{{ $i + 1 }}</div>
                 @if(!empty($step['image']))
-                    <img src="{{ asset('storage/' . $step['image']) }}" alt="{{ $step['title'] }}" class="lp-step-img">
+                    <img src="{{ asset('storage/' . $step['image']) }}" alt="{{ $step['title'] }}" class="lp-step-img"
+                         width="280" height="280" loading="lazy">
                 @endif
                 <div class="lp-step-body">
                     <h3>{{ $step['title'] }}</h3>
@@ -711,6 +717,7 @@
 
 {{-- ═══ Bottom Spacer ═══ --}}
 <div class="lp-bottom-spacer"></div>
+</main>
 
 {{-- ═══ STICKY BOTTOM BAR ═══ --}}
 <div class="lp-sticky">
