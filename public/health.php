@@ -30,12 +30,13 @@ if (file_exists($autoloaderPath)) {
 if ($checks['autoloader']) {
     try {
         $app = require $basePath . '/bootstrap/app.php';
-        $kernel = $app->make(\Illuminate\Contracts\Http\Kernel::class);
+        $app->make(\Illuminate\Contracts\Http\Kernel::class);
+        $app->boot();
         $checks['laravel'] = true;
 
-        // 3. Database
+        // 3. Database (use container directly, not Facade)
         try {
-            \Illuminate\Support\Facades\DB::connection()->getPdo();
+            $app->make('db')->connection()->getPdo();
             $checks['database'] = true;
         } catch (\Throwable $e) {
             $errors[] = 'DB: ' . $e->getMessage();
