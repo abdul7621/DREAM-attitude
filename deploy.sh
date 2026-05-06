@@ -3,7 +3,7 @@
 #  D2C Business OS — Deploy Script  [DREAM ATTITUDE]
 # ═══════════════════════════════════════════════════════════════
 #  Remote:   github.com/abdul7621/DREAM-attitude.git
-#  Branch:   rollback-a985fce
+#  Branch:   main
 #  Server:   Hostinger Shared Hosting
 #  SSH:      ssh -p 65002 u750823523@147.93.17.66
 #  App Path: ~/domains/dreamattitude.al-mhaf.com/dream-app
@@ -32,7 +32,7 @@ REMOTE_HOST="147.93.17.66"
 REMOTE_PORT="65002"
 # REMOTE_PASS="DreamWorld@2008"
 APP_DIR="domains/dreamattitude.al-mhaf.com/dream-app"
-BRANCH="rollback-a985fce"
+BRANCH="main"
 SSH_CMD="ssh -p ${REMOTE_PORT} ${REMOTE_USER}@${REMOTE_HOST}"
 
 RUN_MIGRATE=true
@@ -63,45 +63,38 @@ echo ""
 echo "🌐 [SERVER] Executing remote deployment commands..."
 
 if [ "$RUN_MIGRATE" = true ]; then
-    MIGRATE_CMD="echo '🗄  Running migrations...' && php artisan migrate --force;"
+    MIGRATE_CMD="php artisan migrate --force && "
 else
-    MIGRATE_CMD="echo '⏩ Skipping migrations';"
+    MIGRATE_CMD=""
 fi
 
 PUBLIC_HTML="domains/dreamattitude.al-mhaf.com/public_html"
 
-${SSH_CMD} bash <<REMOTE_SCRIPT
-cd ${APP_DIR} || { echo '❌ Failed to cd into app dir'; exit 1; }
-
-echo '📥 Pulling latest code...'
-git pull origin ${BRANCH}
-
-${MIGRATE_CMD}
-
-echo '📂 Syncing public assets to public_html...'
-rsync -a --delete \
-    --exclude='storage' \
-    --exclude='.htaccess' \
-    --exclude='index.php' \
-    public/ ~/${PUBLIC_HTML}/
-cp -n public/.htaccess ~/${PUBLIC_HTML}/.htaccess 2>/dev/null || true
-
-echo '🔄 Rebuilding caches...'
-php artisan optimize:clear
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-php artisan event:cache 2>/dev/null || true
-php artisan queue:restart 2>/dev/null || true
-chmod -R 755 storage bootstrap/cache
-
-echo '✅ All remote tasks completed successfully!'
-REMOTE_SCRIPT
-
+${SSH_CMD} -t "cd ${APP_DIR} && \
+    echo '📥 Pulling latest code...' && \
+    git pull origin ${BRANCH} && \
+    echo '🗄  Running migrations (if any)...' && \
+    ${MIGRATE_CMD} \
+    echo '📂 Syncing public assets to public_html...' && \
+    rsync -av --delete \
+        --exclude='storage' \
+        --exclude='.htaccess' \
+        --exclude='index.php' \
+        public/ ~/${PUBLIC_HTML}/ && \
+    cp -n public/.htaccess ~/${PUBLIC_HTML}/.htaccess 2>/dev/null || true && \
+    echo '🔄 Rebuilding caches...' && \
+    php artisan optimize:clear && \
+    php artisan config:cache && \
+    php artisan route:cache && \
+    php artisan view:cache && \
+    php artisan event:cache && \
+    php artisan queue:restart && \
+    chmod -R 755 storage bootstrap/cache && \
+    echo '✅ All remote tasks completed successfully!'"
+    
 echo ""
 
 echo "═══════════════════════════════════════════════════"
 echo "  ✅ Deploy complete! Check your live site."
 echo "═══════════════════════════════════════════════════"
 echo ""
-
