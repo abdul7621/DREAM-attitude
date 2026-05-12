@@ -111,15 +111,17 @@ class ProductController extends Controller
         $deliveryEta = $this->settings->get('store.delivery_eta', '2-5 Business Days');
         $codEnabled = (bool)$this->settings->get('payment.cod_enabled', true);
 
-        // ── Social Proof: Real buyer data ─────────────────────────────────────────
-        // Wrapped in try-catch: any DB issue must NEVER break the product page.
+        // ── Social Proof: DISABLED ─────────────────────────────────────────
+        // The social proof toast ("X just bought this!") has been disabled.
+        // It was showing fake fallback names when real orders were insufficient.
+        // To re-enable in the future, uncomment the block below.
         $socialProofData = [];
+        /*
         try {
             $spEnabled = ($product->meta['show_social_proof'] ?? null) !== false
                 && $this->settings->get('conversion_copy.social_proof_enabled', true) !== '0';
 
             if ($spEnabled) {
-                // Step 1: Real orders for THIS product (last 90 days)
                 $realRows = \App\Models\OrderItem::query()
                     ->select(['orders.customer_name', 'orders.placed_at'])
                     ->join('orders', 'order_items.order_id', '=', 'orders.id')
@@ -131,7 +133,6 @@ class ProductController extends Controller
                     ->limit(30)
                     ->get();
 
-                // Step 2: If thin (<5), add same-category orders
                 if ($realRows->count() < 5 && $product->category_id) {
                     $catProductIds = \App\Models\Product::where('category_id', $product->category_id)
                         ->where('id', '!=', $product->id)
@@ -153,7 +154,6 @@ class ProductController extends Controller
                     }
                 }
 
-                // Step 3: Build display-safe data from real rows
                 foreach ($realRows->take(20) as $row) {
                     $name = trim($row->customer_name ?? '');
                     if (empty($name)) continue;
@@ -175,7 +175,6 @@ class ProductController extends Controller
                     $socialProofData[] = ['name' => $firstName, 'time_ago' => $timeAgo];
                 }
 
-                // Step 4: Fill gaps with curated fallback if real data is thin
                 if (count($socialProofData) < 5) {
                     $adminFallback = $this->settings->get('conversion_copy.social_proof_fallback', []);
                     if (is_string($adminFallback) && !empty($adminFallback)) {
@@ -204,9 +203,9 @@ class ProductController extends Controller
                 }
             }
         } catch (\Throwable $e) {
-            // Safety net: social proof failure must never take down the product page
             $socialProofData = [];
         }
+        */
 
 
 
