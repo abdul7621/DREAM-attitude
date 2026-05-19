@@ -5,6 +5,12 @@
 
     RewriteEngine On
 
+    # ── Canonical Domain Redirect ─────────────────────────────────
+    # Redirect dreamattitude.al-mhaf.com (or any other alias) to the main domain
+    RewriteCond %{HTTP_HOST} !^dreamattitude\.com$ [NC]
+    RewriteRule ^(.*)$ https://dreamattitude.com/$1 [L,R=301]
+
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
