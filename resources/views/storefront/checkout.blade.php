@@ -297,15 +297,16 @@
                         <span><i class="bi bi-arrow-repeat text-success"></i> Easy Returns</span>
                     </div>
 
-                    {{-- Sticky Mobile Place Order Button --}}
-                    <div class="d-md-none" style="position: fixed; bottom: 0; left: 0; right: 0; background: var(--color-bg-surface); padding: 12px 16px; border-top: 1px solid var(--color-border); z-index: 1040; box-shadow: 0 -4px 12px rgba(0,0,0,0.05);">
+                    {{-- Sticky Mobile Place Order Button (Premium D2C Style) --}}
+                    <div class="d-md-none sf-mobile-checkout-sticky">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 11px; color: var(--color-text-muted); font-weight: 500;">
                             <span><i class="bi bi-shield-check text-success"></i> 100% Safe</span>
                             <span><i class="bi bi-truck text-success"></i> Secure</span>
                             <span><i class="bi bi-arrow-repeat text-success"></i> Easy Returns</span>
                         </div>
-                        <button type="submit" style="width: 100%; height: 48px; background: var(--color-gold); color: #0a0a0a; border: none; border-radius: var(--radius-sm); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">
-                            Place Order - ₹{{ number_format((float) $totals['grand'], 0) }}
+                        <button type="submit" class="sf-mobile-checkout-btn" onclick="this.style.opacity='0.8'; this.querySelector('.btn-text').innerText='Processing...';">
+                            <span style="font-size: 16px;">₹{{ number_format((float) $totals['grand'], 0) }}</span>
+                            <span style="display: flex; align-items: center; gap: 4px;"><span class="btn-text">Place Order</span> <i class="bi bi-chevron-right"></i></span>
                         </button>
                     </div>
                 </form>
@@ -322,6 +323,55 @@
 .payment-card.selected { border-color: var(--color-gold) !important; background: var(--color-bg-elevated) !important; }
 .sf-inline-err-text { font-size: 0.85rem; color: var(--color-error); display: block; margin-top: 0.25rem; }
 .sf-input.is-invalid { border-color: var(--color-error) !important; box-shadow: 0 0 0 1px var(--color-error); }
+
+/* Mobile Premium Sticky Button Styling */
+.sf-mobile-checkout-sticky {
+    position: fixed; 
+    bottom: 0; 
+    left: 0; 
+    right: 0; 
+    background: #ffffff; 
+    padding: 12px 16px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    border-top: 1px solid rgba(0,0,0,0.05); 
+    z-index: 1040; 
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.08);
+}
+.sf-mobile-checkout-btn {
+    position: relative;
+    width: 100%; 
+    height: 54px; 
+    background: linear-gradient(135deg, #f7d570 0%, #c9a84c 100%);
+    color: #000000; 
+    border: none; 
+    border-radius: 12px; 
+    font-weight: 800; 
+    text-transform: uppercase; 
+    letter-spacing: 0.5px; 
+    font-size: 14px;
+    box-shadow: 0 8px 20px rgba(201,168,76,0.4);
+    overflow: hidden;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    transition: transform 0.1s;
+}
+.sf-mobile-checkout-btn:active { transform: scale(0.98); }
+.sf-mobile-checkout-btn::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 50%; height: 100%;
+    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+    transform: skewX(-25deg);
+    animation: btnShimmer 3s infinite;
+}
+@keyframes btnShimmer {
+    0% { left: -100%; }
+    20% { left: 200%; }
+    100% { left: 200%; }
+}
+
 
 /* Hide Bottom Nav on Checkout for zero-distraction & fix sticky overlap */
 .sf-bottom-nav { display: none !important; }
