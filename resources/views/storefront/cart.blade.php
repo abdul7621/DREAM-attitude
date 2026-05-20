@@ -40,17 +40,18 @@
                 $percentage = $threshold > 0 ? min(100, ($subtotal / $threshold) * 100) : 100;
                 $remaining = max(0, $threshold - $subtotal);
             @endphp
-            <div style="background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 24px;">
+            {{-- Sleek Free Shipping Banner --}}
+            <div style="background: rgba(40, 167, 69, 0.05); border: 1px solid rgba(40, 167, 69, 0.2); border-radius: 8px; padding: 12px 16px; margin-bottom: 24px; position: relative; overflow: hidden;">
                 @if($remaining > 0)
-                    <div style="font-weight: 600; font-size: 14px; color: var(--color-text-primary); margin-bottom: 12px; text-align: center;">
-                        You are <span style="color: var(--color-gold);">{{ config('commerce.currency_symbol', '₹') }}{{ number_format($remaining, 0) }}</span> away from <strong style="color: var(--color-success);">FREE Shipping</strong>!
+                    <div style="font-weight: 600; font-size: 13px; color: var(--color-text-primary); margin-bottom: 8px; text-align: center;">
+                        Add <span style="color: var(--color-gold);">{{ config('commerce.currency_symbol', '₹') }}{{ number_format($remaining, 0) }}</span> more to unlock <strong style="color: var(--color-success);">FREE Shipping!</strong>
                     </div>
                 @else
-                    <div style="font-weight: 600; font-size: 14px; color: var(--color-success); margin-bottom: 12px; text-align: center;">
-                        <i class="bi bi-truck"></i> Congratulations! You unlocked <strong>FREE Shipping</strong> 🎉
+                    <div style="font-weight: 600; font-size: 13px; color: var(--color-success); margin-bottom: 8px; text-align: center;">
+                        <i class="bi bi-truck"></i> You've unlocked <strong>FREE Shipping!</strong> 🎉
                     </div>
                 @endif
-                <div style="background: var(--color-bg-elevated); height: 8px; border-radius: 4px; overflow: hidden; width: 100%;">
+                <div style="background: rgba(40, 167, 69, 0.15); height: 4px; border-radius: 4px; overflow: hidden; width: 100%;">
                     <div style="height: 100%; background: var(--color-success); width: {{ $percentage }}%; transition: width 0.5s ease-in-out;"></div>
                 </div>
             </div>
@@ -63,51 +64,43 @@
                             $variant = $row['variant'];
                             $product = $row['product'];
                         @endphp
-                        <div class="sf-cart-row" style="align-items: flex-start;">
+                        <div class="sf-cart-row" style="align-items: flex-start; padding: 16px; background: #fff; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--color-border); box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
                             @if($product->primaryImage())
-                                <img src="{{ asset('storage/'.$product->primaryImage()->path) }}" class="sf-cart-thumb">
+                                <img src="{{ asset('storage/'.$product->primaryImage()->path) }}" class="sf-cart-thumb" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
                             @else
-                                <div class="sf-cart-thumb" style="background: var(--color-bg-elevated);"></div>
+                                <div class="sf-cart-thumb" style="width: 80px; height: 80px; background: var(--color-bg-elevated); border-radius: 8px;"></div>
                             @endif
-                            <div style="flex: 1; display: flex; flex-direction: column; min-height: 72px;">
-                                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
-                                    <div>
-                                        <div class="sf-cart-name" style="line-height: 1.4;">{{ $product->name }}</div>
-                                        <div class="sf-cart-variant" style="margin-top: 2px;">{{ $variant->title }} @if($variant->sku) · {{ $variant->sku }} @endif</div>
-                                        <div class="sf-cart-price" style="margin-top: 6px; display: flex; gap: 8px; align-items: center;">
+                            <div style="flex: 1; margin-left: 12px; display: flex; flex-direction: column;">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                    <div style="padding-right: 8px;">
+                                        <div style="font-weight: 600; font-size: 14px; color: var(--color-text-primary); line-height: 1.3;">{{ $product->name }}</div>
+                                        <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 4px;">{{ $variant->title }} @if($variant->sku) · {{ $variant->sku }} @endif</div>
+                                        <div style="font-weight: 700; font-size: 15px; margin-top: 6px; color: var(--color-gold);">
                                             @php
                                                 $compareAt = $row['variant']->compare_at_price;
                                                 $unitPrice = (float) $row['unit_price'];
                                                 $showMrp = $compareAt && (float) $compareAt > $unitPrice;
                                             @endphp
-                                            <span style="font-weight: 600;">{{ config('commerce.currency_symbol', '₹') }}{{ number_format((float) $row['unit_price'], 0) }}</span>
+                                            {{ config('commerce.currency_symbol', '₹') }}{{ number_format($unitPrice, 0) }}
                                             @if($showMrp)
-                                                <span style="text-decoration: line-through; color: var(--color-text-muted); font-size: 11px;">{{ config('commerce.currency_symbol', '₹') }}{{ number_format((float) $compareAt, 0) }}</span>
+                                                <span style="text-decoration: line-through; color: #a0a0a0; font-weight: 400; font-size: 12px; margin-left: 4px;">{{ config('commerce.currency_symbol', '₹') }}{{ number_format((float) $compareAt, 0) }}</span>
                                             @endif
                                         </div>
                                     </div>
-                                    <form method="POST" action="{{ route('cart.items.destroy', $item->id) }}">
+                                    <form method="POST" action="{{ route('cart.items.destroy', $item->id) }}" style="margin: 0;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="sf-cart-remove" style="background: none; border: none; padding: 4px; color: var(--color-text-muted); font-size: 16px; line-height: 1; cursor: pointer;"><i class="bi bi-trash"></i></button>
+                                        <button type="submit" style="background: none; border: none; padding: 4px; color: #ff4d4f; font-size: 18px; line-height: 1; cursor: pointer;"><i class="bi bi-trash"></i></button>
                                     </form>
                                 </div>
-                                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 16px;">
-                                    <div class="sf-qty">
-                                        <form action="{{ route('cart.items.update', $item) }}" method="post" style="display: flex;">
-                                            @csrf
-                                            @method('PUT')
-                                            <button type="button" onclick="const inpv=this.nextElementSibling; if(inpv.value>1) {inpv.value--; this.form.submit();}"><i class="bi bi-dash"></i></button>
-                                            <input type="number" name="qty" value="{{ $item->qty }}" min="1">
-                                            <button type="button" onclick="const inpv=this.previousElementSibling; inpv.value++; this.form.submit();"><i class="bi bi-plus"></i></button>
-                                        </form>
-                                    </div>
-                                    <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
-                                        @if($showMrp)
-                                            <span style="text-decoration: line-through; color: var(--color-text-muted); font-size: 11px;">{{ config('commerce.currency_symbol', '₹') }}{{ number_format((float) $compareAt * $item->qty, 0) }}</span>
-                                        @endif
-                                        <span class="sf-cart-price" style="font-weight: 600; color: var(--color-gold);">{{ config('commerce.currency_symbol', '₹') }}{{ number_format((float) $row['line_total'], 0) }}</span>
-                                    </div>
+                                <div style="display: flex; justify-content: flex-start; align-items: center; margin-top: 16px;">
+                                    <form action="{{ route('cart.items.update', $item) }}" method="post" style="display: flex; border: 1px solid var(--color-border); border-radius: 50px; overflow: hidden; height: 32px; width: 100px;">
+                                        @csrf
+                                        @method('PUT')
+                                        <button type="button" onclick="const inpv=this.nextElementSibling; if(inpv.value>1) {inpv.value--; this.form.submit();}" style="flex: 1; background: var(--color-bg-elevated); border: none; font-size: 18px; line-height: 1; color: var(--color-text-primary);"><i class="bi bi-dash"></i></button>
+                                        <input type="number" name="qty" value="{{ $item->qty }}" min="1" readonly style="flex: 1; width: 100%; border: none; text-align: center; font-size: 14px; font-weight: 600; background: #fff; outline: none; -moz-appearance: textfield; padding: 0;">
+                                        <button type="button" onclick="const inpv=this.previousElementSibling; inpv.value++; this.form.submit();" style="flex: 1; background: var(--color-bg-elevated); border: none; font-size: 16px; line-height: 1; color: var(--color-text-primary);"><i class="bi bi-plus"></i></button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -203,10 +196,82 @@
                         <a href="{{ route('checkout.create') }}" class="btn-checkout" style="display: flex; align-items: center; justify-content: center;">Proceed to Checkout</a>
                     </div>
                 </div>
+                    </div>
+                </div>
             </div>
+
+            {{-- Mobile Premium Sticky Checkout CTA --}}
+            <div class="d-md-none sf-mobile-checkout-sticky">
+                <a href="{{ route('checkout.create') }}" class="sf-mobile-checkout-btn" style="text-decoration: none;">
+                    <span style="font-size: 16px;">₹{{ number_format((float) $totals['grand'], 0) }}</span>
+                    <span style="display: flex; align-items: center; gap: 4px;"><span class="btn-text">Proceed</span> <i class="bi bi-chevron-right"></i></span>
+                </a>
+            </div>
+
         @endif
     </div>
 </section>
+
+<style>
+/* Hide Bottom Nav on Cart for zero-distraction & fix sticky overlap */
+.sf-bottom-nav { display: none !important; }
+
+/* Mobile Premium Sticky Button Styling (Shared with Checkout) */
+.sf-mobile-checkout-sticky {
+    position: fixed; 
+    bottom: 0; 
+    left: 0; 
+    right: 0; 
+    background: #ffffff; 
+    padding: 12px 16px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    border-top: 1px solid rgba(0,0,0,0.05); 
+    z-index: 1040; 
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.08);
+}
+.sf-mobile-checkout-btn {
+    position: relative;
+    width: 100%; 
+    height: 54px; 
+    background: linear-gradient(135deg, #f7d570 0%, #c9a84c 100%);
+    color: #000000; 
+    border: none; 
+    border-radius: 12px; 
+    font-weight: 800; 
+    text-transform: uppercase; 
+    letter-spacing: 0.5px; 
+    font-size: 14px;
+    box-shadow: 0 8px 20px rgba(201,168,76,0.4);
+    overflow: hidden;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    transition: transform 0.1s;
+}
+.sf-mobile-checkout-btn:active { transform: scale(0.98); }
+.sf-mobile-checkout-btn::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 50%; height: 100%;
+    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+    transform: skewX(-25deg);
+    animation: btnShimmer 3s infinite;
+}
+@keyframes btnShimmer {
+    0% { left: -100%; }
+    20% { left: 200%; }
+    100% { left: 200%; }
+}
+
+/* Responsive Utility Fallbacks */
+@media (min-width: 768px) {
+    .d-md-none { display: none !important; }
+}
+@media (max-width: 767px) {
+    .sf-container { padding-bottom: 80px; }
+}
+</style>
 @endsection
 
 @if (session('analytics_add_to_cart'))
