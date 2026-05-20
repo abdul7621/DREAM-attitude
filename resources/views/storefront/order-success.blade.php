@@ -57,58 +57,58 @@ if (window.Store) {
 @endpush
 
 @section('content')
-<section class="sf-section" style="padding:60px 0;background:var(--color-bg-primary);">
-    <div class="sf-container" style="max-width:720px;">
+<section class="sf-section sf-os-section">
+    <div class="sf-container sf-os-container">
 
         {{-- Success Header --}}
-        <div style="text-align:center;margin-bottom:32px;">
-            <div style="width:80px;height:80px;border-radius:50%;background:rgba(39,103,73,0.15);display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;">
-                <i class="bi bi-check-circle-fill" style="font-size:2.5rem;color:var(--color-success);"></i>
+        <div class="sf-os-header">
+            <div class="sf-os-icon-wrap">
+                <i class="bi bi-check-circle-fill sf-os-icon"></i>
             </div>
-            <h1 style="color:var(--color-text-primary);font-size:28px;font-weight:500;margin-bottom:8px;text-transform:uppercase;letter-spacing:2px;">Order Confirmed!</h1>
-            <p style="color:var(--color-text-secondary);font-size:14px;margin-bottom:4px;">Thank you for your order, <strong style="color:var(--color-text-primary);">{{ $order->customer_name }}</strong></p>
-            <p style="color:var(--color-gold);font-size:14px;letter-spacing:1px;">Order <strong>#{{ $order->order_number }}</strong></p>
+            <h1 class="sf-os-title">Order Confirmed!</h1>
+            <p class="sf-os-subtitle">Thank you for your order, <strong style="color:var(--color-text-primary);">{{ $order->customer_name }}</strong></p>
+            <p class="sf-os-order-num">Order <strong>#{{ $order->order_number }}</strong></p>
         </div>
 
         @if(session('account_created_email'))
-            <div style="background: rgba(39,103,73,0.1); border: 1px solid var(--color-success); border-radius: var(--radius-md); padding: 16px; margin-bottom: 32px; text-align: center;">
-                <i class="bi bi-person-check" style="color: var(--color-success); font-size: 20px; margin-bottom: 8px; display: block;"></i>
-                <h4 style="color: var(--color-success); font-size: 16px; margin-bottom: 4px;">Account Created Successfully!</h4>
-                <p style="color: var(--color-text-secondary); font-size: 13px; margin: 0;">We've sent a password reset link to <strong>{{ session('account_created_email') }}</strong> so you can track your orders easily.</p>
+            <div class="sf-os-alert-success">
+                <i class="bi bi-person-check sf-os-alert-success-icon"></i>
+                <h4 class="sf-os-alert-success-title">Account Created Successfully!</h4>
+                <p class="sf-os-alert-success-text">We've sent a password reset link to <strong>{{ session('account_created_email') }}</strong> so you can track your orders easily.</p>
             </div>
         @elseif(session('account_created_phone'))
-            <div style="background: rgba(201,168,76,0.1); border: 1px solid var(--color-gold); border-radius: var(--radius-md); padding: 16px; margin-bottom: 32px; text-align: center;">
-                <i class="bi bi-person-check" style="color: var(--color-gold); font-size: 20px; margin-bottom: 8px; display: block;"></i>
-                <h4 style="color: var(--color-text-primary); font-size: 16px; margin-bottom: 4px;">Account Created Successfully!</h4>
-                <p style="color: var(--color-text-secondary); font-size: 13px; margin: 0;">An account was created for you using <strong>{{ session('account_created_phone') }}</strong>. You can use it to track your orders!</p>
+            <div class="sf-os-alert-gold">
+                <i class="bi bi-person-check sf-os-alert-gold-icon"></i>
+                <h4 class="sf-os-alert-gold-title">Account Created Successfully!</h4>
+                <p class="sf-os-alert-gold-text">An account was created for you using <strong>{{ session('account_created_phone') }}</strong>. You can use it to track your orders!</p>
             </div>
         @endif
 
         {{-- Trust / Reassurance Bar --}}
-        <div style="display:flex;justify-content:center;gap:32px;margin-bottom:32px;flex-wrap:wrap;">
-            <div style="display:flex;align-items:center;gap:8px;">
-                <i class="bi bi-shield-check" style="color:var(--color-gold);font-size:18px;"></i>
-                <span style="color:var(--color-text-secondary);font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Secure Order</span>
+        <div class="sf-os-trust-bar">
+            <div class="sf-os-trust-item">
+                <i class="bi bi-shield-check sf-os-trust-icon"></i>
+                <span class="sf-os-trust-text">Secure Order</span>
             </div>
-            <div style="display:flex;align-items:center;gap:8px;">
-                <i class="bi bi-truck" style="color:var(--color-gold);font-size:18px;"></i>
-                <span style="color:var(--color-text-secondary);font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Fast Shipping</span>
+            <div class="sf-os-trust-item">
+                <i class="bi bi-truck sf-os-trust-icon"></i>
+                <span class="sf-os-trust-text">Fast Shipping</span>
             </div>
-            <div style="display:flex;align-items:center;gap:8px;">
-                <i class="bi bi-arrow-return-left" style="color:var(--color-gold);font-size:18px;"></i>
-                <span style="color:var(--color-text-secondary);font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Easy Returns</span>
+            <div class="sf-os-trust-item">
+                <i class="bi bi-arrow-return-left sf-os-trust-icon"></i>
+                <span class="sf-os-trust-text">Easy Returns</span>
             </div>
         </div>
 
         {{-- Payment Info --}}
         <div class="sf-account-card" style="padding:0;overflow:hidden;margin-bottom:16px;">
-            <div style="display:grid;grid-template-columns:1fr 1fr;">
-                <div style="padding:16px;text-align:center;border-right:1px solid var(--color-border);">
-                    <div style="color:var(--color-text-muted);font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Payment Method</div>
-                    <div style="color:var(--color-text-primary);font-weight:600;font-size:14px;">{{ strtoupper($order->payment_method) }}</div>
+            <div class="sf-os-card-grid">
+                <div class="sf-os-card-col-left">
+                    <div class="sf-os-card-label">Payment Method</div>
+                    <div class="sf-os-card-val">{{ strtoupper($order->payment_method) }}</div>
                 </div>
-                <div style="padding:16px;text-align:center;">
-                    <div style="color:var(--color-text-muted);font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Payment Status</div>
+                <div class="sf-os-card-col-right">
+                    <div class="sf-os-card-label">Payment Status</div>
                     <span class="sf-badge {{ $order->payment_status === 'paid' ? 'delivered' : 'processing' }}">{{ ucfirst($order->payment_status) }}</span>
                 </div>
             </div>
@@ -117,55 +117,55 @@ if (window.Store) {
         {{-- Order Items --}}
         @if ($order->orderItems->isNotEmpty())
         <div class="sf-account-card" style="padding:0;overflow:hidden;margin-bottom:16px;">
-            <div style="padding:14px 20px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:8px;">
+            <div class="sf-os-items-header">
                 <i class="bi bi-bag" style="color:var(--color-gold);"></i>
-                <span style="color:var(--color-text-primary);font-weight:600;font-size:14px;">Items Ordered</span>
+                <span class="sf-os-card-val">Items Ordered</span>
             </div>
-            <div style="overflow-x:auto;">
-                <table style="width:100%;border-collapse:collapse;">
+            <div class="sf-os-items-table-wrap">
+                <table class="sf-os-items-table">
                     <thead>
-                        <tr style="border-bottom:1px solid var(--color-border);">
-                            <th style="padding:10px 20px;text-align:left;color:var(--color-gold);font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:500;">Product</th>
-                            <th style="padding:10px 20px;text-align:right;color:var(--color-gold);font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:500;">Qty</th>
-                            <th style="padding:10px 20px;text-align:right;color:var(--color-gold);font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:500;">Total</th>
+                        <tr class="sf-os-items-tr">
+                            <th class="sf-os-items-th-left">Product</th>
+                            <th class="sf-os-items-th-right">Qty</th>
+                            <th class="sf-os-items-th-right">Total</th>
                         </tr>
                     </thead>
                     <tbody>
                     @foreach ($order->orderItems as $oi)
-                        <tr style="border-bottom:1px solid var(--color-border);">
-                            <td style="padding:12px 20px;color:var(--color-text-primary);font-size:13px;">
+                        <tr class="sf-os-items-tr">
+                            <td class="sf-os-items-td-left">
                                 {{ $oi->product_name_snapshot }}
                                 @if ($oi->variant_title_snapshot && !in_array(strtolower(trim($oi->variant_title_snapshot)), ['default', 'default title', '']))
                                     <span style="color:var(--color-text-muted);"> — {{ $oi->variant_title_snapshot }}</span>
                                 @endif
                             </td>
-                            <td style="padding:12px 20px;text-align:right;color:var(--color-text-secondary);font-size:13px;">{{ $oi->qty }}</td>
-                            <td style="padding:12px 20px;text-align:right;color:var(--color-text-primary);font-size:13px;font-weight:500;">₹{{ number_format((float) $oi->line_total, 2) }}</td>
+                            <td class="sf-os-items-td-right">{{ $oi->qty }}</td>
+                            <td class="sf-os-items-td-total">₹{{ number_format((float) $oi->line_total, 2) }}</td>
                         </tr>
                     @endforeach
                     </tbody>
                 </table>
             </div>
-            <div style="padding:16px 20px;border-top:1px solid var(--color-border);">
-                <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--color-text-secondary);margin-bottom:6px;">
+            <div class="sf-os-totals-wrap">
+                <div class="sf-os-totals-row">
                     <span>Subtotal</span>
-                    <span style="color:var(--color-text-primary);">₹{{ number_format((float) $order->subtotal, 2) }}</span>
+                    <span class="sf-os-totals-val">₹{{ number_format((float) $order->subtotal, 2) }}</span>
                 </div>
                 @if((float)$order->shipping_total > 0)
-                <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--color-text-secondary);margin-bottom:6px;">
+                <div class="sf-os-totals-row">
                     <span>Shipping</span>
-                    <span style="color:var(--color-text-primary);">₹{{ number_format((float) $order->shipping_total, 2) }}</span>
+                    <span class="sf-os-totals-val">₹{{ number_format((float) $order->shipping_total, 2) }}</span>
                 </div>
                 @endif
                 @if((float)$order->discount_total > 0)
-                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;">
-                    <span style="color:var(--color-success);">Discount</span>
-                    <span style="color:var(--color-success);">-₹{{ number_format((float) $order->discount_total, 2) }}</span>
+                <div class="sf-os-totals-row-discount">
+                    <span>Discount</span>
+                    <span>-₹{{ number_format((float) $order->discount_total, 2) }}</span>
                 </div>
                 @endif
-                <div style="border-top:1px solid var(--color-border-gold);padding-top:10px;margin-top:10px;display:flex;justify-content:space-between;">
-                    <span style="color:var(--color-gold);font-weight:600;font-size:15px;">Grand Total</span>
-                    <span style="color:var(--color-gold);font-weight:600;font-size:15px;">₹{{ number_format((float) $order->grand_total, 2) }}</span>
+                <div class="sf-os-grand-wrap">
+                    <span class="sf-os-grand-val">Grand Total</span>
+                    <span class="sf-os-grand-val">₹{{ number_format((float) $order->grand_total, 2) }}</span>
                 </div>
             </div>
         </div>
@@ -173,13 +173,13 @@ if (window.Store) {
 
         {{-- Shipping Address --}}
         <div class="sf-account-card" style="padding:0;overflow:hidden;margin-bottom:32px;">
-            <div style="padding:14px 20px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:8px;">
+            <div class="sf-os-items-header">
                 <i class="bi bi-geo-alt" style="color:var(--color-gold);"></i>
-                <span style="color:var(--color-text-primary);font-weight:600;font-size:14px;">Shipping Address</span>
+                <span class="sf-os-card-val">Shipping Address</span>
             </div>
-            <div style="padding:16px 20px;font-size:13px;line-height:1.8;">
-                <strong style="color:var(--color-text-primary);">{{ $order->customer_name }}</strong><br>
-                <span style="color:var(--color-text-secondary);">{{ $order->address_line1 }}<br>
+            <div class="sf-os-addr-wrap">
+                <strong class="sf-os-addr-name">{{ $order->customer_name }}</strong><br>
+                <span class="sf-os-addr-details">{{ $order->address_line1 }}<br>
                 @if($order->address_line2){{ $order->address_line2 }}<br>@endif
                 {{ $order->city }}, {{ $order->state }} {{ $order->postal_code }}<br>
                 {{ $order->country ?? 'India' }}<br>
@@ -188,13 +188,13 @@ if (window.Store) {
         </div>
 
         {{-- CTA Buttons --}}
-        <div style="text-align:center;">
+        <div class="sf-os-actions">
             <a href="{{ route('home') }}" class="sf-hero-cta" style="display:inline-block;text-decoration:none;margin-bottom:12px;">
                 <i class="bi bi-bag" style="margin-right:6px;"></i> Continue Shopping
             </a>
             @auth
             <div style="margin-top:12px;">
-                <a href="{{ route('account.orders.show', $order) }}" style="color:var(--color-gold);font-size:12px;text-transform:uppercase;letter-spacing:1px;text-decoration:none;border:1px solid var(--color-gold);padding:10px 24px;border-radius:var(--radius-sm);display:inline-block;transition:var(--transition);">
+                <a href="{{ route('account.orders.show', $order) }}" class="sf-os-action-track">
                     <i class="bi bi-receipt" style="margin-right:4px;"></i> Track Your Order
                 </a>
             </div>

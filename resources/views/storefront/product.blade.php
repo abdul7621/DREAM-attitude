@@ -192,26 +192,26 @@
 </section>
 
 {{-- ── Sticky Mobile Cart Bar ─────────────────────────────── --}}
-<div class="sf-mobile-sticky sticky-cart-bar">
+<div class="sf-mobile-sticky sf-sticky-cart-bar">
     @php
         $defVarSticky = $product->variants->where('is_active', true)->first();
         $stickyPrice = $defVarSticky ? ((float) ($variantPrices[$defVarSticky->id]['display'] ?? $defVarSticky->price_retail)) : 0;
         $stickyCompare = $defVarSticky ? ((float) ($variantPrices[$defVarSticky->id]['compare'] ?? $defVarSticky->compare_at_price)) : 0;
     @endphp
     
-    <div class="sticky-cart-price-col">
-        <div class="sticky-cart-label">Total Price</div>
-        <div class="sticky-cart-prices">
-            <span class="sticky-cart-price" id="stickyPrice">₹{{ number_format($stickyPrice) }}</span>
-            <span class="sticky-cart-compare" id="stickyCompare" style="display:{{ $stickyCompare > $stickyPrice ? 'inline' : 'none' }};">₹{{ number_format($stickyCompare) }}</span>
+    <div class="sf-sticky-cart-price-col">
+        <div class="sf-sticky-cart-label">Total Price</div>
+        <div class="sf-sticky-cart-prices">
+            <span class="sf-sticky-cart-price" id="stickyPrice">₹{{ number_format($stickyPrice) }}</span>
+            <span class="sf-sticky-cart-compare" id="stickyCompare" style="display:{{ $stickyCompare > $stickyPrice ? 'inline' : 'none' }};">₹{{ number_format($stickyCompare) }}</span>
         </div>
     </div>
     
-    <button onclick="document.getElementById('redirectInput').value='checkout'; document.getElementById('productForm').submit();" class="sticky-cart-buy-btn">
+    <button onclick="document.getElementById('redirectInput').value='checkout'; document.getElementById('productForm').submit();" class="sf-sticky-cart-buy-btn">
         Buy Now
     </button>
     
-    <button id="stickyAddToCartBtn" onclick="document.getElementById('redirectInput').value=''; document.getElementById('productForm').submit();" class="sticky-cart-add-btn" title="Add to Cart">
+    <button id="stickyAddToCartBtn" onclick="document.getElementById('redirectInput').value=''; document.getElementById('productForm').submit();" class="sf-sticky-cart-add-btn" title="Add to Cart">
         <i class="bi bi-cart-plus fs-5"></i>
     </button>
 </div>
@@ -222,11 +222,11 @@
     $spInterval = $product->meta['social_proof_interval'] ?? app(\App\Services\SettingsService::class)->get('conversion_copy.social_proof_interval', 8000);
 @endphp
 @if($spEnabled)
-<div id="sfSocialProof" class="toast-social-proof">
+<div id="sfSocialProof" class="sf-toast-social-proof">
     <i class="bi bi-check-circle-fill text-success fs-5"></i>
     <div>
-        <div class="toast-sp-title" id="spText">Someone just bought this!</div>
-        <div class="toast-sp-time" id="spTime">recently</div>
+        <div class="sf-toast-sp-title" id="spText">Someone just bought this!</div>
+        <div class="sf-toast-sp-time" id="spTime">recently</div>
     </div>
 </div>
 @endif

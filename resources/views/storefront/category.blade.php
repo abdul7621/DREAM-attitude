@@ -39,39 +39,39 @@
     <script type="application/ld+json">{!! json_encode($breadcrumbSchema, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) !!}</script>
 @endpush
 @section('content')
-<section class="sf-hero" style="height: 300px;">
-    <div class="sf-hero-img-wrap" style="height: 100%;">
+<section class="sf-hero sf-cat-hero">
+    <div class="sf-hero-img-wrap sf-cat-hero-img-wrap">
         @if($category->image_path)
             <img src="{{ asset('storage/' . $category->image_path) }}" alt="{{ $category->name }}" class="sf-hero-img" loading="eager">
         @else
-            <div style="background:var(--color-bg-elevated);width:100%;height:100%;"></div>
+            <div class="sf-cat-hero-fallback"></div>
         @endif
     </div>
-    <div class="sf-hero-overlay" style="background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 100%);"></div>
-    <div class="sf-hero-content" style="width: 100%; text-align: center; left: 0;">
+    <div class="sf-hero-overlay sf-cat-hero-overlay"></div>
+    <div class="sf-hero-content sf-cat-hero-content">
         <h1 class="sf-hero-title">{{ $category->name }}</h1>
         @if($category->description)
-            <p class="sf-hero-sub" style="max-width: 600px; margin: 0 auto;">{{ $category->description }}</p>
+            <p class="sf-hero-sub sf-cat-hero-sub">{{ $category->description }}</p>
         @endif
     </div>
 </section>
 
 <section class="sf-section">
     <div class="sf-container">
-        <nav style="margin-bottom: 32px; font-size: 13px; color: var(--color-text-muted);">
-            <a href="{{ route('home') }}" style="color: var(--color-text-secondary);">Home</a> 
-            <span style="margin: 0 8px;">/</span> 
-            <span style="color: var(--color-gold);">{{ $category->name }}</span>
+        <nav class="sf-breadcrumb">
+            <a href="{{ route('home') }}" class="sf-breadcrumb-link">Home</a> 
+            <span class="sf-breadcrumb-sep">/</span> 
+            <span class="sf-breadcrumb-active">{{ $category->name }}</span>
         </nav>
 
         @if($products->isEmpty())
-            <div style="text-align: center; padding: 60px 0;">
-                <h4 style="color: var(--color-text-muted);">No products found in this category.</h4>
+            <div class="sf-cat-empty">
+                <h4 class="sf-cat-empty-msg">No products found in this category.</h4>
             </div>
         @else
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
-                <span style="font-size:13px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:1px;">{{ $products->total() }} Products</span>
-                <select onchange="window.location=this.value" class="sf-input" style="width:auto;min-width:180px;padding:8px 12px;">
+            <div class="sf-cat-toolbar">
+                <span class="sf-cat-count">{{ $products->total() }} Products</span>
+                <select onchange="window.location=this.value" class="sf-input sf-cat-sort">
                     <option value="?sort=newest" {{ request('sort','newest')=='newest'?'selected':'' }}>Newest First</option>
                     <option value="?sort=price_asc" {{ request('sort')=='price_asc'?'selected':'' }}>Price: Low → High</option>
                     <option value="?sort=price_desc" {{ request('sort')=='price_desc'?'selected':'' }}>Price: High → Low</option>

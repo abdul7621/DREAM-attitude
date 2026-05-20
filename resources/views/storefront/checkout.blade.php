@@ -6,24 +6,24 @@
     <meta name="robots" content="noindex, nofollow">
 @endpush
 @section('content')
-<div class="sf-checkout-page" style="background: var(--color-bg-primary); padding-bottom: 60px;">
+<div class="sf-chk-page">
     {{-- Top Header / Progress Indicator --}}
-    <div style="background: var(--color-bg-surface); border-bottom: 1px solid var(--color-border-gold); margin-bottom: 32px; padding: 24px 0;">
+    <div class="sf-chk-header">
         <div class="sf-container">
-            <div style="display: flex; justify-content: center; align-items: center; gap: 16px;">
-                <div style="display: flex; flex-direction: column; align-items: center;">
-                    <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--color-success); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;"><i class="bi bi-check" style="font-size: 20px;"></i></div>
-                    <small style="font-weight: 600; margin-top: 4px; color: var(--color-success);">Cart</small>
+            <div class="sf-chk-step-wrap">
+                <div class="sf-chk-step-col">
+                    <div class="sf-chk-step-circle-done"><i class="bi bi-check" style="font-size: 20px;"></i></div>
+                    <small class="sf-chk-step-label-done">Cart</small>
                 </div>
-                <div style="height: 4px; width: 50px; background: var(--color-success); border-radius: 2px; margin-top: -24px;"></div>
-                <div style="display: flex; flex-direction: column; align-items: center;">
-                    <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--color-gold); color: #0a0a0a; display: flex; align-items: center; justify-content: center; font-weight: bold;">2</div>
-                    <small style="font-weight: 600; margin-top: 4px; color: var(--color-gold);">Shipping</small>
+                <div class="sf-chk-step-line-done"></div>
+                <div class="sf-chk-step-col">
+                    <div class="sf-chk-step-circle-active">2</div>
+                    <small class="sf-chk-step-label-active">Shipping</small>
                 </div>
-                <div style="height: 4px; width: 50px; background: rgba(201,168,76,0.3); border-radius: 2px; margin-top: -24px;"></div>
-                <div style="display: flex; flex-direction: column; align-items: center;">
-                    <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--color-bg-elevated); border: 1px solid var(--color-border); color: var(--color-text-muted); display: flex; align-items: center; justify-content: center; font-weight: bold;">3</div>
-                    <small style="color: var(--color-text-muted); margin-top: 4px;">Payment</small>
+                <div class="sf-chk-step-line-active"></div>
+                <div class="sf-chk-step-col">
+                    <div class="sf-chk-step-circle-next">3</div>
+                    <small class="sf-chk-step-label-next">Payment</small>
                 </div>
             </div>
         </div>
@@ -34,15 +34,15 @@
             {{-- ── Right: Order Summary ────────────────────────────────── --}}
             <div style="order: 2;">
                 <div class="sf-cart-summary" style="position: sticky; top: 20px;">
-                    <div style="font-weight: 600; font-size: 16px; margin-bottom: 24px; color: var(--color-text-primary);"><i class="bi bi-bag-check me-2"></i> Order Summary</div>
+                    <div class="sf-chk-section-title"><i class="bi bi-bag-check me-2"></i> Order Summary</div>
                     <div>
-                        <ul style="list-style: none; padding: 0; margin: 0 0 24px 0; font-size: 13px;">
+                        <ul class="sf-chk-summary-list">
                             @foreach ($lines as $row)
-                                <li style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--color-border); align-items: center;">
+                                <li class="sf-chk-summary-item">
                                     <div style="display: flex; align-items: center; gap: 12px;">
-                                        <div style="position: relative;">
-                                            <img src="{{ $row['product']->primaryImage() ? asset('storage/'.$row['product']->primaryImage()->path) : 'https://placehold.co/50' }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
-                                            <span style="position: absolute; top: -8px; right: -8px; background: var(--color-gold); color: #0a0a0a; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 12px;">{{ $row['item']->qty }}</span>
+                                        <div class="sf-chk-summary-img-wrap">
+                                            <img src="{{ $row['product']->primaryImage() ? asset('storage/'.$row['product']->primaryImage()->path) : 'https://placehold.co/50' }}" class="sf-chk-summary-img">
+                                            <span class="sf-chk-summary-qty">{{ $row['item']->qty }}</span>
                                         </div>
                                         <span style="font-weight: 500; color: var(--color-text-primary);">{{ $row['product']->name }} <span style="display: block; color: var(--color-text-muted); font-size: 11px; margin-top: 4px;">{{ Str::limit($row['variant']->title, 20) }}</span></span>
                                     </div>
@@ -115,8 +115,8 @@
                     @endif
                     
                     {{-- Contact Info --}}
-                    <div style="background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); margin-bottom: 24px; padding: 24px;">
-                        <div style="font-weight: 600; font-size: 16px; margin-bottom: 24px; color: var(--color-text-primary);"><i class="bi bi-person-circle me-2"></i> Contact Information</div>
+                    <div class="sf-chk-section-panel">
+                        <div class="sf-chk-section-title"><i class="bi bi-person-circle me-2"></i> Contact Information</div>
                         <div class="row g-3">
                             <div class="col-12">
                                 <label class="sf-label">Phone Number *</label>
@@ -135,8 +135,8 @@
                     </div>
 
                     {{-- Shipping Info --}}
-                    <div style="background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); margin-bottom: 24px; padding: 24px;">
-                        <div style="font-weight: 600; font-size: 16px; margin-bottom: 24px; color: var(--color-text-primary);"><i class="bi bi-truck me-2"></i> Shipping Address</div>
+                    <div class="sf-chk-section-panel">
+                        <div class="sf-chk-section-title"><i class="bi bi-truck me-2"></i> Shipping Address</div>
                         @auth
                         <div style="margin-bottom: 24px;" id="saved-addr-wrap">
                             <label class="sf-label">Saved Addresses</label>
@@ -177,8 +177,8 @@
                     </div>
 
                     {{-- Billing Toggle --}}
-                    <div style="background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); margin-bottom: 24px; padding: 24px;">
-                        <div style="font-weight: 600; font-size: 16px; margin-bottom: 24px; color: var(--color-text-primary);"><i class="bi bi-receipt me-2"></i> Billing Address</div>
+                    <div class="sf-chk-section-panel">
+                        <div class="sf-chk-section-title"><i class="bi bi-receipt me-2"></i> Billing Address</div>
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <div class="form-check form-switch mb-2">
                                 <input class="form-check-input" type="checkbox" id="sameAsShipping" value="1" checked style="cursor: pointer; width: 2.5em; height: 1.25em;">
@@ -214,8 +214,8 @@
                     @php
                         $copy = app(\App\Services\SettingsService::class)->get('conversion_copy.checkout', config('commerce.conversion_copy.checkout'));
                     @endphp
-                    <div style="background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); margin-bottom: 24px; padding: 24px;">
-                        <div style="font-weight: 600; font-size: 16px; margin-bottom: 24px; color: var(--color-text-primary);"><i class="bi bi-credit-card me-2"></i> Payment Method</div>
+                    <div class="sf-chk-section-panel">
+                        <div class="sf-chk-section-title"><i class="bi bi-credit-card me-2"></i> Payment Method</div>
                         <div>
                             @php
                                 $onlineGateways = collect($activeGateways ?? [])->where('name', '!=', 'cod');
@@ -266,40 +266,40 @@
                     @endphp
                     
                     @if(session('offer_unlocked_freeship') || auth()->user()?->cart?->offer_claimed)
-                    <div style="margin-bottom: 16px; padding: 12px 16px; background: rgba(39,103,73,0.1); border: 1px solid var(--color-success); border-radius: var(--radius-md); text-align: center;">
-                        <span style="color: var(--color-success); font-weight: 600;"><i class="bi bi-gift-fill me-2"></i> Free Prepaid Shipping Unlocked!</span>
+                    <div class="sf-chk-free-ship-toast">
+                        <i class="bi bi-gift-fill me-2"></i> Free Prepaid Shipping Unlocked!
                     </div>
                     @endif
 
-                    <div class="sf-trust-row" style="margin-bottom: 16px; padding: 16px 20px; background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); justify-content: center; flex-wrap: wrap;">
+                    <div class="sf-chk-trust-row">
                         @foreach($trustBadges as $badge)
-                            <span style="display: flex; align-items: center; gap: 8px; margin: 4px 8px;">
+                            <span class="sf-chk-trust-badge">
                                 <i class="bi bi-check-circle-fill" style="color: var(--color-success); font-size: 14px;"></i> {{ $badge }}
                             </span>
                         @endforeach
                         @if($isCodEnabled)
-                            <span style="display: flex; align-items: center; gap: 8px; margin: 4px 8px;">
+                            <span class="sf-chk-trust-badge">
                                 <i class="bi bi-cash-coin" style="color: var(--color-gold); font-size: 14px;"></i> Pay on Delivery
                             </span>
                         @endif
                     </div>
 
                     {{-- Notes --}}
-                    <div style="background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 24px; margin-bottom: 24px;">
+                    <div class="sf-chk-section-panel">
                         <label class="sf-label"><i class="bi bi-pencil-square me-1"></i> Order Notes (Optional)</label>
                         <textarea name="notes" class="sf-input" placeholder="Any special instructions..."></textarea>
                     </div>
 
                     <button type="submit" class="sf-btn-primary d-none d-md-block" style="height: 56px; font-size: 15px;">Complete Order</button>
                     
-                    <div class="d-none d-md-flex" style="justify-content: space-between; margin-top: 16px; font-size: 12px; color: var(--color-text-muted);">
+                    <div class="d-none d-md-flex sf-chk-secure-footer">
                         <span><i class="bi bi-shield-check text-success"></i> 100% Secure Checkout</span>
                         <span><i class="bi bi-arrow-repeat text-success"></i> Easy Returns</span>
                     </div>
 
                     {{-- Sticky Mobile Place Order Button (Premium D2C Style) --}}
                     <div class="d-md-none sf-mobile-checkout-sticky">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 11px; color: var(--color-text-muted); font-weight: 500;">
+                        <div class="sf-chk-mobile-secure-footer">
                             <span><i class="bi bi-shield-check text-success"></i> 100% Safe</span>
                             <span><i class="bi bi-truck text-success"></i> Secure</span>
                             <span><i class="bi bi-arrow-repeat text-success"></i> Easy Returns</span>
@@ -317,65 +317,8 @@
 @endsection
 
 @push('scripts')
-<style>
-.payment-card { transition: border-color 0.2s, background-color 0.2s; }
-.payment-card:hover { border-color: var(--color-gold) !important; }
-.payment-card.selected { border-color: var(--color-gold) !important; background: var(--color-bg-elevated) !important; }
-.sf-inline-err-text { font-size: 0.85rem; color: var(--color-error); display: block; margin-top: 0.25rem; }
-.sf-input.is-invalid { border-color: var(--color-error) !important; box-shadow: 0 0 0 1px var(--color-error); }
-
-/* Mobile Premium Sticky Button Styling */
-.sf-mobile-checkout-sticky {
-    position: fixed; 
-    bottom: 0; 
-    left: 0; 
-    right: 0; 
-    background: #ffffff; 
-    padding: 12px 16px;
-    padding-bottom: max(16px, env(safe-area-inset-bottom));
-    border-top: 1px solid rgba(0,0,0,0.05); 
-    z-index: 1040; 
-    box-shadow: 0 -10px 30px rgba(0,0,0,0.08);
-}
-.sf-mobile-checkout-btn {
-    position: relative;
-    width: 100%; 
-    height: 54px; 
-    background: linear-gradient(135deg, #f7d570 0%, #c9a84c 100%);
-    color: #000000; 
-    border: none; 
-    border-radius: 12px; 
-    font-weight: 800; 
-    text-transform: uppercase; 
-    letter-spacing: 0.5px; 
-    font-size: 14px;
-    box-shadow: 0 8px 20px rgba(201,168,76,0.4);
-    overflow: hidden;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 20px;
-    transition: transform 0.1s;
-}
-.sf-mobile-checkout-btn:active { transform: scale(0.98); }
-.sf-mobile-checkout-btn::after {
-    content: '';
-    position: absolute;
-    top: 0; left: -100%; width: 50%; height: 100%;
-    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
-    transform: skewX(-25deg);
-    animation: btnShimmer 3s infinite;
-}
-@keyframes btnShimmer {
-    0% { left: -100%; }
-    20% { left: 200%; }
-    100% { left: 200%; }
-}
-
-
 /* Hide Bottom Nav on Checkout for zero-distraction & fix sticky overlap */
 .sf-bottom-nav { display: none !important; }
-.sf-checkout-page { padding-bottom: 80px !important; }
 
 /* Responsive Utility Fallbacks */
 @media (min-width: 768px) {
