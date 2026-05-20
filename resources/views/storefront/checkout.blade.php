@@ -322,6 +322,20 @@
 .payment-card.selected { border-color: var(--color-gold) !important; background: var(--color-bg-elevated) !important; }
 .sf-inline-err-text { font-size: 0.85rem; color: var(--color-error); display: block; margin-top: 0.25rem; }
 .sf-input.is-invalid { border-color: var(--color-error) !important; box-shadow: 0 0 0 1px var(--color-error); }
+
+/* Hide Bottom Nav on Checkout for zero-distraction & fix sticky overlap */
+.sf-bottom-nav { display: none !important; }
+.sf-checkout-page { padding-bottom: 80px !important; }
+
+/* Responsive Utility Fallbacks */
+@media (min-width: 768px) {
+    .d-md-none { display: none !important; }
+    .d-md-block { display: block !important; }
+    .d-md-flex { display: flex !important; }
+}
+@media (max-width: 767px) {
+    .d-md-block, .d-md-flex { display: none !important; }
+}
 </style>
 <script>
 (function () {
