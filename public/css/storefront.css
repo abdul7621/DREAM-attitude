@@ -4210,3 +4210,67 @@ html { scroll-behavior: smooth; }
 @media (max-width: 480px) {
   .sf-sidecart { width: 100%; right: -100%; }
 }
+
+/* ============================================================
+   REFACTORED COMPONENTS (Inline CSS Extraction)
+   ============================================================ */
+
+/* ── HEADER / FOOTER ── */
+.sf-logo-header { max-height: 40px; }
+.sf-logo-drawer { max-height: 36px; }
+.sf-logo-footer { max-height: 60px; }
+.sf-cart-wrapper { position: relative; display: inline-flex; align-items: center; margin-left: 12px; }
+.sf-cart-icon { font-size: 20px; }
+.sf-drawer-logo-wrap { display: block; margin-bottom: 20px; }
+.sf-btn-logout { background: none; border: none; color: var(--color-error); font-size: 14px; padding: 0; }
+.sf-footer-logo-wrap { display: inline-block; margin-bottom: 12px; }
+.sf-footer-seo-text { font-size: 11px; color: var(--color-text-muted); margin-top: 24px; }
+
+/* ── HOME COMPONENTS ── */
+.sf-home-seo-container { font-size: 0.95rem; line-height: 1.6; }
+.sf-categories-section { background: var(--color-bg-primary); padding: 48px 0; }
+.sf-section-header-center { text-align: center; margin-bottom: 40px; }
+.sf-section-title-center { margin: 0 auto; color: var(--color-text-primary); }
+.sf-category-placeholder { width: 100%; height: 100%; background: #222; display: flex; align-items: center; justify-content: center; }
+.sf-icon-lg { font-size: 3rem; }
+.sf-btn-white-pill { background: #fff; color: #0A0A0A; font-weight: 700; padding: 12px 32px; border-radius: 100px; text-transform: uppercase; letter-spacing: 1px; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; }
+.sf-matrix-container { margin-top: 80px; }
+.sf-matrix-header-wrap { margin-bottom: 24px; }
+.sf-matrix-title { font-family: 'Playfair Display', serif; font-size: 32px; color: var(--color-text-primary); margin: 0; }
+.sf-matrix-desc { color: var(--color-text-muted); font-size: 14px; margin-top: 8px; display: flex; align-items: center; gap: 6px; }
+.sf-matrix-not-found { background: var(--color-bg-surface); padding: 32px; border-radius: var(--radius-md); text-align: center; color: var(--color-text-muted); }
+.sf-image-banner-link { display: block; position: relative; border-radius: var(--radius-md); overflow: hidden; }
+.sf-image-banner-img { width: 100%; border-radius: var(--radius-md); }
+.sf-image-banner-fallback { background: var(--color-dark); padding: 48px; text-align: center; border-radius: var(--radius-md); }
+.sf-image-banner-fallback h3 { font-size: 24px; color: var(--color-gold); text-transform: uppercase; letter-spacing: 2px; font-family: 'Playfair Display', serif; }
+.sf-reviews-header { text-align: center; margin-bottom: 36px; }
+.sf-reviews-subtitle { color: var(--color-text-muted); font-size: 13px; margin-top: 8px; }
+
+/* ── PDP COMPONENTS ── */
+.pdp-breadcrumb { margin-bottom: 32px; font-size: 13px; color: var(--color-text-muted); }
+.pdp-breadcrumb a { color: var(--color-text-secondary); }
+.pdp-breadcrumb .sep { margin: 0 8px; }
+.pdp-breadcrumb .curr { color: var(--color-gold); }
+.pdp-hook-block { background: var(--color-bg-elevated); border-left: 4px solid var(--color-gold); padding: 16px; margin: 24px 0; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+.pdp-hook-problem { color: var(--color-text-secondary); font-size: 14px; font-style: italic; margin-bottom: 8px; line-height: 1.5; }
+.pdp-hook-promise { color: var(--color-text-primary); font-size: 15px; font-weight: 600; margin: 0; }
+.pdp-hook-icon { color: var(--color-gold); margin-right: 6px; }
+.pdp-trust-block { margin: 24px 0; padding: 16px; border: 1px dashed var(--color-border); border-radius: var(--radius-md); background: rgba(39,103,73,0.03); text-align: center; }
+.pdp-trust-title { font-weight: 700; color: var(--color-success); font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+.pdp-trust-desc { color: var(--color-text-secondary); font-size: 14px; margin: 0; line-height: 1.5; }
+
+/* ── STICKY CART ── */
+.sticky-cart-bar { display: flex; gap: 8px; align-items: center; padding: 12px; background: var(--color-bg-elevated); border-top: 1px solid var(--color-border); z-index: 1040; }
+.sticky-cart-price-col { display: flex; flex-direction: column; justify-content: center; min-width: 80px; }
+.sticky-cart-label { color: var(--color-text-secondary); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+.sticky-cart-prices { display: flex; align-items: baseline; gap: 4px; }
+.sticky-cart-price { color: var(--color-gold); font-weight: 700; font-size: 16px; }
+.sticky-cart-compare { color: var(--color-text-muted); text-decoration: line-through; font-size: 11px; }
+.sticky-cart-buy-btn { flex: 1; background: var(--color-gold); color: #000; border: none; height: 48px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 12px rgba(201,168,76,0.2); }
+.sticky-cart-add-btn { background: transparent; border: 1px solid var(--color-border-gold); color: var(--color-gold); width: 48px; height: 48px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; }
+
+/* ── TOAST SOCIAL PROOF ── */
+.toast-social-proof { position: fixed; bottom: 80px; left: 16px; background: var(--color-bg-elevated); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 12px 16px; display: flex; align-items: center; gap: 12px; transform: translateY(100px); opacity: 0; transition: all 0.3s ease; z-index: 1050; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+.toast-social-proof.show { transform: translateY(0) !important; opacity: 1 !important; }
+.toast-sp-title { color: var(--color-text-primary); font-size: 13px; font-weight: 500; }
+.toast-sp-time { color: var(--color-text-muted); font-size: 11px; }

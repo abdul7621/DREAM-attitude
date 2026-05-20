@@ -116,14 +116,14 @@
 <section class="sf-section">
     <div class="sf-container">
         {{-- Breadcrumb --}}
-        <nav style="margin-bottom: 32px; font-size: 13px; color: var(--color-text-muted);">
-            <a href="{{ route('home') }}" style="color: var(--color-text-secondary);">Home</a> 
+        <nav class="pdp-breadcrumb">
+            <a href="{{ route('home') }}">Home</a> 
             @if ($product->category)
-                <span style="margin: 0 8px;">/</span> 
-                <a href="{{ route('category.show', $product->category) }}" style="color: var(--color-text-secondary);">{{ $product->category->name }}</a>
+                <span class="sep">/</span> 
+                <a href="{{ route('category.show', $product->category) }}">{{ $product->category->name }}</a>
             @endif
-            <span style="margin: 0 8px;">/</span> 
-            <span style="color: var(--color-gold);">{{ $product->name }}</span>
+            <span class="sep">/</span> 
+            <span class="curr">{{ $product->name }}</span>
         </nav>
 
         <div class="sf-pdp">
@@ -151,12 +151,12 @@
                             {{-- CRO Boost: Hook & Promise (After Title/Price) --}}
                             @if($section['key'] === 'title_price')
                                 @if(!empty($product->meta['problem_hook']) || !empty($product->meta['result_promise']))
-                                    <div style="background: var(--color-bg-elevated); border-left: 4px solid var(--color-gold); padding: 16px; margin: 24px 0; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;">
+                                    <div class="pdp-hook-block">
                                         @if(!empty($product->meta['problem_hook']))
-                                            <p style="color: var(--color-text-secondary); font-size: 14px; font-style: italic; margin-bottom: 8px; line-height: 1.5;">{{ $product->meta['problem_hook'] }}</p>
+                                            <p class="pdp-hook-problem">{{ $product->meta['problem_hook'] }}</p>
                                         @endif
                                         @if(!empty($product->meta['result_promise']))
-                                            <p style="color: var(--color-text-primary); font-size: 15px; font-weight: 600; margin: 0;"><i class="bi bi-magic" style="color: var(--color-gold); margin-right: 6px;"></i> {{ $product->meta['result_promise'] }}</p>
+                                            <p class="pdp-hook-promise"><i class="bi bi-magic pdp-hook-icon"></i> {{ $product->meta['result_promise'] }}</p>
                                         @endif
                                     </div>
                                 @endif
@@ -165,9 +165,9 @@
                             {{-- CRO Boost: Trust Proof (After Buy Buttons) --}}
                             @if($section['key'] === 'buy_buttons')
                                 @if(!empty($product->meta['trust_proof']))
-                                    <div style="margin: 24px 0; padding: 16px; border: 1px dashed var(--color-border); border-radius: var(--radius-md); background: rgba(39,103,73,0.03); text-align: center;">
-                                        <div style="font-weight: 700; color: var(--color-success); font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;"><i class="bi bi-shield-check me-1"></i> Trust Proof</div>
-                                        <p style="color: var(--color-text-secondary); font-size: 14px; margin: 0; line-height: 1.5;">{!! nl2br(e($product->meta['trust_proof'])) !!}</p>
+                                    <div class="pdp-trust-block">
+                                        <div class="pdp-trust-title"><i class="bi bi-shield-check me-1"></i> Trust Proof</div>
+                                        <p class="pdp-trust-desc">{!! nl2br(e($product->meta['trust_proof'])) !!}</p>
                                     </div>
                                 @endif
                             @endif
@@ -192,27 +192,27 @@
 </section>
 
 {{-- ── Sticky Mobile Cart Bar ─────────────────────────────── --}}
-<div class="sf-mobile-sticky" style="display: flex; gap: 8px; align-items: center; padding: 12px; background: var(--color-bg-elevated); border-top: 1px solid var(--color-border); z-index: 1040;">
+<div class="sf-mobile-sticky sticky-cart-bar">
     @php
         $defVarSticky = $product->variants->where('is_active', true)->first();
         $stickyPrice = $defVarSticky ? ((float) ($variantPrices[$defVarSticky->id]['display'] ?? $defVarSticky->price_retail)) : 0;
         $stickyCompare = $defVarSticky ? ((float) ($variantPrices[$defVarSticky->id]['compare'] ?? $defVarSticky->compare_at_price)) : 0;
     @endphp
     
-    <div style="display: flex; flex-direction: column; justify-content: center; min-width: 80px;">
-        <div style="color: var(--color-text-secondary); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">Total Price</div>
-        <div style="display: flex; align-items: baseline; gap: 4px;">
-            <span style="color: var(--color-gold); font-weight: 700; font-size: 16px;" id="stickyPrice">₹{{ number_format($stickyPrice) }}</span>
-            <span style="color: var(--color-text-muted); text-decoration: line-through; font-size: 11px;" id="stickyCompare" style="display:{{ $stickyCompare > $stickyPrice ? 'inline' : 'none' }};">₹{{ number_format($stickyCompare) }}</span>
+    <div class="sticky-cart-price-col">
+        <div class="sticky-cart-label">Total Price</div>
+        <div class="sticky-cart-prices">
+            <span class="sticky-cart-price" id="stickyPrice">₹{{ number_format($stickyPrice) }}</span>
+            <span class="sticky-cart-compare" id="stickyCompare" style="display:{{ $stickyCompare > $stickyPrice ? 'inline' : 'none' }};">₹{{ number_format($stickyCompare) }}</span>
         </div>
     </div>
     
-    <button onclick="document.getElementById('redirectInput').value='checkout'; document.getElementById('productForm').submit();" style="flex: 1; background: var(--color-gold); color: #000; border: none; height: 48px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 12px rgba(201,168,76,0.2);">
+    <button onclick="document.getElementById('redirectInput').value='checkout'; document.getElementById('productForm').submit();" class="sticky-cart-buy-btn">
         Buy Now
     </button>
     
-    <button id="stickyAddToCartBtn" onclick="document.getElementById('redirectInput').value=''; document.getElementById('productForm').submit();" style="background: transparent; border: 1px solid var(--color-border-gold); color: var(--color-gold); width: 48px; height: 48px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer;" title="Add to Cart">
-        <i class="bi bi-cart-plus" style="font-size: 20px;"></i>
+    <button id="stickyAddToCartBtn" onclick="document.getElementById('redirectInput').value=''; document.getElementById('productForm').submit();" class="sticky-cart-add-btn" title="Add to Cart">
+        <i class="bi bi-cart-plus fs-5"></i>
     </button>
 </div>
 
@@ -222,16 +222,13 @@
     $spInterval = $product->meta['social_proof_interval'] ?? app(\App\Services\SettingsService::class)->get('conversion_copy.social_proof_interval', 8000);
 @endphp
 @if($spEnabled)
-<div id="sfSocialProof" style="position: fixed; bottom: 80px; left: 16px; background: var(--color-bg-elevated); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 12px 16px; display: flex; align-items: center; gap: 12px; transform: translateY(100px); opacity: 0; transition: all 0.3s ease; z-index: 1050; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
-    <i class="bi bi-check-circle-fill" style="color: var(--color-success); font-size: 20px;"></i>
+<div id="sfSocialProof" class="toast-social-proof">
+    <i class="bi bi-check-circle-fill text-success fs-5"></i>
     <div>
-        <div style="color: var(--color-text-primary); font-size: 13px; font-weight: 500;" id="spText">Someone just bought this!</div>
-        <div style="color: var(--color-text-muted); font-size: 11px;" id="spTime">recently</div>
+        <div class="toast-sp-title" id="spText">Someone just bought this!</div>
+        <div class="toast-sp-time" id="spTime">recently</div>
     </div>
 </div>
-<style>
-#sfSocialProof.show { transform: translateY(0) !important; opacity: 1 !important; }
-</style>
 @endif
 @endsection
 

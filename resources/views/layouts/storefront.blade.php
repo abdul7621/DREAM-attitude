@@ -102,11 +102,11 @@
 <header class="sf-header">
     @if($ss->get('theme.logo'))
         <a class="logo" href="{{ route('home') }}">
-            <img src="{{ asset('storage/' . $ss->get('theme.logo')) }}" alt="{{ config('app.name') }}" style="max-height: 40px;" loading="eager">
+            <img src="{{ asset('storage/' . $ss->get('theme.logo')) }}" alt="{{ config('app.name') }}" class="sf-logo-header" loading="eager">
         </a>
     @elseif(file_exists(public_path('images/logo.png')))
         <a class="logo" href="{{ route('home') }}">
-            <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }}" style="max-height: 40px;">
+            <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }}" class="sf-logo-header">
         </a>
     @else
         <a class="logo" href="{{ route('home') }}">{{ config('app.name') }}</a>
@@ -140,8 +140,8 @@
         @else
             <a href="{{ route('login') }}" class="cart-icon ps-3"><i class="bi bi-person"></i></a>
         @endauth
-        <a href="{{ route('cart.index') }}" class="cart-icon" style="position:relative;display:inline-flex;align-items:center;margin-left:12px;">
-            <i class="bi bi-bag" style="font-size:20px;"></i>
+        <a href="{{ route('cart.index') }}" class="cart-icon sf-cart-wrapper">
+            <i class="bi bi-bag sf-cart-icon"></i>
             {{-- Fix #12: Badge always rendered; hidden via style when count is 0 so JS can update --}}
             <span class="sf-cart-badge" style="pointer-events:none;{{ ($cartCount ?? 0) > 0 ? '' : 'display:none;' }}">{{ $cartCount ?? 0 }}</span>
         </a>
@@ -155,15 +155,15 @@
 <div class="sf-drawer-overlay" id="drawerOverlay" onclick="document.getElementById('mobileDrawer').classList.remove('open'); this.classList.remove('open');"></div>
 <div class="sf-mobile-drawer" id="mobileDrawer">
     <button class="close-drawer" onclick="document.getElementById('mobileDrawer').classList.remove('open'); document.getElementById('drawerOverlay').classList.remove('open');"><i class="bi bi-x"></i></button>
-    <div style="margin-top: 40px;">
+    <div class="mt-4 pt-3">
         {{-- Drawer Logo --}}
         @if($ss->get('theme.logo'))
-            <a href="{{ route('home') }}" style="display:block;margin-bottom:20px;">
-                <img src="{{ asset('storage/' . $ss->get('theme.logo')) }}" alt="{{ config('app.name') }}" style="max-height:36px;">
+            <a href="{{ route('home') }}" class="sf-drawer-logo-wrap">
+                <img src="{{ asset('storage/' . $ss->get('theme.logo')) }}" alt="{{ config('app.name') }}" class="sf-logo-drawer">
             </a>
         @elseif(file_exists(public_path('images/logo.png')))
-            <a href="{{ route('home') }}" style="display:block;margin-bottom:20px;">
-                <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }}" style="max-height:36px;">
+            <a href="{{ route('home') }}" class="sf-drawer-logo-wrap">
+                <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }}" class="sf-logo-drawer">
             </a>
         @else
             <a href="{{ route('home') }}" style="display:block;margin-bottom:20px;color:var(--color-gold);font-weight:600;font-size:16px;text-transform:uppercase;letter-spacing:2px;text-decoration:none;">{{ config('app.name') }}</a>
@@ -193,8 +193,8 @@
             @if (auth()->user()->isAdmin())
                 <a href="{{ route('admin.dashboard') }}">Admin</a>
             @endif
-            <form action="{{ route('logout') }}" method="post" style="margin-top: 16px;">@csrf
-                <button type="submit" style="background:none;border:none;color:var(--color-error);font-size:14px;padding:0;">Logout</button>
+            <form action="{{ route('logout') }}" method="post" class="mt-3">@csrf
+                <button type="submit" class="sf-btn-logout">Logout</button>
             </form>
         @else
             <a href="{{ route('login') }}">Login</a>
@@ -253,12 +253,12 @@
         <div class="sf-footer-grid">
             <div>
                 @if($ss->get('theme.logo'))
-                    <a href="{{ route('home') }}" style="display:inline-block;margin-bottom:12px;">
-                        <img src="{{ asset('storage/' . $ss->get('theme.logo')) }}" alt="{{ config('app.name') }}" style="max-height:60px;">
+                    <a href="{{ route('home') }}" class="sf-footer-logo-wrap">
+                        <img src="{{ asset('storage/' . $ss->get('theme.logo')) }}" alt="{{ config('app.name') }}" class="sf-logo-footer">
                     </a>
                 @elseif(file_exists(public_path('images/logo.png')))
-                    <a href="{{ route('home') }}" style="display:inline-block;margin-bottom:12px;">
-                        <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }}" style="max-height:60px;">
+                    <a href="{{ route('home') }}" class="sf-footer-logo-wrap">
+                        <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }}" class="sf-logo-footer">
                     </a>
                 @else
                     <div class="brand">{{ config('app.name') }}</div>
@@ -337,7 +337,7 @@
         </div>
         
         @if($ss->get('theme.footer_seo_text'))
-            <div style="font-size: 11px; color: var(--color-text-muted); margin-top: 24px;">
+            <div class="sf-footer-seo-text">
                 {!! nl2br(e($ss->get('theme.footer_seo_text'))) !!}
             </div>
         @endif

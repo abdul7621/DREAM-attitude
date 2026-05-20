@@ -125,9 +125,9 @@
 
     @if ($sectionKey === 'hero')
         @if ($ss->get('theme.home_seo_content'))
-            <section class="sf-section py-4" style="background-color: var(--color-bg-subtle);">
+            <section class="sf-section py-4">
                 <div class="sf-container">
-                    <div class="seo-content-block text-muted" style="font-size: 0.95rem; line-height: 1.6;">
+                    <div class="seo-content-block text-muted sf-home-seo-container">
                         {!! \Illuminate\Mail\Markdown::parse($ss->get('theme.home_seo_content')) !!}
                     </div>
                 </div>
@@ -209,11 +209,11 @@
 
     @if ($sectionKey === 'categories' && isset($categories) && $categories->isNotEmpty())
         {{-- ══ CATEGORIES — 3 Big Cards Layout ═════════════════ --}}
-        <section class="sf-section" style="background:var(--color-bg-primary); padding: 48px 0;">
+        <section class="sf-categories-section">
             <div class="sf-container">
-                <div style="text-align:center; margin-bottom:40px;" data-aos="fade-up">
+                <div class="sf-section-header-center" data-aos="fade-up">
                     <p class="sf-section-eyebrow">{{ $section['eyebrow'] ?? 'Curated For You' }}</p>
-                    <h2 class="sf-section-title" style="margin:0 auto; color:var(--color-text-primary);">{{ $sTitle ?? 'Shop by Category' }}</h2>
+                    <h2 class="sf-section-title sf-section-title-center">{{ $sTitle ?? 'Shop by Category' }}</h2>
                 </div>
                 <div class="sf-category-grid">
                     @foreach ($categories->take(3) as $cat)
@@ -222,8 +222,8 @@
                             <img src="{{ asset('storage/'.$cat->image_path) }}" alt="{{ $cat->name }}" loading="lazy">
                         @else
                             {{-- Fallback placeholder --}}
-                            <div style="width:100%; height:100%; background:#222; display:flex; align-items:center; justify-content:center;">
-                                <i class="bi bi-image text-muted" style="font-size:3rem;"></i>
+                            <div class="sf-category-placeholder">
+                                <i class="bi bi-image text-muted sf-icon-lg"></i>
                             </div>
                         @endif
                         <div class="sf-category-content">
@@ -277,7 +277,7 @@
 
     @if ($sectionKey === 'bestsellers' && isset($bestsellers) && $bestsellers->isNotEmpty())
         {{-- ══ BESTSELLERS (The Bento Box Core) ══════════════════════════════ --}}
-        <section class="sf-section sf-section-white" style="background:var(--color-bg-primary);">
+        <section class="sf-section sf-section-white">
             <div class="sf-container">
                 <div class="sf-section-header-row sf-animate">
                     <div>
@@ -306,7 +306,7 @@
                     <div class="sf-funnel-catch-glow"></div>
                     <h3>Still Confused? Let Us Guide You</h3>
                     <p>The perfect match for your needs is waiting in our complete collection.</p>
-                    <a href="{{ route('search') }}" class="btn" style="background:#fff; color:#0A0A0A; font-weight:700; padding:12px 32px; border-radius:100px; text-transform:uppercase; letter-spacing:1px; font-size:13px;">Find Your Perfect Product <i class="bi bi-arrow-right ms-2"></i></a>
+                    <a href="{{ route('search') }}" class="sf-btn-white-pill">Find Your Perfect Product <i class="bi bi-arrow-right ms-2"></i></a>
                 </div>
 
                 {{-- PROBLEM -> SOLUTION MATRIX ENGINE --}}
@@ -315,13 +315,13 @@
                     $matrixItems = is_string($matrixRaw) ? json_decode($matrixRaw, true) : (is_array($matrixRaw) ? $matrixRaw : []);
                 @endphp
                 @if(!empty($matrixItems))
-                <div class="sf-ps-engine sf-animate" style="margin-top:80px;">
+                <div class="sf-ps-engine sf-animate sf-matrix-container">
                     <div class="sf-ps-tabs" id="psTabs">
-                        <div style="margin-bottom:24px;">
-                            <p class="sf-section-eyebrow" style="margin-bottom:4px;">Diagnostic Tool</p>
-                            <h2 style="font-family:'Playfair Display',serif; font-size:32px; color:var(--color-text-primary); margin:0;">Target Solutions</h2>
-                            <p style="color:var(--color-text-muted); font-size:14px; margin-top:8px; display: flex; align-items: center; gap: 6px;">
-                                <i class="bi bi-hand-index-thumb fs-5" style="color:var(--color-gold);"></i> 
+                        <div class="sf-matrix-header-wrap">
+                            <p class="sf-section-eyebrow">Diagnostic Tool</p>
+                            <h2 class="sf-matrix-title">Target Solutions</h2>
+                            <p class="sf-matrix-desc">
+                                <i class="bi bi-hand-index-thumb fs-5 text-gold"></i> 
                                 Tap on a problem below to reveal tailored product solutions.
                             </p>
                         </div>
@@ -360,7 +360,7 @@
                                             @endforeach
                                         </div>
                                     @else
-                                        <div style="background:var(--color-bg-surface); padding:32px; border-radius:var(--radius-md); text-align:center; color:var(--color-text-muted);">
+                                        <div class="sf-matrix-not-found">
                                             Products resolving to IDs "{{ $mItem['products'] ?? '' }}" were not found.
                                         </div>
                                     @endif
@@ -387,12 +387,12 @@
         @if($bannerImage || $bannerText)
         <section class="sf-section sf-section-cream">
             <div class="sf-container">
-                <a href="{{ $bannerLink }}" style="display:block;position:relative;border-radius:var(--radius-md);overflow:hidden;">
+                <a href="{{ $bannerLink }}" class="sf-image-banner-link">
                     @if($bannerImage)
-                        <img src="{{ asset('storage/' . $bannerImage) }}" alt="{{ $bannerText ?? 'Promotion' }}" style="width:100%;border-radius:var(--radius-md);" loading="lazy">
+                        <img src="{{ asset('storage/' . $bannerImage) }}" alt="{{ $bannerText ?? 'Promotion' }}" class="sf-image-banner-img" loading="lazy">
                     @else
-                        <div style="background:var(--color-plum);padding:48px;text-align:center;border-radius:var(--radius-md);">
-                            <h3 style="font-size:24px;color:var(--color-gold);text-transform:uppercase;letter-spacing:2px;font-family:'Playfair Display',serif;">{{ $bannerText }}</h3>
+                        <div class="sf-image-banner-fallback">
+                            <h3>{{ $bannerText }}</h3>
                         </div>
                     @endif
                 </a>
@@ -405,10 +405,10 @@
         {{-- ══ CUSTOMER REVIEWS — Card Slider (auto 5s, dots, swipe) ═══════════ --}}
         <section class="sf-section sf-section-cream">
             <div class="sf-container">
-                <div style="text-align:center;margin-bottom:36px;" class="sf-animate">
+                <div class="sf-reviews-header sf-animate">
                     <p class="sf-section-eyebrow">Testimonials</p>
-                    <h2 class="sf-section-title" style="margin:0 auto;">{{ $sTitle ?? 'What Our Customers Say' }}</h2>
-                    <p style="color:var(--color-text-muted);font-size:13px;margin-top:8px;">{{ $sSubtitle ?? 'Real reviews from verified buyers across India' }}</p>
+                    <h2 class="sf-section-title">{{ $sTitle ?? 'What Our Customers Say' }}</h2>
+                    <p class="sf-reviews-subtitle">{{ $sSubtitle ?? 'Real reviews from verified buyers across India' }}</p>
                 </div>
                 <div class="sf-review-slider" id="reviewSlider">
                     <div class="sf-review-track" id="reviewTrack">
