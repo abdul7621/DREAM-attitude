@@ -119,13 +119,13 @@
                         <div style="font-weight: 600; font-size: 16px; margin-bottom: 24px; color: var(--color-text-primary);"><i class="bi bi-person-circle me-2"></i> Contact Information</div>
                         <div class="row g-3">
                             <div class="col-12">
-                                <label class="sf-label">Full Name *</label>
-                                <input type="text" name="customer_name" id="customer_name" value="{{ old('customer_name') }}" autocomplete="name" class="sf-input @error('customer_name') is-invalid @enderror" required>
+                                <label class="sf-label">Phone Number *</label>
+                                <input type="tel" name="phone" id="phone" value="{{ old('phone') }}" autocomplete="tel" class="sf-input @error('phone') is-invalid @enderror" required placeholder="10-digit mobile number">
+                                <small class="sf-inline-err-text d-none" id="phone_err">Enter a valid phone number</small>
                             </div>
                             <div class="col-md-6">
-                                <label class="sf-label">Phone Number *</label>
-                                <input type="tel" name="phone" id="phone" value="{{ old('phone') }}" autocomplete="tel" class="sf-input @error('phone') is-invalid @enderror" required>
-                                <small class="sf-inline-err-text d-none" id="phone_err">Enter a valid phone number</small>
+                                <label class="sf-label">Full Name *</label>
+                                <input type="text" name="customer_name" id="customer_name" value="{{ old('customer_name') }}" autocomplete="name" class="sf-input @error('customer_name') is-invalid @enderror" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="sf-label">Email (Optional)</label>
@@ -208,6 +208,7 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
 
                     {{-- Payment Info --}}
                     @php
@@ -266,7 +267,7 @@
                     
                     @if(session('offer_unlocked_freeship') || auth()->user()?->cart?->offer_claimed)
                     <div style="margin-bottom: 16px; padding: 12px 16px; background: rgba(39,103,73,0.1); border: 1px solid var(--color-success); border-radius: var(--radius-md); text-align: center;">
-                        <span style="color: var(--color-success); font-weight: 600;"><i class="bi bi-gift-fill me-2"></i> Free Shipping Unlocked!</span>
+                        <span style="color: var(--color-success); font-weight: 600;"><i class="bi bi-gift-fill me-2"></i> Free Prepaid Shipping Unlocked!</span>
                     </div>
                     @endif
 
@@ -283,15 +284,30 @@
                         @endif
                     </div>
 
-                    <button type="submit" class="sf-btn-primary" id="submitBtn">
-                        <span id="submitBtnText" style="display:flex;align-items:center;justify-content:center;">{{ $checkoutOs['cta_text'] ?? 'Complete My Order' }} <i class="bi bi-arrow-right ms-2"></i></span>
-                    </button>
+                    {{-- Notes --}}
+                    <div style="background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 24px; margin-bottom: 24px;">
+                        <label class="sf-label"><i class="bi bi-pencil-square me-1"></i> Order Notes (Optional)</label>
+                        <textarea name="notes" class="sf-input" placeholder="Any special instructions..."></textarea>
+                    </div>
+
+                    <button type="submit" class="sf-btn-primary d-none d-md-block" style="height: 56px; font-size: 15px;">Complete Order</button>
                     
-                    @if(!empty($checkoutOs['reassurance_copy']))
-                        <div style="text-align: center; margin-top: 12px; font-size: 12px; color: var(--color-text-muted);">
-                            <i class="bi bi-shield-lock-fill me-1"></i> {{ $checkoutOs['reassurance_copy'] }}
+                    <div class="d-none d-md-flex" style="justify-content: space-between; margin-top: 16px; font-size: 12px; color: var(--color-text-muted);">
+                        <span><i class="bi bi-shield-check text-success"></i> 100% Secure Checkout</span>
+                        <span><i class="bi bi-arrow-repeat text-success"></i> Easy Returns</span>
+                    </div>
+
+                    {{-- Sticky Mobile Place Order Button --}}
+                    <div class="d-md-none" style="position: fixed; bottom: 0; left: 0; right: 0; background: var(--color-bg-surface); padding: 12px 16px; border-top: 1px solid var(--color-border); z-index: 1040; box-shadow: 0 -4px 12px rgba(0,0,0,0.05);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 11px; color: var(--color-text-muted); font-weight: 500;">
+                            <span><i class="bi bi-shield-check text-success"></i> 100% Safe</span>
+                            <span><i class="bi bi-truck text-success"></i> Secure</span>
+                            <span><i class="bi bi-arrow-repeat text-success"></i> Easy Returns</span>
                         </div>
-                    @endif
+                        <button type="submit" style="width: 100%; height: 48px; background: var(--color-gold); color: #0a0a0a; border: none; border-radius: var(--radius-sm); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">
+                            Place Order - ₹{{ number_format((float) $totals['grand'], 0) }}
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>

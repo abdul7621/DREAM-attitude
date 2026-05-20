@@ -517,5 +517,93 @@
 </script>
 
 @stack('scripts')
+
+{{-- ── Side Cart Drawer ──────────────────── --}}
+<div class="sf-sidecart-overlay" id="sideCartOverlay"></div>
+<div class="sf-sidecart" id="sideCartDrawer">
+    <div class="sf-sidecart-header">
+        <h6><i class="bi bi-bag me-1"></i> Your Cart (<span id="scCount">0</span>)</h6>
+        <button type="button" class="sf-sidecart-close" id="sideCartClose"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="sf-sidecart-progress" id="scShippingBar" style="display:none;">
+        <div class="sf-sidecart-progress-track">
+            <div class="sf-sidecart-progress-fill" id="scProgressFill" style="width:0%"></div>
+        </div>
+        <small id="scProgressText"></small>
+    </div>
+    <div class="sf-sidecart-body" id="scBody">
+        <div class="sf-sidecart-empty" id="scEmpty">
+            <i class="bi bi-bag-x" style="font-size:40px;opacity:.3;"></i>
+            <p>Your cart is empty</p>
+        </div>
+    </div>
+    <div class="sf-sidecart-footer" id="scFooter" style="display:none;">
+        <div class="sf-sidecart-subtotal">
+            <span>Subtotal</span>
+            <span id="scSubtotal">₹0</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+            <a href="{{ route('cart.index') }}" style="display:block; text-align:center; padding:12px; border:1px solid var(--color-gold); color:#0A0A0A; border-radius:4px; text-decoration:none; font-weight:600; font-size:12px; text-transform:uppercase; font-family:'DM Sans', sans-serif;">View Cart</a>
+            <a href="{{ route('checkout.create') }}" class="sf-btn-primary" style="display:flex; align-items:center; justify-content:center; text-decoration:none;">Checkout</a>
+        </div>
+    </div>
+</div>
+<script>
+    window.__sideCartConfig = {
+        freeThreshold: 500,
+        showBar: true,
+        currency: '{{ config('commerce.currency', 'INR') }}'
+    };
+
+    // Global AJAX Add to Cart for product grids
+    document.addEventListener('submit', function(e) {
+        if (e.target.classList.contains('form-add-to-cart')) {
+            e.preventDefault();
+            var form = e.target;
+            var btn = form.querySelector('button[type="submit"]');
+            var originalHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.innerHTML = '...';
+                btn.disabled = true;
+            }
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' },
+                body: new FormData(form)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (btn) {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                }
+                
+                if (data.analytics && typeof fbq === 'function') {
+                    var item = data.analytics.items[0];
+                    fbq('track', 'AddToCart', {
+                        content_ids: [item.item_id],
+                        content_type: 'product',
+                        currency: data.analytics.currency,
+                        value: data.analytics.value
+                    });
+                }
+                
+                if (window.Store) {
+                    Store.emit('cart:added', data);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                if (btn) {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                }
+            });
+        }
+    });
+</script>
+<script defer src="{{ asset('js/side-cart.js') }}?v={{ @filemtime(public_path('js/side-cart.js')) ?: '1' }}"></script>
+
 </body>
 </html>

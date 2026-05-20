@@ -346,15 +346,51 @@
     var activeBtn = document.querySelector('.sf-variant-btn.active') || variantBtns[0];
     if (activeBtn) refreshUi(activeBtn);
 
-    // Form submit listener for analytics
+    // Form submit listener for analytics & AJAX side cart
     var pForm = document.getElementById('productForm');
     if (pForm) {
-        pForm.addEventListener('submit', function() {
+        pForm.addEventListener('submit', function(e) {
+            var isBuyNow = document.getElementById('redirectInput').value === 'checkout';
+
             Store.emit('analytics', { 
                 event: 'add_to_cart', 
                 productId: {{ $product->id }}, 
                 variantId: hiddenInput.value 
             });
+
+            if (typeof fbq === 'function') {
+                fbq('track', 'AddToCart', {
+                    content_ids: [hiddenInput.value],
+                    content_type: 'product',
+                    currency: '{{ config('commerce.currency', 'INR') }}'
+                });
+            }
+
+            if (!isBuyNow) {
+                e.preventDefault();
+                var btn = document.getElementById('addToCartBtn');
+                var originalHtml = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Adding...';
+                btn.disabled = true;
+
+                var formData = new FormData(pForm);
+                fetch(pForm.action, {
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json' },
+                    body: formData
+                })
+                .then(r => r.json())
+                .then(data => {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                    Store.emit('cart:added', data);
+                })
+                .catch(err => {
+                    console.error(err);
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                });
+            }
         });
     }
 })();

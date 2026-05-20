@@ -65,6 +65,7 @@ Route::post('/p/{product}/reviews', [ReviewController::class, 'store'])->name('r
 
 // ── Cart ───────────────────────────────────────────────────────────────────
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::get('/cart/data', [CartController::class, 'data'])->name('cart.data');
 Route::post('/cart/items', [CartController::class, 'store'])->name('cart.items.store');
 Route::put('/cart/items/{item}', [CartController::class, 'update'])->name('cart.items.update');
 Route::delete('/cart/items/{item}', [CartController::class, 'destroy'])->name('cart.items.destroy');

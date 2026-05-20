@@ -27,6 +27,37 @@ class CartController extends Controller
         return view('storefront.cart', compact('lines', 'totals'));
     }
 
+    public function data(): \Illuminate\Http\JsonResponse
+    {
+        $lines = $this->cart->linesWithPricing();
+        $totals = $this->cart->computeTotals('');
+        
+        $items = [];
+        foreach ($lines as $row) {
+            $items[] = [
+                'item_id' => $row['item']->id,
+                'variant_id' => $row['variant']->id,
+                'name' => $row['product']->name,
+                'variant' => $row['variant']->title,
+                'url' => route('product.show', $row['product']->slug),
+                'qty' => $row['item']->qty,
+                'unit_price' => (float) $row['unit_price'],
+                'unit_price_formatted' => '₹' . number_format((float) $row['unit_price'], 2),
+                'line_total' => (float) $row['line_total'],
+                'image' => $row['product']->primaryImage() ? asset('storage/'.$row['product']->primaryImage()->path) : 'https://placehold.co/100',
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'count' => collect($lines)->sum(fn($row) => $row['item']->qty),
+            'subtotal' => (float) $totals['subtotal'],
+            'subtotal_formatted' => '₹' . number_format((float) $totals['subtotal'], 2),
+            'currency' => config('commerce.currency', 'INR'),
+            'items' => $items,
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse|\Illuminate\Http\JsonResponse
     {
         $data = $request->validate([
@@ -46,21 +77,20 @@ class CartController extends Controller
             : url()->previous();
 
         if ($request->wantsJson()) {
-            return response()->json([
-                'status' => 'success',
-                'message' => __('Added to cart.'),
-                'total_items' => $this->cart->linesWithPricing()->sum(fn($row) => $row['item']->qty),
-                'analytics' => [
-                    'currency' => config('commerce.currency', 'INR'),
-                    'value' => round($unit * $qty, 2),
-                    'items' => [[
-                        'item_id' => $variant->sku ?: 'v'.$variant->id,
-                        'item_name' => $variant->product->name,
-                        'price' => $unit,
-                        'quantity' => $qty,
-                    ]],
-                ]
-            ]);
+            $dataResponse = $this->data()->getData(true);
+            $dataResponse['status'] = 'success';
+            $dataResponse['message'] = __('Added to cart.');
+            $dataResponse['analytics'] = [
+                'currency' => config('commerce.currency', 'INR'),
+                'value' => round($unit * $qty, 2),
+                'items' => [[
+                    'item_id' => $variant->sku ?: 'v'.$variant->id,
+                    'item_name' => $variant->product->name,
+                    'price' => $unit,
+                    'quantity' => $qty,
+                ]],
+            ];
+            return response()->json($dataResponse);
         }
 
         return redirect($redirectUrl)
@@ -77,7 +107,7 @@ class CartController extends Controller
             ]);
     }
 
-    public function update(Request $request, CartItem $item): RedirectResponse
+    public function update(Request $request, CartItem $item): RedirectResponse|\Illuminate\Http\JsonResponse
     {
         $data = $request->validate([
             'qty' => ['required', 'integer', 'min:0', 'max:9999'],
@@ -85,12 +115,20 @@ class CartController extends Controller
 
         $this->cart->updateQty($item, (int) $data['qty']);
 
+        if ($request->wantsJson()) {
+            return $this->data();
+        }
+
         return redirect()->route('cart.index')->with('status', __('Cart updated.'));
     }
 
-    public function destroy(CartItem $item): RedirectResponse
+    public function destroy(Request $request, CartItem $item): RedirectResponse|\Illuminate\Http\JsonResponse
     {
         $this->cart->remove($item);
+
+        if ($request->wantsJson()) {
+            return $this->data();
+        }
 
         return redirect()->route('cart.index')->with('status', __('Item removed.'));
     }
