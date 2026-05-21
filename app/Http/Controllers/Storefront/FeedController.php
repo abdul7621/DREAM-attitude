@@ -165,7 +165,8 @@ class FeedController extends Controller
 
                 // — Required fields —
                 $lines[] = '<g:id>'.e($variant->sku ?: 'p'.$product->id.'-v'.$variant->id).'</g:id>';
-                $lines[] = '<g:title>'.e($product->name.($variant->title !== 'Default' ? ' — '.$variant->title : '')).'</g:title>';
+                $variantTitleSuffix = (strcasecmp($variant->title, 'Default') !== 0 && strcasecmp($variant->title, 'Default Title') !== 0) ? ' — '.$variant->title : '';
+                $lines[] = '<g:title>'.e($product->name.$variantTitleSuffix).'</g:title>';
                 $lines[] = '<g:description>'.e($description).'</g:description>';
                 $lines[] = '<g:link>'.e($productLink).'</g:link>';
                 $lines[] = '<g:condition>new</g:condition>';
@@ -207,9 +208,7 @@ class FeedController extends Controller
                 }
 
                 // — Variant grouping (all variants of same product grouped together) —
-                if ($activeVariants->count() > 1) {
-                    $lines[] = '<g:item_group_id>'.e('DA-'.$product->id).'</g:item_group_id>';
-                }
+                $lines[] = '<g:item_group_id>'.e('DA-'.$product->id).'</g:item_group_id>';
 
                 // — Variant attributes (size, color etc.) —
                 if ($variant->option1) {
