@@ -189,9 +189,21 @@ class FeedController extends Controller
                     $lines[] = '<g:additional_image_link>'.e($addImg).'</g:additional_image_link>';
                 }
 
-                // — Category (product_type) —
+                // — Category (product_type) & Custom Labels —
                 if ($categoryPath !== '') {
                     $lines[] = '<g:product_type>'.e($categoryPath).'</g:product_type>';
+                    
+                    // Create dynamic custom labels for Facebook Product Sets
+                    $cats = explode(' > ', $categoryPath);
+                    if (isset($cats[0])) {
+                        $lines[] = '<g:custom_label_0>'.e($cats[0]).'</g:custom_label_0>';
+                    }
+                    if (isset($cats[1])) {
+                        $lines[] = '<g:custom_label_1>'.e($cats[1]).'</g:custom_label_1>';
+                    }
+                    if (isset($cats[2])) {
+                        $lines[] = '<g:custom_label_2>'.e($cats[2]).'</g:custom_label_2>';
+                    }
                 }
 
                 // — Variant grouping (all variants of same product grouped together) —
