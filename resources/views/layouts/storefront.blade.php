@@ -555,53 +555,7 @@
         currency: '{{ config('commerce.currency', 'INR') }}'
     };
 
-    // Global AJAX Add to Cart for product grids
-    document.addEventListener('submit', function(e) {
-        if (e.target.classList.contains('form-add-to-cart')) {
-            e.preventDefault();
-            var form = e.target;
-            var btn = form.querySelector('button[type="submit"]');
-            var originalHtml = btn ? btn.innerHTML : '';
-            if (btn) {
-                btn.innerHTML = '...';
-                btn.disabled = true;
-            }
-
-            fetch(form.action, {
-                method: 'POST',
-                headers: { 'Accept': 'application/json' },
-                body: new FormData(form)
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (btn) {
-                    btn.innerHTML = originalHtml;
-                    btn.disabled = false;
-                }
-                
-                if (data.analytics && typeof fbq === 'function') {
-                    var item = data.analytics.items[0];
-                    fbq('track', 'AddToCart', {
-                        content_ids: [item.item_id],
-                        content_type: 'product',
-                        currency: data.analytics.currency,
-                        value: data.analytics.value
-                    });
-                }
-                
-                if (window.Store) {
-                    Store.emit('cart:added', data);
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                if (btn) {
-                    btn.innerHTML = originalHtml;
-                    btn.disabled = false;
-                }
-            });
-        }
-    });
+    // Global AJAX Add to Cart for product grids is handled globally in store.js
 </script>
 <script defer src="{{ asset('js/side-cart.js') }}?v={{ @filemtime(public_path('js/side-cart.js')) ?: '1' }}"></script>
 

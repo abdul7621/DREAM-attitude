@@ -114,7 +114,7 @@
                 if (data.status === 'success') {
                     if (window.Store) {
                         Store.emit('toast', { type: 'success', message: data.message || 'Added to cart' });
-                        Store.emit('cart:updated', { count: data.total_items });
+                        Store.emit('cart:added', data);
 
                         // Fix #13: Fire AddToCart pixel on AJAX add-to-cart
                         if (data.analytics) {
