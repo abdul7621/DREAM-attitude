@@ -254,9 +254,7 @@ class CartService
         }
         $discount = $coupon ? $this->coupons->discountAmount($coupon, $subtotal) : '0.00';
         $pc = trim($postalCode);
-        $shipping = $pc !== ''
-            ? $this->shipping->quote($pc, $paymentMethod, $this->totalWeightGrams(), $subtotal)
-            : '0.00';
+        $shipping = $this->shipping->quote($pc, $paymentMethod, $this->totalWeightGrams(), $subtotal);
         
         $afterDisc = $this->subMoney($subtotal, $discount);
         

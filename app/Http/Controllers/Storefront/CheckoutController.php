@@ -26,12 +26,14 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->withErrors(['cart' => __('Your cart is empty.')]);
         }
 
+        $activeGateways = $this->paymentManager->activeGateways();
+        $defaultPaymentMethod = collect($activeGateways)->firstWhere('is_default', true)?->name ?? 'phonepe';
+
         $postal = old('postal_code', '');
-        $paymentMethod = old('payment_method', '');
+        $paymentMethod = old('payment_method', $defaultPaymentMethod);
         // Zero-Trust Security: We DO NOT use $val['state'] for shipping cost calculation!
         // The backend determines shipping internally inside CartService using the postal code & payment method.
         $totals = $this->cart->computeTotals($postal, $paymentMethod);
-        $activeGateways = $this->paymentManager->activeGateways();
 
         return view('storefront.checkout', compact('lines', 'totals', 'activeGateways'));
     }
@@ -194,11 +196,6 @@ class CheckoutController extends Controller
     public function shippingQuote(Request $request): \Illuminate\Http\JsonResponse
     {
         $postalCode = trim($request->input('postal_code', ''));
-
-        if (strlen($postalCode) !== 6 || !ctype_digit($postalCode)) {
-            return response()->json(['shipping' => '0.00', 'label' => 'FREE']);
-        }
-
         $paymentMethod = $request->input('payment_method');
 
         $totals = $this->cart->computeTotals($postalCode, $paymentMethod);

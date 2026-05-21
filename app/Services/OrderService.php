@@ -31,7 +31,7 @@ class OrderService
             throw new RuntimeException(__('Your cart is empty.'));
         }
 
-        $totals = $this->cartService->computeTotals($data['postal_code']);
+        $totals = $this->cartService->computeTotals($data['postal_code'], 'cod');
 
         $order = DB::transaction(function () use ($cart, $data, $lines, $totals): Order {
             $this->assertAndLockStock($lines);
@@ -143,7 +143,7 @@ class OrderService
             throw new RuntimeException(__('Your cart is empty.'));
         }
 
-        $totals = $this->cartService->computeTotals($data['postal_code']);
+        $totals = $this->cartService->computeTotals($data['postal_code'], $data['payment_method']);
 
         // We have removed `findReusableOrder` option because updating an existing 
         // order grand_total without updating order lines creates invoice corruption.

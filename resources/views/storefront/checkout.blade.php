@@ -74,7 +74,7 @@
                             <span>Shipping</span>
                             <span id="summary-shipping-val">
                             @if ((float) $totals['shipping'] === 0.0)
-                                <span style="color: var(--color-success); font-weight: 600;">FREE</span>
+                                <span style="color: var(--color-success); font-weight: 600;">FREE (Online Payment)</span>
                             @else
                                 <span style="font-weight: 500;">₹{{ number_format((float) $totals['shipping'], 2) }}</span>
                             @endif
@@ -230,8 +230,10 @@
                                             <div style="flex: 1;">
                                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                                     <span style="font-weight: 600; color: var(--color-text-primary);">{{ $gw->name === 'phonepe' ? 'Online Payment' : $gw->label }}</span>
-                                                    @if($gw->is_default)
-                                                        <span style="font-size: 10px; font-weight: 600; color: var(--color-gold); background: rgba(201,168,76,0.1); padding: 4px 8px; border-radius: 12px; text-transform: uppercase;">Recommended</span>
+                                                    @if((float) $totals['subtotal'] >= 500)
+                                                        <span style="font-size: 11px; font-weight: 600; color: var(--color-success);">FREE Shipping</span>
+                                                    @else
+                                                        <span style="font-size: 11px; font-weight: 600; color: var(--color-text-muted);">+ ₹69.00 Shipping</span>
                                                     @endif
                                                 </div>
                                                 <p style="color: var(--color-text-muted); font-size: 12px; margin: 4px 0 0 0;">{{ in_array($gw->name, ['razorpay', 'phonepe']) ? 'UPI, Cards, NetBanking' : 'Pay via ' . $gw->label }}</p>
@@ -248,9 +250,9 @@
                                         <div style="flex: 1;">
                                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                                 <span style="font-weight: 600; color: var(--color-text-primary);">{{ $codGateway->label ?: 'Cash on Delivery (COD)' }}</span>
-                                                <span style="font-size: 11px; font-weight: 600; color: var(--color-text-muted);">{{ $copy['cod_fee_message'] ?: '₹0 Additional Fee' }}</span>
+                                                <span style="font-size: 11px; font-weight: 600; color: var(--color-gold);">+ ₹69.00 Shipping</span>
                                             </div>
-                                            <p style="color: var(--color-text-muted); font-size: 12px; margin: 4px 0 0 0;">{{ $copy['cod_message'] ?: 'Pay when your order is delivered to you.' }}</p>
+                                            <p style="color: var(--color-text-muted); font-size: 12px; margin: 4px 0 0 0;">Pay cash when your order is delivered to you (+ ₹69.00 shipping fee applies).</p>
                                         </div>
                                     </label>
                                 </div>
@@ -654,7 +656,7 @@
     // ── Global Shipping Quote JS ──
     window.refreshShippingQuote = function() {
         var pin = (pinInput && pinInput.value) ? pinInput.value.trim() : '';
-        if (pin.length !== 6) return; // Only fetch if PIN is present
+        if (pin.length > 0 && pin.length !== 6) return; // Only block if partially typed
 
         var method = document.querySelector('input[name="payment_method"]:checked');
         var methodVal = method ? method.value : '';
@@ -670,13 +672,17 @@
             var grandEl    = document.getElementById('summary-grand-val');
             if (shippingEl) {
                 if (q.is_free) {
-                    shippingEl.innerHTML = '<span style="color: var(--color-success); font-weight: 600;">FREE</span>';
+                    shippingEl.innerHTML = '<span style="color: var(--color-success); font-weight: 600;">FREE (Online Payment)</span>';
                 } else {
                     shippingEl.innerHTML = '<span style="font-weight: 500;">₹' + parseFloat(q.shipping).toFixed(2) + '</span>';
                 }
             }
             if (grandEl && q.grand) {
                 grandEl.textContent = '₹' + parseFloat(q.grand).toFixed(2);
+                var stickyGrandEl = document.querySelector('.sf-mobile-checkout-btn span:first-child');
+                if (stickyGrandEl) {
+                    stickyGrandEl.textContent = '₹' + Math.round(parseFloat(q.grand));
+                }
             }
         })
         .catch(function(e) { console.warn('Shipping quote fetch failed', e); });
