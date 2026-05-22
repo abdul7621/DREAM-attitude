@@ -319,6 +319,7 @@
 @endsection
 
 @push('scripts')
+<style>
 /* Hide Bottom Nav on Checkout for zero-distraction & fix sticky overlap */
 .sf-bottom-nav { display: none !important; }
 
