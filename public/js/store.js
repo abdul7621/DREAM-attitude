@@ -84,7 +84,12 @@
                 return; // Let standard form submission handle Buy Now
             }
 
+            if (form.dataset.submitting === 'true') {
+                e.preventDefault();
+                return;
+            }
             e.preventDefault();
+            form.dataset.submitting = 'true';
             
             const btn = form.querySelector('button[type="submit"]');
             const originalHtml = btn ? btn.innerHTML : '';
@@ -174,6 +179,7 @@
                 if (window.Store) Store.emit('toast', { type: 'error', message: 'Failed to add item to cart.' });
             })
             .finally(() => {
+                form.dataset.submitting = 'false';
                 if (btn) {
                     btn.disabled = false;
                     btn.innerHTML = originalHtml;

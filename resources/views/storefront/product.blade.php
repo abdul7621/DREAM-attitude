@@ -244,6 +244,8 @@
     var stickyPrice = document.getElementById('stickyPrice');
     var addToCartBtn = document.getElementById('addToCartBtn');
     var buyNowBtn = document.getElementById('buyNowBtn');
+    var mainImgNode = document.querySelector('.main-img');
+    var defaultMainImg = mainImgNode ? mainImgNode.src : '';
 
     function fmt(n) { return '\u20b9' + parseFloat(n).toLocaleString('en-IN', {minimumFractionDigits: 0}); }
 
@@ -261,15 +263,20 @@
         var vname = btn.dataset.name || '';
         var vimg = btn.dataset.img || '';
 
-        if (vimg) {
-            var mainImg = document.querySelector('.main-img');
-            if (mainImg) {
+        var mainImg = document.querySelector('.main-img');
+        if (mainImg) {
+            if (vimg) {
                 mainImg.src = vimg;
-                var thumbs = document.querySelectorAll('.sf-pdp-thumbs img');
-                for (var ti = 0; ti < thumbs.length; ti++) { thumbs[ti].classList.remove('active'); }
-                // Find matching thumb manually (no Array.from/find)
+            } else if (defaultMainImg) {
+                mainImg.src = defaultMainImg;
+            }
+            var thumbs = document.querySelectorAll('.sf-pdp-thumbs img');
+            for (var ti = 0; ti < thumbs.length; ti++) { thumbs[ti].classList.remove('active'); }
+            // Find matching thumb manually
+            var targetImg = vimg || defaultMainImg;
+            if (targetImg) {
                 for (var tj = 0; tj < thumbs.length; tj++) {
-                    if (thumbs[tj].src === vimg) { thumbs[tj].classList.add('active'); break; }
+                    if (thumbs[tj].src === targetImg) { thumbs[tj].classList.add('active'); break; }
                 }
             }
         }
