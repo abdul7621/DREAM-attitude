@@ -72,6 +72,8 @@ PUBLIC_HTML="domains/dreamattitude.al-mhaf.com/public_html"
 ${SSH_CMD} -t "cd ${APP_DIR} && \
     echo '📥 Pulling latest code...' && \
     git pull origin ${BRANCH} && \
+    echo '📦 Installing PHP dependencies...' && \
+    composer install --no-interaction --prefer-dist --optimize-autoloader && \
     echo '🗄  Running migrations (if any)...' && \
     ${MIGRATE_CMD} \
     echo '📂 Syncing public assets to public_html...' && \

@@ -111,15 +111,15 @@ class TrackVisitor
                     $ip = explode(',', $ip)[0];
                 }
 
-                if (file_exists($dbPath) && $ip) {
+                if (file_exists($dbPath) && $ip && class_exists(\GeoIp2\Database\Reader::class)) {
                     $reader = new \GeoIp2\Database\Reader($dbPath);
                     $record = $reader->city($ip);
                     $city = $record->city->name;
                     $region = $record->mostSpecificSubdivision->name;
                     $country = $record->country->isoCode;
                 }
-            } catch (\Exception $e) {
-                // Ignore geoip errors (e.g. IP not found in DB)
+            } catch (\Throwable $e) {
+                // Ignore geoip errors (e.g. missing package, IP not found)
                 \Log::debug('GeoIP lookup failed: ' . $e->getMessage());
             }
 
@@ -209,8 +209,6 @@ class TrackVisitor
 
         } catch (\Throwable $e) {
             // Fail silently so we don't break the storefront if DB connection drops briefly
-            @file_put_contents(public_path('debug_err.txt'), date('Y-m-d H:i:s') . ' - ' . $e->getMessage() . "\n");
-            session()->flash('track_error', $e->getMessage() . ' at line ' . $e->getLine());
             \Illuminate\Support\Facades\Log::warning('TrackVisitor middleware error: ' . $e->getMessage());
         }
     }
