@@ -95,53 +95,61 @@ class TrackVisitor
             elseif (preg_match('/Android/i', $userAgent)) $os = 'Android';
             elseif (preg_match('/iPhone|iPad|iPod/i', $userAgent)) $os = 'iOS';
 
+            $visitor = null;
+            $needsGeoIp = $isNewVisitor;
+
+            if (!$isNewVisitor) {
+                $visitor = Visitor::where('visitor_uuid', $visitorUuid)->first();
+                if (!$visitor || empty($visitor->city)) {
+                    $needsGeoIp = true;
+                }
+            }
+
             $city = null;
             $region = null;
             $country = null;
             
-            // Local GeoIP Lookup
-            try {
-                $dbPath = storage_path('app/geoip/GeoLite2-City.mmdb');
-                $ip = $request->ip();
-                
-                // Allow testing on localhost by spoofing IP or skip if local
-                if ($ip === '127.0.0.1' || $ip === '::1') {
-                    // Try to get real IP from headers if behind proxy
-                    $ip = $request->header('X-Forwarded-For', '8.8.8.8'); // Fake IP for local testing
-                    $ip = explode(',', $ip)[0];
-                }
+            if ($needsGeoIp) {
+                // Local GeoIP Lookup
+                try {
+                    $dbPath = storage_path('app/geoip/GeoLite2-City.mmdb');
+                    $ip = $request->ip();
+                    
+                    if ($ip === '127.0.0.1' || $ip === '::1') {
+                        $ip = $request->header('X-Forwarded-For', '8.8.8.8');
+                        $ip = explode(',', $ip)[0];
+                    }
 
-                if (file_exists($dbPath) && $ip && class_exists(\GeoIp2\Database\Reader::class)) {
-                    $reader = new \GeoIp2\Database\Reader($dbPath);
-                    $record = $reader->city($ip);
-                    $city = $record->city->name;
-                    $region = $record->mostSpecificSubdivision->name;
-                    $country = $record->country->isoCode;
+                    if (file_exists($dbPath) && $ip && class_exists(\GeoIp2\Database\Reader::class)) {
+                        $reader = new \GeoIp2\Database\Reader($dbPath);
+                        $record = $reader->city($ip);
+                        $city = $record->city->name;
+                        $region = $record->mostSpecificSubdivision->name;
+                        $country = $record->country->isoCode;
+                    }
+                } catch (\Throwable $e) {
+                    \Log::debug('GeoIP lookup failed: ' . $e->getMessage());
                 }
-            } catch (\Throwable $e) {
-                // Ignore geoip errors (e.g. missing package, IP not found)
-                \Log::debug('GeoIP lookup failed: ' . $e->getMessage());
             }
 
             // Visitor Upsert
-            $visitor = Visitor::firstOrCreate(
-                ['visitor_uuid' => $visitorUuid],
-                [
-                    'first_source' => session('attr_utm_source') ?: $request->query('utm_source'),
-                    'first_medium' => session('attr_utm_medium') ?: $request->query('utm_medium'),
-                    'first_campaign' => session('attr_utm_campaign') ?: $request->query('utm_campaign'),
-                    'device_type' => $deviceType,
-                    'browser' => $browser,
-                    'os' => $os,
-                    'city' => $city,
-                    'region' => $region,
-                    'country' => $country,
-                    'first_seen_at' => now(),
-                ]
-            );
-
-            // If visitor exists but city is missing, try updating it
-            if ($visitor->wasRecentlyCreated === false && !$visitor->city && $city) {
+            if (!$visitor) {
+                $visitor = Visitor::firstOrCreate(
+                    ['visitor_uuid' => $visitorUuid],
+                    [
+                        'first_source' => session('attr_utm_source') ?: $request->query('utm_source'),
+                        'first_medium' => session('attr_utm_medium') ?: $request->query('utm_medium'),
+                        'first_campaign' => session('attr_utm_campaign') ?: $request->query('utm_campaign'),
+                        'device_type' => $deviceType,
+                        'browser' => $browser,
+                        'os' => $os,
+                        'city' => $city,
+                        'region' => $region,
+                        'country' => $country,
+                        'first_seen_at' => now(),
+                    ]
+                );
+            } elseif (empty($visitor->city) && $city) {
                 $visitor->update([
                     'city' => $city,
                     'region' => $region,
