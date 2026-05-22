@@ -123,7 +123,7 @@ class BeaconController extends Controller
 
         } catch (\Throwable $e) {
             Log::warning('Beacon API error: ' . $e->getMessage());
-            return response()->json(['status' => 'error'], 500);
+            return response()->json(['status' => 'error', 'msg' => $e->getMessage(), 'line' => $e->getLine()], 500);
         }
     }
 }

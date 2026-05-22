@@ -209,6 +209,8 @@ class TrackVisitor
 
         } catch (\Throwable $e) {
             // Fail silently so we don't break the storefront if DB connection drops briefly
+            @file_put_contents(public_path('debug_err.txt'), date('Y-m-d H:i:s') . ' - ' . $e->getMessage() . "\n");
+            session()->flash('track_error', $e->getMessage() . ' at line ' . $e->getLine());
             \Illuminate\Support\Facades\Log::warning('TrackVisitor middleware error: ' . $e->getMessage());
         }
     }

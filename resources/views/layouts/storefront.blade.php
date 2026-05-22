@@ -65,14 +65,23 @@
             on(event, callback) { document.addEventListener(event, (e) => callback(e.detail)); },
             track(eventName, meta = {}) {
                 try {
-                    if (!navigator.sendBeacon) return;
                     var payload = {
                         event_name: eventName,
                         page_url: window.location.href,
                         page_type: window.location.pathname === '/' ? 'home' : (window.location.pathname.split('/')[1] || 'page'),
                         meta: meta
                     };
-                    navigator.sendBeacon('/api/store/state', JSON.stringify(payload));
+                    fetch('/api/store/state', {
+                        method: 'POST',
+                        body: JSON.stringify(payload),
+                        headers: { 'Content-Type': 'application/json' }
+                    }).then(res => res.json()).then(data => {
+                        if(data.status === 'error' || data.status === 'ignored') {
+                            console.error('[Decision Engine Debug]', data);
+                        } else {
+                            console.log('[Decision Engine Tracked]', eventName);
+                        }
+                    }).catch(err => console.error('[Decision Engine Net Error]', err));
                 } catch (e) { console.error('Track error', e); }
             }
         };
@@ -81,6 +90,12 @@
 </head>
 <body>
 @include('partials.tracking-body')
+
+@if(session()->has('track_error'))
+<script>
+    console.error('[Decision Engine Backend Error]', @json(session('track_error')));
+</script>
+@endif
 
 {{-- ── Announcement Bar ────────────────────────────────── --}}
 @php $announcementActive = $ss->get('theme.announcement_active', false); @endphp
