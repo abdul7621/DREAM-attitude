@@ -73,6 +73,7 @@ ${SSH_CMD} -t "cd ${APP_DIR} && \
     echo '📥 Pulling latest code...' && \
     git pull origin ${BRANCH} && \
     echo '📦 Installing PHP dependencies...' && \
+    composer update geoip2/geoip2 --no-interaction --prefer-dist --optimize-autoloader && \
     composer install --no-interaction --prefer-dist --optimize-autoloader && \
     echo '🗄  Running migrations (if any)...' && \
     ${MIGRATE_CMD} \
