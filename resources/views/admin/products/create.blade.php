@@ -30,8 +30,9 @@
                 <input type="text" name="sku" value="{{ old('sku') }}" class="form-control">
             </div>
             <div class="col-12">
-                <label class="form-label">Short description</label>
-                <input type="text" name="short_description" value="{{ old('short_description') }}" class="form-control" maxlength="512">
+                <label class="form-label fw-semibold">Short description <span class="text-danger">*</span> <span class="text-muted fw-normal">(100-150 chars ideal)</span></label>
+                <input type="text" name="short_description" id="shortDescInput" value="{{ old('short_description') }}" class="form-control" maxlength="160" placeholder="e.g. A lightweight argan oil shampoo that controls frizz and restores natural shine.">
+                <div class="form-text"><span id="shortDescCount">0</span>/160 characters — Keep it crisp.</div>
             </div>
             <div class="col-12">
                 <label class="form-label">Description (HTML ok)</label>
@@ -115,3 +116,16 @@
         </div>
     </form>
 @endsection
+
+@push('scripts')
+<script>
+(function(){
+    var input = document.getElementById('shortDescInput');
+    var count = document.getElementById('shortDescCount');
+    if(input && count) {
+        count.textContent = input.value.length;
+        input.addEventListener('input', function() { count.textContent = this.value.length; });
+    }
+})();
+</script>
+@endpush

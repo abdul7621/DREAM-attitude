@@ -27,7 +27,9 @@
         <button type="button"
             class="wishlist-heart"
             data-product-id="{{ $product->id }}"
-            title="Wishlist">
+            title="Wishlist"
+            aria-label="Add to Wishlist"
+            style="min-width: 48px; min-height: 48px; display: flex; align-items: center; justify-content: center;">
             <i class="bi bi-heart"></i>
         </button>
         @if ($compare && $compare > $price)

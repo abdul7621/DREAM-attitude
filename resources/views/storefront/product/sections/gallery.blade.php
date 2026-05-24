@@ -5,11 +5,13 @@
         <div style="background:var(--color-bg-elevated);width:100%;position:relative;padding-top:100%;border: 1px solid var(--color-border);border-radius: var(--radius-md);"></div>
     @endif
     @if ($product->images->count() > 1)
-        <div class="sf-pdp-thumbs">
+        <div class="sf-pdp-thumbs" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px;">
             @foreach ($product->images as $i => $image)
-                <img src="{{ asset('storage/'.$image->path) }}" alt="{{ $product->name }} - Image {{ $i + 1 }} - {{ config('app.name') }}" loading="lazy"
-                     class="{{ $i === 0 ? 'active' : '' }}"
-                     onclick="document.querySelector('.main-img').src=this.src; document.querySelectorAll('.sf-pdp-thumbs img').forEach(t=>t.classList.remove('active')); this.classList.add('active');">
+                <button type="button" aria-label="View Image {{ $i + 1 }}" style="padding: 0; border: none; background: none; min-width: 48px; min-height: 48px; flex-shrink: 0;"
+                     onclick="document.querySelector('.main-img').src='{{ asset('storage/'.$image->path) }}'; document.querySelectorAll('.sf-pdp-thumbs img').forEach(t=>t.classList.remove('active')); this.querySelector('img').classList.add('active');">
+                     <img src="{{ asset('storage/'.$image->path) }}" alt="{{ $product->name }} - Image {{ $i + 1 }} - {{ config('app.name') }}" loading="lazy"
+                          class="{{ $i === 0 ? 'active' : '' }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;">
+                </button>
             @endforeach
         </div>
     @endif

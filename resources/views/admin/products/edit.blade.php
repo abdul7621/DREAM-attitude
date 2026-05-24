@@ -30,8 +30,9 @@
                 <input type="text" name="sku" value="{{ old('sku', $product->sku) }}" class="form-control">
             </div>
             <div class="col-12">
-                <label class="form-label">Short description</label>
-                <input type="text" name="short_description" value="{{ old('short_description', $product->short_description) }}" class="form-control" maxlength="512">
+                <label class="form-label fw-semibold">Short description <span class="text-danger">*</span> <span class="text-muted fw-normal">(100-150 chars ideal)</span></label>
+                <input type="text" name="short_description" id="shortDescInput" value="{{ old('short_description', $product->short_description) }}" class="form-control" maxlength="160" placeholder="e.g. A lightweight argan oil shampoo that controls frizz and restores natural shine.">
+                <div class="form-text"><span id="shortDescCount">0</span>/160 characters — Appears on category pages and top of product page. Keep it crisp.</div>
             </div>
             <div class="col-12">
                 <label class="form-label">Description</label>
@@ -88,12 +89,19 @@
         </div>
         <script>
         (function(){
-            var ti = document.getElementById('seoTitleInput');
-            var tc = document.getElementById('seoTitleCount');
-            var di = document.getElementById('seoDescInput');
-            var dc = document.getElementById('seoDescCount');
-            if(ti && tc){ tc.textContent = ti.value.length; ti.addEventListener('input', function(){ tc.textContent = this.value.length; }); }
-            if(di && dc){ dc.textContent = di.value.length; di.addEventListener('input', function(){ dc.textContent = this.value.length; }); }
+            function bindCount(inputId, countId) {
+                var input = document.getElementById(inputId);
+                var count = document.getElementById(countId);
+                if(input && count) {
+                    count.textContent = input.value.length;
+                    input.addEventListener('input', function() { count.textContent = this.value.length; });
+                }
+            }
+            bindCount('seoTitleInput', 'seoTitleCount');
+            bindCount('seoDescInput', 'seoDescCount');
+            bindCount('shortDescInput', 'shortDescCount');
+            bindCount('hookInput', 'hookCount');
+            bindCount('promiseInput', 'promiseCount');
         })();
         </script>
 
@@ -127,19 +135,19 @@
         <p class="text-muted small mb-3">These fields power the product page conversion blocks — hook the customer, promise results, build trust.</p>
         <div class="row g-3">
             <div class="col-12">
-                <label class="form-label fw-semibold">Problem Hook <span class="badge bg-secondary">Shows above price</span></label>
-                <input type="text" name="meta[problem_hook]" class="form-control" value="{{ old('meta.problem_hook', $product->meta['problem_hook'] ?? '') }}" placeholder="e.g. Struggling with hair fall, dryness or dull skin?">
-                <div class="form-text">1 line that agitates the customer's problem. Shows in italic above the price.</div>
+                <label class="form-label fw-semibold">Problem Hook <span class="badge bg-secondary">Shows above price</span> <span class="text-danger">*Limit 80 Chars*</span></label>
+                <input type="text" name="meta[problem_hook]" id="hookInput" class="form-control" value="{{ old('meta.problem_hook', $product->meta['problem_hook'] ?? '') }}" maxlength="80" placeholder="e.g. Struggling with hair fall, dryness or dull skin?">
+                <div class="form-text text-danger fw-bold"><i class="bi bi-exclamation-triangle"></i> DO NOT use ## headings or long paragraphs. EXACTLY 1 short line (max 80 chars). <span id="hookCount" class="text-dark">0</span>/80</div>
             </div>
             <div class="col-12">
-                <label class="form-label fw-semibold">Result Promise <span class="badge bg-warning text-dark">High impact</span></label>
-                <input type="text" name="meta[result_promise]" class="form-control" value="{{ old('meta.result_promise', $product->meta['result_promise'] ?? '') }}" placeholder="e.g. See visible results in just 7 days — or full refund.">
-                <div class="form-text">1 bold statement that promises transformation. Shows with ✦ icon below the hook.</div>
+                <label class="form-label fw-semibold">Result Promise <span class="badge bg-warning text-dark">High impact</span> <span class="text-danger">*Limit 100 Chars*</span></label>
+                <input type="text" name="meta[result_promise]" id="promiseInput" class="form-control" value="{{ old('meta.result_promise', $product->meta['result_promise'] ?? '') }}" maxlength="100" placeholder="e.g. See visible results in just 7 days — or full refund.">
+                <div class="form-text text-danger fw-bold"><i class="bi bi-exclamation-triangle"></i> DO NOT use ## headings. Just 1 bold statement. <span id="promiseCount" class="text-dark">0</span>/100</div>
             </div>
             <div class="col-12">
                 <label class="form-label fw-semibold">Trust Proof <span class="badge bg-success">After buy buttons</span></label>
-                <textarea name="meta[trust_proof]" rows="2" class="form-control" placeholder="e.g. 10,000+ orders shipped. Rated 4.8/5 by verified buyers.&#10;Dermatologist tested. 100% natural ingredients.">{{ old('meta.trust_proof', $product->meta['trust_proof'] ?? '') }}</textarea>
-                <div class="form-text">Social proof shown below the Add to Cart / Buy Now buttons. Supports multi-line.</div>
+                <textarea name="meta[trust_proof]" rows="2" class="form-control" maxlength="250" placeholder="e.g. 10,000+ orders shipped. Rated 4.8/5 by verified buyers.&#10;Dermatologist tested. 100% natural ingredients.">{{ old('meta.trust_proof', $product->meta['trust_proof'] ?? '') }}</textarea>
+                <div class="form-text">Keep it to 2-3 short lines. DO NOT write essays here.</div>
             </div>
             <div class="col-12">
                 <label class="form-label fw-semibold">Volume Pricing (Bundle Deals) <span class="badge bg-info text-dark">JSON format</span></label>

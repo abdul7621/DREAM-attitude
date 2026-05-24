@@ -65,9 +65,9 @@
     <div style="display: flex; gap: 16px;">
         @if(empty($volumePricing))
         <div class="sf-qty">
-            <button type="button" onclick="const inpv=this.nextElementSibling; if(inpv.value>1) inpv.value--;"><i class="bi bi-dash"></i></button>
-            <input type="number" name="qty" value="1" min="1" max="9999" required readonly>
-            <button type="button" onclick="const inpv=this.previousElementSibling; inpv.value++;"><i class="bi bi-plus"></i></button>
+            <button type="button" aria-label="Decrease quantity" style="min-width: 48px; min-height: 48px;" onclick="const inpv=this.nextElementSibling; if(inpv.value>1) inpv.value--;"><i class="bi bi-dash"></i></button>
+            <input type="number" name="qty" value="1" min="1" max="9999" aria-label="Quantity" required readonly style="min-height: 48px;">
+            <button type="button" aria-label="Increase quantity" style="min-width: 48px; min-height: 48px;" onclick="const inpv=this.previousElementSibling; inpv.value++;"><i class="bi bi-plus"></i></button>
         </div>
         @else
         {{-- Volume pricing selected — qty is driven by bundle selection --}}

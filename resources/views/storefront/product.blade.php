@@ -207,11 +207,11 @@
         </div>
     </div>
     
-    <button onclick="document.getElementById('redirectInput').value='checkout'; document.getElementById('productForm').submit();" class="sf-sticky-cart-buy-btn">
+    <button onclick="document.getElementById('redirectInput').value='checkout'; document.getElementById('productForm').submit();" class="sf-sticky-cart-buy-btn" style="min-height: 48px;" aria-label="Buy Now">
         Buy Now
     </button>
     
-    <button id="stickyAddToCartBtn" onclick="document.getElementById('redirectInput').value=''; const form = document.getElementById('productForm'); if (form.requestSubmit) form.requestSubmit(); else form.submit();" class="sf-sticky-cart-add-btn" title="Add to Cart">
+    <button id="stickyAddToCartBtn" onclick="document.getElementById('redirectInput').value=''; const form = document.getElementById('productForm'); if (form.requestSubmit) form.requestSubmit(); else form.submit();" class="sf-sticky-cart-add-btn" title="Add to Cart" aria-label="Add to Cart" style="min-width: 48px; min-height: 48px; display: flex; align-items: center; justify-content: center;">
         <i class="bi bi-cart-plus fs-5"></i>
     </button>
 </div>
