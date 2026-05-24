@@ -51,7 +51,7 @@ class ProductController extends Controller
             'category_id' => ['nullable', 'exists:categories,id'],
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:190'],
-            'short_description' => ['nullable', 'string', 'max:512'],
+            'short_description' => ['nullable', 'string', 'max:160'],
             'description' => ['nullable', 'string'],
             'seo_title' => ['nullable', 'string', 'max:255'],
             'seo_description' => ['nullable', 'string', 'max:512'],
@@ -71,6 +71,10 @@ class ProductController extends Controller
             'track_inventory' => ['nullable', 'boolean'],
             'weight_grams' => ['nullable', 'integer', 'min:0'],
             'images.*' => ['nullable', 'image', 'max:5120'],
+            'meta' => ['nullable', 'array'],
+            'meta.problem_hook' => ['nullable', 'string', 'max:80'],
+            'meta.result_promise' => ['nullable', 'string', 'max:100'],
+            'meta.trust_proof' => ['nullable', 'string', 'max:250'],
         ]);
 
         $base = $request->filled('slug') ? (string) $data['slug'] : (string) $data['name'];
@@ -185,7 +189,7 @@ class ProductController extends Controller
             'category_id' => ['nullable', 'exists:categories,id'],
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:190'],
-            'short_description' => ['nullable', 'string', 'max:512'],
+            'short_description' => ['nullable', 'string', 'max:160'],
             'description' => ['nullable', 'string'],
             'seo_title' => ['nullable', 'string', 'max:255'],
             'seo_description' => ['nullable', 'string', 'max:512'],
@@ -211,6 +215,10 @@ class ProductController extends Controller
             'remove_image_ids' => ['nullable', 'array'],
             'remove_image_ids.*' => ['integer', 'exists:product_images,id'],
             'images.*' => ['nullable', 'image', 'max:5120'],
+            'meta' => ['nullable', 'array'],
+            'meta.problem_hook' => ['nullable', 'string', 'max:80'],
+            'meta.result_promise' => ['nullable', 'string', 'max:100'],
+            'meta.trust_proof' => ['nullable', 'string', 'max:250'],
         ]);
 
         $base = $request->filled('slug') ? (string) $data['slug'] : (string) $data['name'];

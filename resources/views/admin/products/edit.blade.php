@@ -117,8 +117,9 @@
                 <textarea name="meta[how_to_use]" rows="2" class="form-control">{{ old('meta.how_to_use', $product->meta['how_to_use'] ?? '') }}</textarea>
             </div>
             <div class="col-12">
-                <label class="form-label">FAQ</label>
-                <textarea name="meta[faq]" rows="3" class="form-control">{{ old('meta.faq', $product->meta['faq'] ?? '') }}</textarea>
+                <label class="form-label fw-semibold">FAQ <span class="text-danger">*No ## Headings*</span></label>
+                <textarea name="meta[faq]" rows="4" class="form-control" placeholder="Q: Is it suitable for daily use?&#10;A: Yes, it is very gentle.">{{ old('meta.faq', isset($product->meta['faq']) ? (is_array($product->meta['faq']) ? json_encode($product->meta['faq'], JSON_PRETTY_PRINT) : $product->meta['faq']) : '') }}</textarea>
+                <div class="form-text text-danger fw-bold"><i class="bi bi-exclamation-triangle"></i> DO NOT use ## or ### headings. If you want a structured FAQ, provide a JSON array. Otherwise, just write simple text.</div>
             </div>
             <div class="col-md-6">
                 <label class="form-label">Offer Message</label>
