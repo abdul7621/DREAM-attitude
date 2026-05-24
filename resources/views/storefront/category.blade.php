@@ -42,7 +42,7 @@
 <section class="sf-hero sf-cat-hero">
     <div class="sf-hero-img-wrap sf-cat-hero-img-wrap">
         @if($category->image_path)
-            <img src="{{ asset('storage/' . $category->image_path) }}" alt="{{ $category->name }}" class="sf-hero-img" loading="eager">
+            <img src="{{ asset('storage/' . $category->image_path) }}" alt="{{ $category->name }}" class="sf-hero-img" loading="eager" fetchpriority="high" width="800" height="400">
         @else
             <div class="sf-cat-hero-fallback"></div>
         @endif

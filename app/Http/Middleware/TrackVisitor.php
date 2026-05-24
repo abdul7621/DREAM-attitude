@@ -126,6 +126,11 @@ class TrackVisitor
                         $city = $record->city->name;
                         $region = $record->mostSpecificSubdivision->name;
                         $country = $record->country->isoCode;
+                        
+                        // Hard Block known bot farms (Vietnam, Sweden, Russia, China) to save server resources & ad budget
+                        if (in_array($country, ['VN', 'SE', 'RU', 'CN'])) {
+                            abort(403, 'Access denied.');
+                        }
                     }
                 } catch (\Throwable $e) {
                     \Log::debug('GeoIP lookup failed: ' . $e->getMessage());

@@ -70,15 +70,15 @@
                 </div>
                 
                 @if ($hasMultipleVariants)
-                    <a href="{{ route('product.show', $product) }}" class="btn-add" style="display:block;text-align:center;text-decoration:none;line-height:36px;">Select Options →</a>
+                    <a href="{{ route('product.show', $product) }}" class="btn-add" style="display:block;text-align:center;text-decoration:none;line-height:44px;min-height:48px;font-size:15px;border-radius:8px;">Select Options →</a>
                 @elseif ($isOutOfStock)
-                    <button type="button" class="btn-add" disabled style="opacity:0.5;cursor:not-allowed;">Out of Stock</button>
+                    <button type="button" class="btn-add" disabled style="opacity:0.5;cursor:not-allowed;min-height:48px;font-size:15px;border-radius:8px;">Out of Stock</button>
                 @else
                     <form action="{{ route('cart.items.store') }}" method="POST" class="form-add-to-cart">
                         @csrf
                         <input type="hidden" name="variant_id" value="{{ $variant->id }}">
                         <input type="hidden" name="qty" value="1">
-                        <button type="submit" class="btn-add">Add to Cart</button>
+                        <button type="submit" class="btn-add" style="min-height:48px;font-size:15px;border-radius:8px;">Add to Cart</button>
                     </form>
                 @endif
             </div>
