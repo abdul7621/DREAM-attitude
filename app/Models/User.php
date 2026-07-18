@@ -26,6 +26,8 @@ class User extends Authenticatable
         'password',
         'is_admin',
         'role',
+        'must_reset_password',
+        'woo_customer_id',
     ];
 
     /**
@@ -49,6 +51,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
+            'must_reset_password' => 'boolean',
         ];
     }
 

@@ -91,6 +91,12 @@ Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->
 Route::middleware('guest')->group(function () {
     Route::get('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'showForm'])->name('register');
     Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'register'])->middleware('throttle:5,1');
+
+    // Password Reset
+    Route::get('/forgot-password', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'showForm'])->name('password.request');
+    Route::post('/forgot-password', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'sendResetLink'])->name('password.email');
+    Route::get('/reset-password/{token}', [\App\Http\Controllers\Auth\ResetPasswordController::class, 'showForm'])->name('password.reset');
+    Route::post('/reset-password', [\App\Http\Controllers\Auth\ResetPasswordController::class, 'reset'])->name('password.update');
 });
 
 // ── Customer Account (auth required) ──────────────────────────────────────
@@ -126,6 +132,7 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
 Route::post('/api/shiprocket/webhook', [\App\Http\Controllers\Api\ShiprocketWebhookController::class, 'handle'])->name('webhook.shiprocket');
 Route::post('/api/webhooks/phonepe', [\App\Http\Controllers\Api\PhonePeWebhookController::class, 'handle'])->name('api.webhooks.phonepe');
 Route::post('/api/webhooks/ithink', [\App\Http\Controllers\Api\IthinkWebhookController::class, 'handle'])->name('webhook.ithink');
+Route::post('/api/webhooks/nimbus', [\App\Http\Controllers\Api\NimbusWebhookController::class, 'handle'])->name('webhook.nimbus');
 Route::post('/api/store/state', [\App\Http\Controllers\Api\BeaconController::class, 'track'])->name('api.beacon.track');
 Route::get('/test-ithink/{orderId}', function ($orderId) {
     try {
@@ -171,6 +178,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Shipping Rules
     Route::resource('shipping-rules', AdminShippingRuleController::class)->except(['show']);
+
+    // Country Shipping Rates
+    Route::post('shipping-rates/import', [\App\Http\Controllers\Admin\ShippingRateController::class, 'import'])->name('shipping-rates.import');
+    Route::resource('shipping-rates', \App\Http\Controllers\Admin\ShippingRateController::class)->except(['show']);
 
     // Returns
     Route::get('returns', [AdminReturnRequestController::class, 'index'])->name('returns.index');
@@ -250,4 +261,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('import/{importJob}/chunk', [AdminImportController::class, 'chunk'])->name('import.chunk');
     Route::get('import/{importJob}/details', [AdminImportController::class, 'show'])->name('import.show');
     Route::get('import/{importJob}/export-errors', [AdminImportController::class, 'exportErrors'])->name('import.exportErrors');
+});
+
+Route::get('/run-migrations-and-seeder', function() {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--class' => 'ShippingRateSeeder', '--force' => true]);
+        return 'Success! Migrations and Seeder executed successfully.';
+    } catch (\Exception $e) {
+        return 'Error: ' . $e->getMessage();
+    }
 });

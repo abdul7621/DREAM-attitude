@@ -280,6 +280,10 @@
            class="sidebar-link {{ request()->routeIs('admin.shipping-rules.*') ? 'active' : '' }}">
             <i class="bi bi-truck"></i> Shipping Rules
         </a>
+        <a href="{{ route('admin.shipping-rates.index') }}"
+           class="sidebar-link {{ request()->routeIs('admin.shipping-rates.*') ? 'active' : '' }}">
+            <i class="bi bi-globe"></i> Country Shipping Rates
+        </a>
         <a href="{{ route('admin.redirects.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.redirects.*') ? 'active' : '' }}">
             <i class="bi bi-signpost-split"></i> URL Redirects
@@ -384,6 +388,29 @@
         sidebar.classList.contains('show') ? close() : open();
     });
     if (overlay) overlay.addEventListener('click', close);
+
+    // Preserve sidebar scroll position across page reloads
+    if (sidebar) {
+        const savedScroll = localStorage.getItem('admin_sidebar_scroll');
+        if (savedScroll) {
+            sidebar.scrollTop = parseInt(savedScroll, 10);
+        }
+        
+        // Listen to link clicks or form submissions to save position
+        const saveScrollPos = function () {
+            localStorage.setItem('admin_sidebar_scroll', sidebar.scrollTop);
+        };
+
+        const links = sidebar.querySelectorAll('.sidebar-link, .storefront-link');
+        links.forEach(function (link) {
+            link.addEventListener('click', saveScrollPos);
+        });
+
+        const logoutForm = sidebar.querySelector('form');
+        if (logoutForm) {
+            logoutForm.addEventListener('submit', saveScrollPos);
+        }
+    }
 })();
 </script>
 @stack('scripts')

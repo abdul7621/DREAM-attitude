@@ -7,11 +7,19 @@
         <div class="d-flex align-items-center" style="gap: 16px;">
             <h1 class="h4 mb-0">Products</h1>
             <!-- Search Form -->
-            <form action="{{ route('admin.products.index') }}" method="GET" class="d-flex mb-0">
-                <input type="text" name="search" class="form-control form-control-sm" placeholder="Search by name or SKU..." value="{{ request('search') }}" style="min-width: 250px;">
-                <button type="submit" class="btn btn-sm btn-outline-secondary ms-1"><i class="bi bi-search"></i></button>
-                @if(request()->has('search'))
-                    <a href="{{ route('admin.products.index') }}" class="btn btn-sm btn-outline-danger ms-1" title="Clear Search"><i class="bi bi-x-lg"></i></a>
+            <form action="{{ route('admin.products.index') }}" method="GET" class="d-flex mb-0 align-items-center gap-2">
+                <input type="text" name="search" class="form-control form-control-sm" placeholder="Search by name or SKU..." value="{{ request('search') }}" style="min-width: 200px;">
+                
+                <select name="category_id" class="form-select form-select-sm" style="min-width: 150px;" onchange="this.form.submit()">
+                    <option value="">All Categories</option>
+                    @foreach($categories as $cat)
+                        <option value="{{ $cat->id }}" @selected(request('category_id') == $cat->id)>{{ $cat->name }}</option>
+                    @endforeach
+                </select>
+
+                <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="bi bi-search"></i></button>
+                @if(request()->filled('search') || request()->filled('category_id'))
+                    <a href="{{ route('admin.products.index') }}" class="btn btn-sm btn-outline-danger" title="Clear Filters"><i class="bi bi-x-lg"></i></a>
                 @endif
             </form>
         </div>
@@ -36,6 +44,7 @@
                 <thead>
                     <tr>
                         <th style="width: 40px;"><input type="checkbox" id="select-all" class="form-check-input"></th>
+                        <th style="width: 60px;">Image</th>
                         <th>Name</th>
                         <th>SKU</th>
                         <th>Category</th>
@@ -50,7 +59,19 @@
                             <input type="checkbox" name="ids[]" value="{{ $p->id }}" class="form-check-input row-checkbox">
                         </td>
                         <td>
-                            {{ $p->name }}
+                            @php
+                                $primaryImg = $p->images->first(fn($img) => $img->is_primary) ?? $p->images->first();
+                            @endphp
+                            @if($primaryImg)
+                                <img src="{{ asset('storage/' . $primaryImg->path) }}" alt="{{ $p->name }}" class="img-thumbnail rounded" style="width: 42px; height: 42px; object-fit: cover; padding: 1px; border: 1px solid #dee2e6;">
+                            @else
+                                <div class="rounded bg-light d-flex align-items-center justify-content-center border" style="width: 42px; height: 42px; color: #adb5bd;">
+                                    <i class="bi bi-image" style="font-size: 1.25rem;"></i>
+                                </div>
+                            @endif
+                        </td>
+                        <td>
+                            <span class="fw-semibold text-dark">{{ $p->name }}</span>
                             @if($p->trashed()) <span class="badge bg-warning text-dark ms-1">Archived</span> @endif
                         </td>
                         <td>{{ $p->sku ?? '—' }}</td>

@@ -170,8 +170,172 @@
                                 <label class="sf-label">Street/Area/Landmark (Optional)</label>
                                 <input type="text" name="address_line2" id="address_line2" value="{{ old('address_line2') }}" class="sf-input">
                             </div>
-                            <div style="display: none;">
-                                <input type="hidden" name="country" value="IN">
+                            <div class="col-12">
+                                <label class="sf-label">Country *</label>
+                                <select name="country" id="country" class="sf-input" required>
+                                    <option value="IN" selected>India</option>
+                                    <option value="US">United States</option>
+                                    <option value="GB">United Kingdom</option>
+                                    <option value="AE">United Arab Emirates</option>
+                                    <option value="CA">Canada</option>
+                                    <option value="AU">Australia</option>
+                                    <option value="SG">Singapore</option>
+                                    <option value="MY">Malaysia</option>
+                                    <option value="DE">Germany</option>
+                                    <option value="FR">France</option>
+                                    <option value="AF">Afghanistan</option>
+                                    <option value="AO">Angola</option>
+                                    <option value="AL">Albania</option>
+                                    <option value="AD">Andorra</option>
+                                    <option value="AR">Argentina</option>
+                                    <option value="AM">Armenia</option>
+                                    <option value="AT">Austria</option>
+                                    <option value="AZ">Azerbaijan</option>
+                                    <option value="BI">Burundi</option>
+                                    <option value="BE">Belgium</option>
+                                    <option value="BJ">Benin</option>
+                                    <option value="BF">Burkina Faso</option>
+                                    <option value="BD">Bangladesh</option>
+                                    <option value="BG">Bulgaria</option>
+                                    <option value="BH">Bahrain</option>
+                                    <option value="BS">Bahamas</option>
+                                    <option value="BA">Bosnia and Herzegovina</option>
+                                    <option value="BY">Belarus</option>
+                                    <option value="BZ">Belize</option>
+                                    <option value="BO">Bolivia</option>
+                                    <option value="BR">Brazil</option>
+                                    <option value="BB">Barbados</option>
+                                    <option value="BN">Brunei</option>
+                                    <option value="BT">Bhutan</option>
+                                    <option value="BW">Botswana</option>
+                                    <option value="CF">Central African Republic</option>
+                                    <option value="CH">Switzerland</option>
+                                    <option value="CL">Chile</option>
+                                    <option value="CN">China</option>
+                                    <option value="CM">Cameroon</option>
+                                    <option value="CD">Congo, Democratic Republic</option>
+                                    <option value="CG">Congo, Republic</option>
+                                    <option value="CO">Colombia</option>
+                                    <option value="KM">Comoros</option>
+                                    <option value="CV">Cape Verde</option>
+                                    <option value="CR">Costa Rica</option>
+                                    <option value="CU">Cuba</option>
+                                    <option value="CY">Cyprus</option>
+                                    <option value="CZ">Czech Republic</option>
+                                    <option value="DJ">Djibouti</option>
+                                    <option value="DM">Dominica</option>
+                                    <option value="DK">Denmark</option>
+                                    <option value="DO">Dominican Republic</option>
+                                    <option value="DZ">Algeria</option>
+                                    <option value="EC">Ecuador</option>
+                                    <option value="EG">Egypt</option>
+                                    <option value="ER">Eritrea</option>
+                                    <option value="ES">Spain</option>
+                                    <option value="EE">Estonia</option>
+                                    <option value="ET">Ethiopia</option>
+                                    <option value="FI">Finland</option>
+                                    <option value="FJ">Fiji</option>
+                                    <option value="GA">Gabon</option>
+                                    <option value="GE">Georgia</option>
+                                    <option value="GH">Ghana</option>
+                                    <option value="GN">Guinea</option>
+                                    <option value="GM">Gambia</option>
+                                    <option value="GQ">Equatorial Guinea</option>
+                                    <option value="GR">Greece</option>
+                                    <option value="GT">Guatemala</option>
+                                    <option value="GY">Guyana</option>
+                                    <option value="HN">Honduras</option>
+                                    <option value="HR">Croatia</option>
+                                    <option value="HT">Haiti</option>
+                                    <option value="HU">Hungary</option>
+                                    <option value="ID">Indonesia</option>
+                                    <option value="IE">Ireland</option>
+                                    <option value="IR">Iran</option>
+                                    <option value="IQ">Iraq</option>
+                                    <option value="IS">Iceland</option>
+                                    <option value="IL">Israel</option>
+                                    <option value="IT">Italy</option>
+                                    <option value="JM">Jamaica</option>
+                                    <option value="JO">Jordan</option>
+                                    <option value="JP">Japan</option>
+                                    <option value="KZ">Kazakhstan</option>
+                                    <option value="KE">Kenya</option>
+                                    <option value="KG">Kyrgyzstan</option>
+                                    <option value="KH">Cambodia</option>
+                                    <option value="KR">South Korea</option>
+                                    <option value="KW">Kuwait</option>
+                                    <option value="LA">Laos</option>
+                                    <option value="LB">Lebanon</option>
+                                    <option value="LY">Libya</option>
+                                    <option value="LK">Sri Lanka</option>
+                                    <option value="LT">Lithuania</option>
+                                    <option value="LU">Luxembourg</option>
+                                    <option value="LV">Latvia</option>
+                                    <option value="MA">Morocco</option>
+                                    <option value="MD">Moldova</option>
+                                    <option value="MG">Madagascar</option>
+                                    <option value="MV">Maldives</option>
+                                    <option value="MX">Mexico</option>
+                                    <option value="ML">Mali</option>
+                                    <option value="MT">Malta</option>
+                                    <option value="MM">Myanmar</option>
+                                    <option value="MN">Mongolia</option>
+                                    <option value="MZ">Mozambique</option>
+                                    <option value="MW">Malawi</option>
+                                    <option value="NA">Namibia</option>
+                                    <option value="NG">Nigeria</option>
+                                    <option value="NI">Nicaragua</option>
+                                    <option value="NL">Netherlands</option>
+                                    <option value="NO">Norway</option>
+                                    <option value="NP">Nepal</option>
+                                    <option value="NZ">New Zealand</option>
+                                    <option value="OM">Oman</option>
+                                    <option value="PK">Pakistan</option>
+                                    <option value="PA">Panama</option>
+                                    <option value="PE">Peru</option>
+                                    <option value="PH">Philippines</option>
+                                    <option value="PL">Poland</option>
+                                    <option value="KP">North Korea</option>
+                                    <option value="PT">Portugal</option>
+                                    <option value="PY">Paraguay</option>
+                                    <option value="QA">Qatar</option>
+                                    <option value="RO">Romania</option>
+                                    <option value="RU">Russia</option>
+                                    <option value="SA">Saudi Arabia</option>
+                                    <option value="SD">Sudan</option>
+                                    <option value="SE">Sweden</option>
+                                    <option value="SI">Slovenia</option>
+                                    <option value="SK">Slovakia</option>
+                                    <option value="SN">Senegal</option>
+                                    <option value="SO">Somalia</option>
+                                    <option value="SR">Suriname</option>
+                                    <option value="SS">South Sudan</option>
+                                    <option value="SV">El Salvador</option>
+                                    <option value="SY">Syria</option>
+                                    <option value="SZ">Swaziland</option>
+                                    <option value="TD">Chad</option>
+                                    <option value="TG">Togo</option>
+                                    <option value="TH">Thailand</option>
+                                    <option value="TJ">Tajikistan</option>
+                                    <option value="TL">East Timor</option>
+                                    <option value="TM">Turkmenistan</option>
+                                    <option value="TN">Tunisia</option>
+                                    <option value="TR">Turkey</option>
+                                    <option value="TT">Trinidad and Tobago</option>
+                                    <option value="TW">Taiwan</option>
+                                    <option value="TZ">Tanzania</option>
+                                    <option value="UA">Ukraine</option>
+                                    <option value="UG">Uganda</option>
+                                    <option value="UY">Uruguay</option>
+                                    <option value="UZ">Uzbekistan</option>
+                                    <option value="VC">Saint Vincent and Grenadines</option>
+                                    <option value="VE">Venezuela</option>
+                                    <option value="VN">Vietnam</option>
+                                    <option value="YE">Yemen</option>
+                                    <option value="ZA">South Africa</option>
+                                    <option value="ZM">Zambia</option>
+                                    <option value="ZW">Zimbabwe</option>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -486,114 +650,180 @@
         }
     }
 
-    // Pincode API
-    if (pinInput && cityInput && stateInput) {
-        pinInput.readOnly = false;
-        pinInput.removeAttribute('readonly');
+    // ── Country Selector Change Listener ─────────────────
+    const countrySelect = document.getElementById('country');
+    if (countrySelect) {
+        countrySelect.addEventListener('change', function() {
+            var country = this.value;
 
-        pinInput.addEventListener('input', function() {
-            this.value = this.value.replace(/[^0-9]/g, '');
-            
-            // Hide error while typing
-            const errEl = document.getElementById('pin_err');
-            if (errEl) errEl.classList.add('d-none');
-            this.classList.remove('is-invalid');
-            
-            if (this.value.length === 6) {
-                // Fetch
-                if (spinner) spinner.classList.remove('d-none');
-                this.readOnly = true;
-                
-                var processEnd = function() {
-                    pinInput.readOnly = false;
-                    pinInput.removeAttribute('readonly');
-                    if (spinner) spinner.classList.add('d-none');
-                };
+            // Reset input values to avoid old country state remaining
+            pinInput.value = '';
+            cityInput.value = '';
+            stateInput.value = '';
+            pinInput.classList.remove('is-invalid', 'is-valid');
+            cityInput.classList.remove('is-invalid', 'is-valid');
+            stateInput.classList.remove('is-invalid', 'is-valid');
 
-                fetch('https://api.postalpincode.in/pincode/' + this.value, {
-                    method: 'GET'
-                })
-                .then(function(res) { return res.json(); })
-                .then(function(data) {
-                    if (data && data[0] && data[0].Status === 'Success' && data[0].PostOffice && data[0].PostOffice.length > 0) {
-                        var info = data[0].PostOffice[0];
-                        cityInput.value = info.District;
-                        stateInput.value = info.State;
-                        
-                        cityInput.readOnly = true;
-                        stateInput.readOnly = true;
-                        cityInput.setAttribute('readonly', 'true');
-                        stateInput.setAttribute('readonly', 'true');
-                        
-                        if (errEl) errEl.classList.add('d-none');
-                        pinInput.classList.remove('is-invalid');
-                        pinInput.classList.add('is-valid');
-
-                        if (window.Store) {
-                            Store.emit('pincode:resolved', { city: info.District, state: info.State, pincode: pinInput.value });
-                        }
-
-                        // Trigger AJAX Quote
-                        if (typeof refreshShippingQuote === 'function') {
-                            refreshShippingQuote();
-                        }
-                    } else if (data && data[0] && data[0].Status === 'Error') {
-                        // Invalid PIN Case 3
-                        cityInput.value = '';
-                        stateInput.value = '';
-                        cityInput.readOnly = true;
-                        stateInput.readOnly = true;
-                        cityInput.setAttribute('readonly', 'true');
-                        stateInput.setAttribute('readonly', 'true');
-
-                        pinInput.classList.add('is-invalid');
-                        pinInput.classList.remove('is-valid');
-                        if (errEl) {
-                            errEl.textContent = 'Invalid PIN code. Please check.';
-                            errEl.classList.remove('d-none');
-                        }
-                    } else {
-                        // Valid PIN but API format unexpectedly changed / failed
-                        cityInput.readOnly = false;
-                        stateInput.readOnly = false;
-                        cityInput.removeAttribute('readonly');
-                        stateInput.removeAttribute('readonly');
-                        
-                        if (errEl) {
-                            errEl.textContent = 'Auto-fill failed, please enter manually.';
-                            errEl.classList.remove('d-none');
-                        }
-                    }
-                    processEnd();
-                })
-                .catch(function(err) {
-                    console.error("Postal API error: ", err);
-                    // API Fail Case 2
-                    cityInput.readOnly = false;
-                    stateInput.readOnly = false;
-                    cityInput.removeAttribute('readonly');
-                    stateInput.removeAttribute('readonly');
-                    
-                    if (errEl) {
-                        errEl.textContent = 'Auto-fill failed, please enter manually.';
-                        errEl.classList.remove('d-none');
-                    }
-                    processEnd();
-                });
-            } else if (this.value.length > 0 && this.value.length < 6) {
-                // Keep readonly if less than 6 digits
-                cityInput.value = '';
-                stateInput.value = '';
+            if (country === 'IN') {
+                pinInput.maxLength = 6;
+                pinInput.inputMode = 'numeric';
+                pinInput.placeholder = '6-digit PIN code';
+                pinInput.pattern = '[0-9]{6}';
                 cityInput.readOnly = true;
                 stateInput.readOnly = true;
                 cityInput.setAttribute('readonly', 'true');
                 stateInput.setAttribute('readonly', 'true');
-                this.classList.remove('is-valid');
+
+                // Show COD
+                var codCard = document.getElementById('card_cod');
+                if (codCard) codCard.style.display = 'block';
+            } else {
+                pinInput.removeAttribute('maxLength');
+                pinInput.removeAttribute('inputMode');
+                pinInput.placeholder = 'ZIP / Postal Code';
+                pinInput.removeAttribute('pattern');
+                cityInput.readOnly = false;
+                stateInput.readOnly = false;
+                cityInput.removeAttribute('readonly');
+                stateInput.removeAttribute('readonly');
+
+                // Hide COD and select online gateway
+                var codCard = document.getElementById('card_cod');
+                if (codCard) {
+                    codCard.style.display = 'none';
+                    var codRadio = codCard.querySelector('input[type="radio"]');
+                    if (codRadio && codRadio.checked) {
+                        // Check the first available online payment radio
+                        var firstOnlineRadio = document.querySelector('input[name="payment_method"]:not([value="cod"])');
+                        if (firstOnlineRadio) {
+                            firstOnlineRadio.checked = true;
+                            updatePaymentCards();
+                        }
+                    }
+                }
+            }
+
+            refreshShippingQuote();
+        });
+    }
+
+    // Pincode API
+    if (pinInput && cityInput && stateInput) {
+        pinInput.addEventListener('input', function() {
+            var country = countrySelect ? countrySelect.value : 'IN';
+            if (country === 'IN') {
+                this.value = this.value.replace(/[^0-9]/g, '');
+
+                // Hide error while typing
+                const errEl = document.getElementById('pin_err');
+                if (errEl) errEl.classList.add('d-none');
+                this.classList.remove('is-invalid');
+
+                if (this.value.length === 6) {
+                    // Fetch
+                    if (spinner) spinner.classList.remove('d-none');
+                    this.readOnly = true;
+
+                    var processEnd = function() {
+                        pinInput.readOnly = false;
+                        pinInput.removeAttribute('readonly');
+                        if (spinner) spinner.classList.add('d-none');
+                    };
+
+                    fetch('https://api.postalpincode.in/pincode/' + this.value, {
+                        method: 'GET'
+                    })
+                    .then(function(res) { return res.json(); })
+                    .then(function(data) {
+                        if (data && data[0] && data[0].Status === 'Success' && data[0].PostOffice && data[0].PostOffice.length > 0) {
+                            var info = data[0].PostOffice[0];
+                            cityInput.value = info.District;
+                            stateInput.value = info.State;
+
+                            cityInput.readOnly = true;
+                            stateInput.readOnly = true;
+                            cityInput.setAttribute('readonly', 'true');
+                            stateInput.setAttribute('readonly', 'true');
+
+                            if (errEl) errEl.classList.add('d-none');
+                            pinInput.classList.remove('is-invalid');
+                            pinInput.classList.add('is-valid');
+
+                            if (window.Store) {
+                                Store.emit('pincode:resolved', { city: info.District, state: info.State, pincode: pinInput.value });
+                            }
+
+                            // Trigger AJAX Quote
+                            if (typeof refreshShippingQuote === 'function') {
+                                refreshShippingQuote();
+                            }
+                        } else if (data && data[0] && data[0].Status === 'Error') {
+                            cityInput.value = '';
+                            stateInput.value = '';
+                            cityInput.readOnly = true;
+                            stateInput.readOnly = true;
+                            cityInput.setAttribute('readonly', 'true');
+                            stateInput.setAttribute('readonly', 'true');
+
+                            pinInput.classList.add('is-invalid');
+                            pinInput.classList.remove('is-valid');
+                            if (errEl) {
+                                errEl.textContent = 'Invalid PIN code. Please check.';
+                                errEl.classList.remove('d-none');
+                            }
+                        } else {
+                            cityInput.readOnly = false;
+                            stateInput.readOnly = false;
+                            cityInput.removeAttribute('readonly');
+                            stateInput.removeAttribute('readonly');
+
+                            if (errEl) {
+                                errEl.textContent = 'Auto-fill failed, please enter manually.';
+                                errEl.classList.remove('d-none');
+                            }
+                        }
+                        processEnd();
+                    })
+                    .catch(function(err) {
+                        console.error("Postal API error: ", err);
+                        cityInput.readOnly = false;
+                        stateInput.readOnly = false;
+                        cityInput.removeAttribute('readonly');
+                        stateInput.removeAttribute('readonly');
+
+                        if (errEl) {
+                            errEl.textContent = 'Auto-fill failed, please enter manually.';
+                            errEl.classList.remove('d-none');
+                        }
+                        processEnd();
+                    });
+                } else if (this.value.length > 0 && this.value.length < 6) {
+                    cityInput.value = '';
+                    stateInput.value = '';
+                    cityInput.readOnly = true;
+                    stateInput.readOnly = true;
+                    cityInput.setAttribute('readonly', 'true');
+                    stateInput.setAttribute('readonly', 'true');
+                    this.classList.remove('is-valid');
+                }
+            } else {
+                // Alphanumeric ZIP/postal code formatting
+                this.value = this.value.toUpperCase();
+                const errEl = document.getElementById('pin_err');
+                if (errEl) errEl.classList.add('d-none');
+                this.classList.remove('is-invalid');
+
+                // Trigger quote refresh if ZIP is typed
+                if (this.value.length >= 3) {
+                    if (typeof refreshShippingQuote === 'function') {
+                        refreshShippingQuote();
+                    }
+                }
             }
         });
-        
+
         // Initial check if validation failed previously
-        if(pinInput.value.length === 6 && !cityInput.value) {
+        if(pinInput.value.length === 6 && !cityInput.value && (countrySelect ? countrySelect.value : 'IN') === 'IN') {
             pinInput.dispatchEvent(new Event('input'));
         }
     }
@@ -601,11 +831,22 @@
     if (phoneInput) {
         phoneInput.addEventListener('blur', function() {
             var val = this.value.trim().replace(/[\s\-]/g, '');
-            var isValid = /^(?:(?:\+|00)?91)?[6-9]\d{9}$/.test(val);
+            var country = countrySelect ? countrySelect.value : 'IN';
+            var isValid = false;
+            var errMsg = '';
+
+            if (country === 'IN') {
+                isValid = /^(?:(?:\+|00)?91)?[6-9]\d{9}$/.test(val);
+                errMsg = 'Enter a valid 10-digit phone number';
+            } else {
+                isValid = /^\+?[0-9\s\-]{7,18}$/.test(val);
+                errMsg = 'Enter a valid international phone number';
+            }
+
             if (!isValid) {
-                showError(this, 'Enter a valid 10-digit phone number');
+                showError(this, errMsg);
                 var pe = document.getElementById('phone_err');
-                if(pe) { pe.classList.remove('d-none'); pe.textContent = 'Enter a valid 10-digit phone number'; }
+                if(pe) { pe.classList.remove('d-none'); pe.textContent = errMsg; }
             } else {
                 hideError(this);
                 var pe = document.getElementById('phone_err');
@@ -638,16 +879,26 @@
         pinInput.addEventListener('blur', function() {
             if (this.readOnly) return; // API in progress
             var val = this.value.trim();
+            var country = countrySelect ? countrySelect.value : 'IN';
             var errEl = document.getElementById('pin_err');
-            if (val.length > 0 && val.length < 6) {
-                showError(this, 'PIN code must be exactly 6 digits');
-                if (errEl) {
-                    errEl.textContent = 'PIN code must be exactly 6 digits';
-                    errEl.classList.remove('d-none');
+
+            if (country === 'IN') {
+                if (val.length > 0 && val.length < 6) {
+                    showError(this, 'PIN code must be exactly 6 digits');
+                    if (errEl) {
+                        errEl.textContent = 'PIN code must be exactly 6 digits';
+                        errEl.classList.remove('d-none');
+                    }
+                } else if (val.length === 6) {
+                    if (errEl) errEl.classList.add('d-none');
+                    if (!this.classList.contains('is-invalid')) {
+                        hideError(this);
+                    }
                 }
-            } else if (val.length === 6) {
-                if (errEl) errEl.classList.add('d-none');
-                if (!this.classList.contains('is-invalid')) {
+            } else {
+                if (val.length > 0 && val.length < 3) {
+                    showError(this, 'ZIP code is too short');
+                } else if (val.length >= 3) {
                     hideError(this);
                 }
             }
@@ -657,12 +908,13 @@
     // ── Global Shipping Quote JS ──
     window.refreshShippingQuote = function() {
         var pin = (pinInput && pinInput.value) ? pinInput.value.trim() : '';
-        if (pin.length > 0 && pin.length !== 6) return; // Only block if partially typed
+        var country = countrySelect ? countrySelect.value : 'IN';
+        if (country === 'IN' && pin.length > 0 && pin.length !== 6) return;
 
         var method = document.querySelector('input[name="payment_method"]:checked');
         var methodVal = method ? method.value : '';
 
-        var url = '{{ route("checkout.shipping.quote") }}?postal_code=' + encodeURIComponent(pin) + '&payment_method=' + encodeURIComponent(methodVal);
+        var url = '{{ route("checkout.shipping.quote") }}?postal_code=' + encodeURIComponent(pin) + '&payment_method=' + encodeURIComponent(methodVal) + '&country=' + encodeURIComponent(country);
 
         fetch(url, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -699,14 +951,21 @@
     // Analytics and Form Submit
     var form = document.getElementById('checkout-form');
     if (!form) return;
-    
+
     form.addEventListener('submit', function (e) {
         // Run validations manually
         var hasError = false;
+        var country = countrySelect ? countrySelect.value : 'IN';
         var phoneVal = phoneInput ? phoneInput.value.trim().replace(/[\s\-]/g, '') : '';
-        if (phoneInput && !(/^(?:(?:\+|00)?91)?[6-9]\d{9}$/.test(phoneVal))) {
-            showError(phoneInput, 'Enter a valid 10-digit phone number');
-            hasError = true;
+
+        if (phoneInput) {
+            var isPhoneValid = country === 'IN'
+                ? /^(?:(?:\+|00)?91)?[6-9]\d{9}$/.test(phoneVal)
+                : /^\+?[0-9\s\-]{7,18}$/.test(phoneVal);
+            if (!isPhoneValid) {
+                showError(phoneInput, country === 'IN' ? 'Enter a valid 10-digit phone number' : 'Enter a valid international phone number');
+                hasError = true;
+            }
         }
         if (nameInput && nameInput.value.trim().length < 3) {
             showError(nameInput, 'Please enter your full name');
@@ -716,9 +975,19 @@
             showError(addressInput, 'Please enter a valid complete address');
             hasError = true;
         }
-        if (pinInput && pinInput.value.trim().length !== 6) {
-            showError(pinInput, 'PIN code must be exactly 6 digits');
-            hasError = true;
+        if (pinInput) {
+            var pinVal = pinInput.value.trim();
+            if (country === 'IN') {
+                if (pinVal.length !== 6) {
+                    showError(pinInput, 'PIN code must be exactly 6 digits');
+                    hasError = true;
+                }
+            } else {
+                if (pinVal.length < 3) {
+                    showError(pinInput, 'Please enter a valid ZIP code');
+                    hasError = true;
+                }
+            }
         }
 
         if(hasError) {
@@ -735,17 +1004,16 @@
             document.getElementById('billing_state').value = document.getElementById('state').value;
             document.getElementById('billing_address_line1').value = document.getElementById('address_line1').value;
         }
-        
+
         var btn = document.getElementById('submitBtn');
         if(btn) {
-            if(btn.dataset.submitting === 'true') { 
-                e.preventDefault(); 
-                return; 
+            if(btn.dataset.submitting === 'true') {
+                e.preventDefault();
+                return;
             }
             btn.dataset.submitting = 'true';
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Processing...';
             btn.classList.add('disabled');
-            // Async disable to allow form to actually submit before disabling
             setTimeout(function() { btn.disabled = true; }, 50);
         }
 
@@ -768,8 +1036,6 @@
                 ]
             }
         });
-        // InitiateCheckout already fires on page load (Fix #15 — dedup guarded)
-        // Do NOT fire again on submit to avoid double events
     });
 })();
 </script>

@@ -24,7 +24,9 @@ class ProductController extends Controller
 
     public function index(Request $request): View
     {
-        $query = Product::withTrashed()->with('category')->latest();
+        $categories = Category::query()->orderBy('name')->get(['id', 'name']);
+
+        $query = Product::withTrashed()->with(['category', 'images'])->latest();
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
@@ -33,9 +35,13 @@ class ProductController extends Controller
             });
         }
 
+        if ($categoryId = $request->input('category_id')) {
+            $query->where('category_id', $categoryId);
+        }
+
         $products = $query->paginate(30)->withQueryString();
 
-        return view('admin.products.index', compact('products'));
+        return view('admin.products.index', compact('products', 'categories'));
     }
 
     public function create(): View

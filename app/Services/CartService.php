@@ -235,7 +235,7 @@ class CartService
     /**
      * @return array{subtotal: string, discount: string, shipping: string, tax: string, grand: string, coupon: ?Coupon}
      */
-    public function computeTotals(string $postalCode = '', ?string $paymentMethod = null): array
+    public function computeTotals(string $postalCode = '', ?string $paymentMethod = null, ?string $country = null): array
     {
         $subtotal = $this->subtotalFormatted();
         $coupon = $this->getAppliedCoupon();
@@ -254,7 +254,7 @@ class CartService
         }
         $discount = $coupon ? $this->coupons->discountAmount($coupon, $subtotal) : '0.00';
         $pc = trim($postalCode);
-        $shipping = $this->shipping->quote($pc, $paymentMethod, $this->totalWeightGrams(), $subtotal);
+        $shipping = $this->shipping->quote($pc, $paymentMethod, $this->totalWeightGrams(), $subtotal, $country);
         
         $afterDisc = $this->subMoney($subtotal, $discount);
         

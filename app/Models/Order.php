@@ -69,6 +69,8 @@ class Order extends Model
         'state',
         'postal_code',
         'country',
+        'country_code',
+        'country_name',
         'subtotal',
         'shipping_total',
         'discount_total',

@@ -31,7 +31,7 @@ class OrderService
             throw new RuntimeException(__('Your cart is empty.'));
         }
 
-        $totals = $this->cartService->computeTotals($data['postal_code'], 'cod');
+        $totals = $this->cartService->computeTotals($data['postal_code'], 'cod', $data['country'] ?? 'IN');
 
         $order = DB::transaction(function () use ($cart, $data, $lines, $totals): Order {
             $this->assertAndLockStock($lines);
@@ -48,6 +48,8 @@ class OrderService
                 'state' => $data['state'],
                 'postal_code' => $data['postal_code'],
                 'country' => $data['country'] ?? 'IN',
+                'country_code' => $data['country_code'] ?? ($data['country'] ?? 'IN'),
+                'country_name' => $data['country_name'] ?? 'India',
                 'subtotal' => $totals['subtotal'],
                 'shipping_total' => $totals['shipping'],
                 'discount_total' => $totals['discount'],
@@ -143,7 +145,7 @@ class OrderService
             throw new RuntimeException(__('Your cart is empty.'));
         }
 
-        $totals = $this->cartService->computeTotals($data['postal_code'], $data['payment_method']);
+        $totals = $this->cartService->computeTotals($data['postal_code'], $data['payment_method'], $data['country'] ?? 'IN');
 
         // We have removed `findReusableOrder` option because updating an existing 
         // order grand_total without updating order lines creates invoice corruption.
@@ -165,6 +167,8 @@ class OrderService
                 'state' => $data['state'],
                 'postal_code' => $data['postal_code'],
                 'country' => $data['country'] ?? 'IN',
+                'country_code' => $data['country_code'] ?? ($data['country'] ?? 'IN'),
+                'country_name' => $data['country_name'] ?? 'India',
                 'subtotal' => $totals['subtotal'],
                 'shipping_total' => $totals['shipping'],
                 'discount_total' => $totals['discount'],

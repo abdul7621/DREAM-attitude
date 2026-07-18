@@ -233,8 +233,17 @@
             @endforeach
         </div>
         <div class="mb-3">
-            <label class="form-label">Add images</label>
-            <input type="file" name="images[]" class="form-control" multiple accept="image/*">
+            <label class="form-label fw-bold">Add Images</label>
+            <div class="sf-drag-drop-zone border border-2 border-dashed border-primary rounded p-4 text-center bg-light position-relative" id="dragDropZone" style="cursor: pointer; transition: all 0.2s ease;">
+                <input type="file" name="images[]" id="imagesInput" class="position-absolute top-0 start-0 w-100 h-100 opacity-0" multiple accept="image/*" style="cursor: pointer; z-index: 2;">
+                <div class="py-3 text-muted">
+                    <i class="bi bi-cloud-arrow-up-fill text-primary fs-1 mb-2"></i>
+                    <p class="mb-1 fw-bold">Drag & Drop Images here or click to browse</p>
+                    <p class="small text-secondary mb-0">Supports JPG, PNG, WEBP, AVIF (Max 5MB each)</p>
+                </div>
+            </div>
+            {{-- Live Previews --}}
+            <div class="row g-2 mt-2" id="liveImagePreviewContainer"></div>
         </div>
 
         <button type="submit" class="btn btn-primary">Update</button>
@@ -284,6 +293,70 @@
             if (this.checked) wrap.classList.remove('d-none');
             else wrap.classList.add('d-none');
         });
+    }
+
+    // Drag & Drop Image Uploader logic
+    const zone = document.getElementById('dragDropZone');
+    const input = document.getElementById('imagesInput');
+    const previewContainer = document.getElementById('liveImagePreviewContainer');
+
+    if (zone && input && previewContainer) {
+        ['dragenter', 'dragover'].forEach(eventName => {
+            zone.addEventListener(eventName, function (e) {
+                e.preventDefault();
+                zone.style.borderColor = 'var(--bs-success)';
+                zone.style.background = '#e9f5ec';
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            zone.addEventListener(eventName, function (e) {
+                e.preventDefault();
+                zone.style.borderColor = '';
+                zone.style.background = '';
+            }, false);
+        });
+
+        input.addEventListener('change', function () {
+            previewContainer.innerHTML = '';
+            const files = Array.from(input.files);
+            
+            if (files.length > 0) {
+                files.forEach((file, index) => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            const col = document.createElement('div');
+                            col.className = 'col-6 col-md-3';
+                            col.innerHTML = `
+                                <div class="border rounded p-2 bg-white position-relative shadow-sm" style="height: 100%;">
+                                    <img src="${e.target.result}" class="img-fluid rounded mb-1" style="height: 120px; width: 100%; object-fit: cover;">
+                                    <div class="small text-truncate fw-semibold text-dark">${file.name}</div>
+                                    <div class="small text-secondary">${(file.size / 1024).toFixed(0)} KB</div>
+                                    <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 rounded-circle p-1 d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; font-size: 10px;" onclick="window.removeSelectedFile(${index})">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </div>
+                            `;
+                            previewContainer.appendChild(col);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+        });
+
+        window.removeSelectedFile = function (indexToRemove) {
+            const dt = new DataTransfer();
+            const files = input.files;
+            for (let i = 0; i < files.length; i++) {
+                if (i !== indexToRemove) {
+                    dt.items.add(files[i]);
+                }
+            }
+            input.files = dt.files;
+            input.dispatchEvent(new Event('change'));
+        };
     }
 })();
 </script>

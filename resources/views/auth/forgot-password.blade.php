@@ -1,6 +1,6 @@
 @extends('layouts.storefront')
 
-@section('title', 'Login')
+@section('title', 'Reset Password')
 
 @section('content')
 <section class="sf-section">
@@ -14,40 +14,25 @@
             @else
                 <div class="logo">{{ config('app.name') }}</div>
             @endif
-            <h1 style="color: var(--color-text-primary); font-size: 18px; text-align: center; margin-bottom: 24px; text-transform: uppercase;">Login</h1>
+            <h1 style="color: var(--color-text-primary); font-size: 18px; text-align: center; margin-bottom: 8px; text-transform: uppercase;">Reset Password</h1>
+            <p style="color: var(--color-text-secondary); font-size: 13px; text-align: center; margin-bottom: 24px;">Enter your email address and we will send you a password reset link.</p>
             @if (session('status'))
                 <div style="background: rgba(72, 187, 120, 0.1); border: 1px solid #48bb78; color: #48bb78; padding: 12px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 24px;">{{ session('status') }}</div>
-            @endif
-            @if (session('warning'))
-                <div style="background: rgba(237, 137, 54, 0.1); border: 1px solid #ed8936; color: #ed8936; padding: 12px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 24px;">{{ session('warning') }}</div>
             @endif
             @if ($errors->any())
                 <div style="background: rgba(197, 48, 48, 0.1); border: 1px solid var(--color-error); color: var(--color-error); padding: 12px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 24px;">{{ $errors->first() }}</div>
             @endif
-            <form method="post" action="{{ route('login') }}">
+            <form method="post" action="{{ route('password.email') }}">
                 @csrf
-                <div style="margin-bottom: 16px;">
+                <div style="margin-bottom: 24px;">
                     <label class="sf-label">Email</label>
                     <input type="email" name="email" value="{{ old('email') }}" class="sf-input" required autofocus>
                 </div>
-                <div style="margin-bottom: 24px;">
-                    <label class="sf-label">Password</label>
-                    <input type="password" name="password" class="sf-input" required>
-                </div>
-                <div style="text-align: right; margin-bottom: 8px;">
-                    <a href="{{ route('password.request') }}" style="color: var(--color-gold); font-size: 12px; text-decoration: none;">Forgot password?</a>
-                </div>
-                <div style="margin-bottom: 24px; display: flex; align-items: center; gap: 8px;">
-                    <input type="checkbox" name="remember" id="r1" value="1" style="accent-color: var(--color-gold);">
-                    <label for="r1" style="color: var(--color-text-secondary); font-size: 12px;">Remember me</label>
-                </div>
-                <button type="submit" class="sf-btn-primary">Sign in</button>
+                <button type="submit" class="sf-btn-primary">Send Reset Link</button>
             </form>
-            @if(Route::has('register'))
             <div class="sf-auth-link">
-                Don't have an account? <a href="{{ route('register') }}">Sign up</a>
+                <a href="{{ route('login') }}">Back to Login</a>
             </div>
-            @endif
         </div>
     </div>
 </section>
