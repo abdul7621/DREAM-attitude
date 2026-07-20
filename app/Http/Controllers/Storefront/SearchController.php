@@ -148,24 +148,10 @@ class SearchController extends Controller
         $like = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $q).'%';
         $items = collect();
 
-        // 1. Matches in Brands
-        $matchedBrands = \App\Models\Brand::where('is_active', true)
-            ->where('name', 'like', $like)
-            ->limit(2)
-            ->get();
-        foreach ($matchedBrands as $brand) {
-            $items->push([
-                'title' => $brand->name,
-                'type'  => 'brand',
-                'url'   => route('brand.show', $brand->slug),
-                'image' => $brand->logo ? asset('storage/' . $brand->logo) : null,
-            ]);
-        }
-
-        // 2. Matches in Categories
+        // 1. Matches in Categories
         $matchedCategories = \App\Models\Category::where('is_active', true)
             ->where('name', 'like', $like)
-            ->limit(3)
+            ->limit(4)
             ->get();
         foreach ($matchedCategories as $cat) {
             $items->push([
@@ -175,13 +161,12 @@ class SearchController extends Controller
             ]);
         }
 
-        // 3. Matches in Products (name, sku, brand, short_description, tags)
+        // 2. Matches in Products (name, sku, short_description)
         $products = Product::query()
             ->where('status', Product::STATUS_ACTIVE)
             ->where(function ($query) use ($like): void {
                 $query->where('name', 'like', $like)
                       ->orWhere('sku', 'like', $like)
-                      ->orWhere('brand', 'like', $like)
                       ->orWhere('short_description', 'like', $like);
             })
             ->with(['variants', 'images'])
@@ -197,8 +182,7 @@ class SearchController extends Controller
             $products = Product::query()
                 ->where('status', Product::STATUS_ACTIVE)
                 ->where(function ($query) use ($fuzzyLike, $firstWord): void {
-                    $query->where('name', 'like', $fuzzyLike)
-                          ->orWhere('brand', 'like', $fuzzyLike);
+                    $query->where('name', 'like', $fuzzyLike);
                     if (DB::connection()->getDriverName() === 'mysql' && strlen($firstWord) >= 3) {
                         $query->orWhereRaw('SOUNDEX(name) = SOUNDEX(?)', [$firstWord]);
                     }

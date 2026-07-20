@@ -112,6 +112,10 @@
             $carrierKey = strtolower($ship->carrier ?? '');
             if (str_contains($carrierKey, 'ithink')) {
                 $effectiveTrackingUrl = 'https://ithinklogistics.com/track?awb=' . urlencode($ship->awb);
+            } elseif (str_contains($carrierKey, 'shiprocket')) {
+                $effectiveTrackingUrl = 'https://shiprocket.co/tracking/' . urlencode($ship->awb);
+            } elseif (str_contains($carrierKey, 'nimbus')) {
+                $effectiveTrackingUrl = 'https://nimbuspost.com/track/' . urlencode($ship->awb);
             } elseif (str_contains($carrierKey, 'delhivery')) {
                 $effectiveTrackingUrl = 'https://www.delhivery.com/track/package/' . urlencode($ship->awb);
             } elseif (str_contains($carrierKey, 'dtdc')) {
@@ -140,7 +144,7 @@
                     <i class="bi bi-geo-alt-fill"></i> Track Package Live ➔
                 </a>
             @endif
-            <a href="https://wa.me/919876543210?text={{ urlencode('Hi Dream Attitude Team, I need help with my Order #'.$order->order_number.($ship->awb ? ' (AWB: '.$ship->awb.')' : '')) }}" target="_blank" style="background:#25D366;color:#FFFFFF;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;text-decoration:none;padding:10px 20px;border-radius:var(--radius-sm);display:inline-flex;align-items:center;gap:6px;">
+            <a href="https://wa.me/917096206785?text={{ urlencode('Hi Dream Attitude Team, I need help with my Order #'.$order->order_number.($ship->awb ? ' (AWB: '.$ship->awb.')' : '')) }}" target="_blank" style="background:#25D366;color:#FFFFFF;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;text-decoration:none;padding:10px 20px;border-radius:var(--radius-sm);display:inline-flex;align-items:center;gap:6px;">
                 <i class="bi bi-whatsapp"></i> WhatsApp Order Support
             </a>
         </div>

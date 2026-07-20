@@ -99,9 +99,9 @@ function closeWaMenu() {
 
 document.addEventListener('DOMContentLoaded', function() {
     // Generate custom pre-filled message depending on page context
-    var beautyNum = '919999999999'; // Configurable default WhatsApp numbers
-    var ordersNum = '919999999999';
-    var bulkNum   = '919999999999';
+    var beautyNum = '917096206785';
+    var ordersNum = '917096206785';
+    var bulkNum   = '917096206785';
     
     var currentUrl = window.location.href;
     var pdpNameEl = document.querySelector('.sf-section-title');

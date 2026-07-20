@@ -85,7 +85,7 @@ class ReviewController extends Controller
             ReviewVote::create([
                 'user_id' => $userId,
                 'review_id' => $review->id,
-                'vote_type' => 'up'
+                'session_id' => session()->getId(),
             ]);
             $review->increment('helpful_count');
             return response()->json([
