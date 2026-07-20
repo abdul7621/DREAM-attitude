@@ -32,8 +32,11 @@ class LoyaltyService
             return;
         }
 
-        // Rule: ₹100 Spent = 1 Point = ₹1 Store Credit (1% reward rate)
-        $creditAmount = floor((float) $order->grand_total / 100);
+        // Rule: 5% Flat Cashback Reward Points on Grand Total (capped at ₹500 per order)
+        $creditAmount = round(((float) $order->grand_total) * 0.05, 2);
+        if ($creditAmount > 500) {
+            $creditAmount = 500;
+        }
         if ($creditAmount <= 0) {
             return;
         }

@@ -7,33 +7,41 @@
 
 <div style="display:grid;gap:24px;grid-template-columns:1fr;">
 
-    {{-- Stats and Redemption form --}}
-    <div class="sf-account-card">
-        <div style="font-weight:600;color:var(--color-text-primary);font-size:14px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--color-border);">Wallet Summary</div>
-        
-        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));gap:24px;align-items:start;">
+    {{-- Stats and VIP Tier Card --}}
+    @php
+        $totalSpend = (float) \App\Models\Order::where('user_id', auth()->id())
+            ->where('order_status', 'delivered')
+            ->sum('grand_total');
+
+        $tierName = 'Bronze Beauty Member';
+        $tierColor = '#CD7F32';
+        $tierIcon = 'bi-award-fill';
+
+        if ($totalSpend > 25000) {
+            $tierName = 'Platinum Elite Member';
+            $tierColor = '#E5E4E2';
+            $tierIcon = 'bi-gem';
+        } elseif ($totalSpend > 10000) {
+            $tierName = 'Gold Luxe Member';
+            $tierColor = '#C9A84C';
+            $tierIcon = 'bi-stars';
+        } elseif ($totalSpend > 2500) {
+            $tierName = 'Silver Glow Member';
+            $tierColor = '#C0C0C0';
+            $tierIcon = 'bi-shield-shaded';
+        }
+    @endphp
+    <div class="sf-account-card" style="background: linear-gradient(135deg, #111827 0%, #1F2937 100%); border: none; padding: 28px; border-radius: 16px; color: #FFFFFF; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
             <div>
-                <div style="font-size: 13px; color: var(--color-text-secondary);">Available Points Balance</div>
-                <div style="font-size: 36px; font-weight: 700; color: var(--color-gold); margin-top: 8px;">{{ number_format($loyaltyBalance, 0) }} pts</div>
-                <div style="font-size: 11px; color: var(--color-text-muted); margin-top: 8px; line-height: 1.5;">
-                    * 1 Point = ₹1 Store Discount. Points are earned automatically on order delivery.
+                <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.1);padding:4px 12px;border-radius:20px;margin-bottom:12px;font-size:11px;font-weight:700;letter-spacing:0.5px;color:{{ $tierColor }};">
+                    <i class="bi {{ $tierIcon }}"></i> {{ $tierName }}
                 </div>
+                <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.75; font-weight: 700; color: #E5E7EB; display: block; margin-bottom: 6px;">Available Balance</span>
+                <span style="font-size: 38px; font-weight: 800; color: var(--color-gold); line-height: 1;">₹{{ number_format($loyaltyBalance, 2) }}</span>
+                <span style="font-size: 12px; opacity: 0.85; display: block; margin-top: 8px; color: #F3F4F6;">Get <strong>5% flat cashback</strong> reward points automatically on the grand total of every delivered order. 1 Point = ₹1.</span>
             </div>
-            
-            <div style="background:var(--color-bg-elevated); border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:20px;">
-                <div style="font-weight:600; color:var(--color-text-primary); font-size:13px; margin-bottom:12px;">Convert Points to Coupon</div>
-                <form action="{{ route('account.loyalty.redeem') }}" method="post">
-                    @csrf
-                    <div style="margin-bottom:12px;">
-                        <label class="sf-label">Redemption Amount (Min 10 pts)</label>
-                        <input type="number" name="amount" class="sf-input" placeholder="Enter points to convert..." min="10" max="{{ (int) $loyaltyBalance }}" required style="background: #fff;">
-                    </div>
-                    <button type="submit" class="sf-btn-primary" style="width:100%; height:40px; font-size:12px;">Redeem Now</button>
-                </form>
-                <div style="font-size:10px; color:var(--color-text-muted); margin-top:8px; text-align:center;">
-                    Generated coupon is restricted to your account and valid for 90 days.
-                </div>
-            </div>
+            <i class="bi bi-gem" style="font-size: 40px; color: var(--color-gold); opacity: 0.9;"></i>
         </div>
     </div>
 

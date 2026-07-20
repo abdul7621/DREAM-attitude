@@ -110,11 +110,36 @@ class SearchController extends Controller
     public function suggest(Request $request): JsonResponse
     {
         $q = trim((string) $request->query('q', ''));
+        
+        // If query is empty, return dynamic active categories & featured products
         if (strlen($q) < 1) {
-            return response()->json(['items' => []]);
+            $categories = \App\Models\Category::where('is_active', true)->limit(6)->get(['id', 'name', 'slug']);
+            $bestsellers = Product::where('status', Product::STATUS_ACTIVE)
+                ->where('is_bestseller', true)
+                ->with(['variants', 'images'])
+                ->limit(4)
+                ->get();
+            if ($bestsellers->isEmpty()) {
+                $bestsellers = Product::where('status', Product::STATUS_ACTIVE)
+                    ->with(['variants', 'images'])
+                    ->limit(4)
+                    ->get();
+            }
+
+            $items = collect();
+            foreach ($categories as $cat) {
+                $items->push([
+                    'title' => $cat->name,
+                    'type'  => 'category',
+                    'url'   => route('category.show', $cat->slug),
+                ]);
+            }
+            $this->formatProductsResponse($bestsellers, $items);
+
+            return response()->json(['items' => $items, 'is_default' => true]);
         }
 
-        // Apply synonym mapping in suggestion too
+        // Apply synonym mapping in suggestion
         $synonym = SearchSynonym::where('term', strtolower($q))->first();
         if ($synonym) {
             $q = $synonym->replace_with;
@@ -140,7 +165,7 @@ class SearchController extends Controller
         // 2. Matches in Categories
         $matchedCategories = \App\Models\Category::where('is_active', true)
             ->where('name', 'like', $like)
-            ->limit(2)
+            ->limit(3)
             ->get();
         foreach ($matchedCategories as $cat) {
             $items->push([
@@ -150,18 +175,63 @@ class SearchController extends Controller
             ]);
         }
 
-        // 3. Matches in Products
+        // 3. Matches in Products (name, sku, brand, short_description, tags)
         $products = Product::query()
             ->where('status', Product::STATUS_ACTIVE)
             ->where(function ($query) use ($like): void {
                 $query->where('name', 'like', $like)
                       ->orWhere('sku', 'like', $like)
-                      ->orWhere('brand', 'like', $like);
+                      ->orWhere('brand', 'like', $like)
+                      ->orWhere('short_description', 'like', $like);
             })
             ->with(['variants', 'images'])
             ->limit(6)
             ->get();
 
+        // Fuzzy Fallback if exact LIKE matches are 0
+        if ($products->isEmpty() && strlen($q) >= 2) {
+            $words = preg_split('/[^a-zA-Z0-9]+/', strtolower($q));
+            $firstWord = $words[0] ?? $q;
+            
+            $fuzzyLike = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $firstWord).'%';
+            $products = Product::query()
+                ->where('status', Product::STATUS_ACTIVE)
+                ->where(function ($query) use ($fuzzyLike, $firstWord): void {
+                    $query->where('name', 'like', $fuzzyLike)
+                          ->orWhere('brand', 'like', $fuzzyLike);
+                    if (DB::connection()->getDriverName() === 'mysql' && strlen($firstWord) >= 3) {
+                        $query->orWhereRaw('SOUNDEX(name) = SOUNDEX(?)', [$firstWord]);
+                    }
+                })
+                ->with(['variants', 'images'])
+                ->limit(6)
+                ->get();
+        }
+
+        // Bestsellers fallback if products still empty
+        $isFallback = false;
+        if ($products->isEmpty()) {
+            $isFallback = true;
+            $products = Product::where('status', Product::STATUS_ACTIVE)
+                ->where('is_bestseller', true)
+                ->with(['variants', 'images'])
+                ->limit(4)
+                ->get();
+            if ($products->isEmpty()) {
+                $products = Product::where('status', Product::STATUS_ACTIVE)
+                    ->with(['variants', 'images'])
+                    ->limit(4)
+                    ->get();
+            }
+        }
+
+        $this->formatProductsResponse($products, $items);
+
+        return response()->json(['items' => $items, 'is_fallback' => $isFallback]);
+    }
+
+    private function formatProductsResponse($products, $items): void
+    {
         $pricing = app(\App\Services\PricingService::class);
         $currencySvc = app(\App\Services\CurrencyService::class);
 
@@ -195,7 +265,5 @@ class SearchController extends Controller
                 'variant_title' => ($variant && $variant->title !== 'Default Title') ? $variant->title : null,
             ]);
         }
-
-        return response()->json(['items' => $items]);
     }
 }

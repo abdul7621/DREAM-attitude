@@ -135,7 +135,7 @@
         <form action="{{ route('search') }}" method="get" role="search" class="sf-desktop-search">
             <input type="search" name="q" class="search-input" placeholder="Search products…" aria-label="Search">
         </form>
-        <button type="button" class="sf-search-toggle sf-mobile-only" onclick="toggleMobileSearch()" aria-label="Search" style="background:none; border:none; color:var(--color-gold); font-size:20px; cursor:pointer; display:none;">
+        <button type="button" class="sf-search-toggle sf-mobile-only" aria-label="Search" style="background:none; border:none; color:var(--color-text-primary); font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:4px;">
             <i class="bi bi-search"></i>
         </button>
         @auth
