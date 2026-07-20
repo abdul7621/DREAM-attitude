@@ -46,6 +46,11 @@ class Product extends Model
         ];
     }
 
+    public function getMetaAttribute($value)
+    {
+        return is_array($value) ? $value : (json_decode((string) $value, true) ?: []);
+    }
+
     protected static function booted(): void
     {
         $flush = function () {

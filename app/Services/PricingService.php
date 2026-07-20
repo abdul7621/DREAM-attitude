@@ -23,7 +23,7 @@ class PricingService
         // 1. Check strict volume pricing (bundles) from product meta
         $product = $variant->product;
         if ($product) {
-            $volumePricingRaw = $product->meta['volume_pricing'] ?? null;
+            $volumePricingRaw = is_array($product->meta) ? ($product->meta['volume_pricing'] ?? null) : null;
             if (!empty($volumePricingRaw)) {
                 $volumePricing = is_string($volumePricingRaw) ? json_decode($volumePricingRaw, true) : $volumePricingRaw;
                 if (is_array($volumePricing)) {

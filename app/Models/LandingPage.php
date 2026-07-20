@@ -48,6 +48,36 @@ class LandingPage extends Model
         ];
     }
 
+    public function getProductsAttribute($value)
+    {
+        return is_array($value) ? $value : (json_decode((string) $value, true) ?: []);
+    }
+
+    public function getReviewsAttribute($value)
+    {
+        return is_array($value) ? $value : (json_decode((string) $value, true) ?: []);
+    }
+
+    public function getFaqAttribute($value)
+    {
+        return is_array($value) ? $value : (json_decode((string) $value, true) ?: []);
+    }
+
+    public function getProblemPointsAttribute($value)
+    {
+        return is_array($value) ? $value : (json_decode((string) $value, true) ?: []);
+    }
+
+    public function getStepsAttribute($value)
+    {
+        return is_array($value) ? $value : (json_decode((string) $value, true) ?: []);
+    }
+
+    public function getTrustPointsAttribute($value)
+    {
+        return is_array($value) ? $value : (json_decode((string) $value, true) ?: []);
+    }
+
     public function getRouteKeyName(): string
     {
         return 'slug';
