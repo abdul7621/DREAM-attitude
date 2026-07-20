@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    // Inject Luxury Glassmorphism Search Overlay CSS styles dynamically
+    // Inject Search CSS styles dynamically
     const styleId = 'sf-smart-search-styles';
     if (!document.getElementById(styleId)) {
         const style = document.createElement('style');
@@ -13,427 +13,442 @@
                 align-items: center;
                 width: 100%;
             }
-            .sf-search-modal-backdrop {
-                position: fixed;
-                inset: 0;
-                background: rgba(17, 24, 39, 0.75);
-                backdrop-filter: blur(10px);
-                -webkit-backdrop-filter: blur(10px);
-                z-index: 99999;
-                opacity: 0;
-                visibility: hidden;
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                display: flex;
-                justify-content: center;
-                align-items: flex-start;
-                padding: 20px 12px;
-                overflow-y: auto;
+            .sf-search-wrapper .sf-header-search-btn {
+                position: absolute;
+                right: 4px;
+                top: 50%;
+                transform: translateY(-50%);
+                z-index: 10;
             }
-            .sf-search-modal-backdrop.open {
-                opacity: 1;
-                visibility: visible;
-            }
-            .sf-search-modal-container {
-                background: #FFFFFF;
-                width: 100%;
-                max-width: 900px;
-                border-radius: 20px;
-                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
-                border: 1px solid rgba(201, 168, 76, 0.3);
+            .sf-search-dropdown {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: #ffffff;
+                border: 1px solid rgba(201, 168, 76, 0.25);
+                border-radius: 16px;
+                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+                z-index: 10000;
+                margin-top: 8px;
+                display: none;
                 overflow: hidden;
-                transform: translateY(-20px) scale(0.98);
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                position: relative;
-                margin-top: 20px;
-            }
-            .sf-search-modal-backdrop.open .sf-search-modal-container {
-                transform: translateY(0) scale(1);
-            }
-            .sf-search-modal-header {
-                padding: 16px 20px;
-                border-bottom: 1px solid #E5E7EB;
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                background: #FAFAFA;
-                position: relative;
-            }
-            .sf-search-modal-header i.search-icon {
-                font-size: 20px;
-                color: #C9A84C;
-            }
-            .sf-search-modal-input {
-                flex: 1;
-                border: none;
-                background: transparent;
-                font-size: 16px;
-                font-weight: 500;
-                color: #111827;
-                outline: none;
-                font-family: inherit;
-                min-width: 0;
-            }
-            .sf-search-modal-close {
-                background: #E5E7EB;
-                border: none;
-                width: 32px;
-                height: 32px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                color: #374151;
-                font-size: 18px;
-                transition: all 0.2s;
-                flex-shrink: 0;
-            }
-            .sf-search-modal-close:hover {
-                background: #E31E24;
-                color: #FFFFFF;
-            }
-            .sf-search-modal-body {
-                padding: 20px;
-                max-height: 75vh;
+                font-family: 'DM Sans', 'Inter', sans-serif;
+                text-align: left;
+                max-height: 480px;
                 overflow-y: auto;
             }
-            .sf-search-grid-3col {
-                display: grid;
-                grid-template-columns: 240px 1fr;
-                gap: 20px;
+            .sf-search-dropdown.open {
+                display: block;
             }
-            @media (max-width: 768px) {
-                .sf-search-grid-3col {
-                    grid-template-columns: 1fr;
-                }
-                .sf-search-modal-backdrop {
-                    padding: 10px 8px;
-                }
-                .sf-search-modal-container {
-                    margin-top: 5px;
-                    border-radius: 16px;
-                }
-            }
-            .sf-search-col-title {
+            .sf-search-section-title {
+                padding: 12px 16px 6px;
                 font-size: 11px;
                 font-weight: 700;
-                color: #9CA3AF;
+                color: #9ca3af;
                 text-transform: uppercase;
-                letter-spacing: 1px;
-                margin-bottom: 10px;
-                display: flex;
-                align-items: center;
-                gap: 6px;
+                letter-spacing: 0.5px;
+                border-bottom: 1px solid #f3f4f6;
             }
-            .sf-search-pills-wrap {
+            .sf-search-tags-container {
                 display: flex;
                 flex-wrap: wrap;
-                gap: 6px;
-                margin-bottom: 16px;
+                gap: 8px;
+                padding: 12px 16px;
             }
-            .sf-search-pill {
-                background: #F3F4F6;
-                padding: 5px 10px;
-                border-radius: 16px;
+            .sf-search-tag {
+                background: #f3f4f6;
+                padding: 6px 14px;
+                border-radius: 20px;
                 font-size: 12px;
-                font-weight: 500;
                 color: #374151;
                 text-decoration: none;
+                font-weight: 500;
+                transition: all 0.2s;
+                cursor: pointer;
+                border: none;
                 display: inline-flex;
                 align-items: center;
                 gap: 6px;
-                transition: all 0.2s;
-                cursor: pointer;
             }
-            .sf-search-pill:hover {
+            .sf-search-tag:hover {
                 background: rgba(201, 168, 76, 0.15);
-                color: #A08030;
+                color: #a08030;
             }
-            .sf-search-products-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-                gap: 12px;
+            .sf-search-tag-remove {
+                font-size: 10px;
+                color: #9ca3af;
+                margin-left: 2px;
             }
-            .sf-search-card {
-                border: 1px solid #E5E7EB;
-                border-radius: 12px;
-                padding: 10px;
+            .sf-search-tag-remove:hover {
+                color: #ef4444;
+            }
+            .sf-search-item {
                 display: flex;
-                flex-direction: column;
-                justify-content: space-between;
+                align-items: center;
+                padding: 10px 16px;
+                color: #374151;
                 text-decoration: none;
-                color: inherit;
-                transition: all 0.2s ease;
-                background: #FFFFFF;
-                position: relative;
+                font-size: 13px;
+                transition: background 0.15s;
+                cursor: pointer;
+                border-bottom: 1px solid #f9fafb;
             }
-            .sf-search-card:hover {
-                border-color: #C9A84C;
-                box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-                transform: translateY(-2px);
+            .sf-search-item:hover {
+                background-color: #faf5e8;
             }
-            .sf-search-card-img-wrap {
-                width: 100%;
-                height: 110px;
+            .sf-search-item-img {
+                width: 44px;
+                height: 44px;
+                object-fit: cover;
                 border-radius: 8px;
-                overflow: hidden;
-                margin-bottom: 8px;
-                background: #FAFAFA;
+                margin-right: 12px;
+                border: 1px solid #f3f4f6;
+                background: #f9fafb;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                position: relative;
+                flex-shrink: 0;
             }
-            .sf-search-card-img {
-                max-height: 100%;
-                width: auto;
-                object-fit: contain;
+            .sf-search-item-info {
+                flex: 1;
+                min-width: 0;
             }
-            .sf-search-card-disc {
-                position: absolute;
-                top: 4px;
-                left: 4px;
-                background: #E31E24;
-                color: #FFFFFF;
-                font-size: 9px;
-                font-weight: 700;
-                padding: 2px 6px;
-                border-radius: 4px;
-            }
-            .sf-search-card-title {
-                font-size: 12px;
+            .sf-search-item-title {
                 font-weight: 600;
                 color: #111827;
-                line-height: 1.3;
-                margin-bottom: 4px;
-                display: -webkit-box;
-                -webkit-line-clamp: 2;
-                -webkit-box-orient: vertical;
                 overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                margin-bottom: 2px;
+                font-size: 13px;
             }
-            .sf-search-card-prices {
+            .sf-search-item-meta {
                 display: flex;
                 align-items: center;
-                gap: 6px;
-                margin-bottom: 8px;
+                gap: 8px;
+                font-size: 12px;
             }
-            .sf-search-card-price {
+            .sf-search-item-price {
                 font-weight: 700;
-                font-size: 13px;
                 color: #111827;
             }
-            .sf-search-card-compare {
-                font-size: 10px;
-                color: #9CA3AF;
+            .sf-search-item-compare {
                 text-decoration: line-through;
+                color: #9ca3af;
+                font-size: 11px;
             }
-            .sf-search-card-btn {
-                width: 100%;
+            .sf-search-item-discount {
+                background: #fee2e2;
+                color: #ef4444;
+                font-size: 9px;
+                font-weight: 700;
+                padding: 1px 5px;
+                border-radius: 4px;
+            }
+            .sf-search-item-add {
                 background: #111827;
-                color: #FFFFFF;
+                color: #ffffff;
                 border: none;
-                border-radius: 16px;
-                padding: 5px 10px;
                 font-size: 11px;
                 font-weight: 700;
+                padding: 6px 16px;
+                border-radius: 20px;
                 cursor: pointer;
+                margin-left: auto;
                 transition: all 0.2s;
-                text-align: center;
+                flex-shrink: 0;
             }
-            .sf-search-card-btn:hover {
-                background: #C9A84C;
+            .sf-search-item-add:hover {
+                background: #c9a84c;
                 color: #000000;
+            }
+            .sf-search-item-add.out-of-stock {
+                background: #f3f4f6;
+                color: #9ca3af;
+                cursor: not-allowed;
+            }
+            .sf-search-no-results {
+                padding: 24px 16px;
+                text-align: center;
+                color: #6b7280;
+                font-size: 13px;
             }
         `;
         document.head.appendChild(style);
     }
 
-    // Modal DOM Elements
-    let modalBackdrop = null;
-    let modalInput = null;
-    let modalBody = null;
+    // Config & state variables
+    const maxHistoryCount = 5;
+    const trendingSearches = ["Perfume", "Attar", "Oud", "Musk", "Luxury Fragrance"];
+    const popularCategories = [
+        { name: "Perfumes", url: "/search?q=Perfume" },
+        { name: "Attars", url: "/search?q=Attar" },
+        { name: "Oud Collection", url: "/search?q=Oud" },
+        { name: "Luxury Fragrances", url: "/search?q=Fragrance" }
+    ];
 
-    function buildSearchModal() {
-        if (document.getElementById('sfSearchModalBackdrop')) return;
-
-        modalBackdrop = document.createElement('div');
-        modalBackdrop.id = 'sfSearchModalBackdrop';
-        modalBackdrop.className = 'sf-search-modal-backdrop';
-        modalBackdrop.innerHTML = `
-            <div class="sf-search-modal-container">
-                <div class="sf-search-modal-header">
-                    <i class="bi bi-search search-icon"></i>
-                    <input type="text" class="sf-search-modal-input" id="sfSearchModalInput" placeholder="Search for attars, perfumes, oud, luxury fragrances..." autocomplete="off">
-                    <button type="button" class="sf-search-modal-close" id="sfSearchModalClose" aria-label="Close search"><i class="bi bi-x"></i></button>
-                </div>
-                <div class="sf-search-modal-body" id="sfSearchModalBody"></div>
-            </div>
-        `;
-        document.body.appendChild(modalBackdrop);
-
-        modalInput = document.getElementById('sfSearchModalInput');
-        modalBody = document.getElementById('sfSearchModalBody');
-
-        // Close Handlers
-        document.getElementById('sfSearchModalClose').addEventListener('click', closeSearchModal);
-        modalBackdrop.addEventListener('click', function (e) {
-            if (e.target === modalBackdrop) closeSearchModal();
-        });
-
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape' && modalBackdrop.classList.contains('open')) {
-                closeSearchModal();
-            }
-        });
-
-        let debounceTimer;
-        modalInput.addEventListener('input', function () {
-            const val = this.value.trim();
-            clearTimeout(debounceTimer);
-
-            debounceTimer = setTimeout(() => {
-                fetchSuggestions(val);
-            }, 150);
-        });
-
-        // Submit on Enter
-        modalInput.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter' && this.value.trim() !== '') {
-                window.location.href = '/search?q=' + encodeURIComponent(this.value.trim());
-            }
-        });
+    function getHistory() {
+        try {
+            return JSON.parse(localStorage.getItem('sf_recent_searches')) || [];
+        } catch (e) {
+            return [];
+        }
     }
 
-    function fetchSuggestions(query) {
-        if (!modalBody) return;
-        modalBody.innerHTML = `<div style="text-align:center;padding:30px;color:#9CA3AF;"><i class="bi bi-arrow-repeat spin" style="font-size:20px;display:inline-block;animation:spin 1s linear infinite;margin-bottom:6px;"></i><br>Searching catalog...</div>`;
+    function saveHistory(query) {
+        if (!query || query.trim() === '') return;
+        query = query.trim();
+        let history = getHistory();
+        history = history.filter(item => item.toLowerCase() !== query.toLowerCase());
+        history.unshift(query);
+        if (history.length > maxHistoryCount) {
+            history.pop();
+        }
+        try {
+            localStorage.setItem('sf_recent_searches', JSON.stringify(history));
+        } catch (e) {}
+    }
 
-        fetch('/api/search/suggest?q=' + encodeURIComponent(query), {
-            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+    function removeHistoryItem(e, item) {
+        e.preventDefault();
+        e.stopPropagation();
+        let history = getHistory();
+        history = history.filter(q => q.toLowerCase() !== item.toLowerCase());
+        try {
+            localStorage.setItem('sf_recent_searches', JSON.stringify(history));
+        } catch (e) {}
+        const activeInput = document.activeElement;
+        if (activeInput && activeInput.parentElement) {
+            const dropdown = activeInput.parentElement.querySelector('.sf-search-dropdown');
+            if (dropdown) renderDefaultContent(dropdown);
+        }
+    }
+
+    // Add item to cart helper
+    window.addSearchProductToCart = function (e, productId) {
+        e.preventDefault();
+        e.stopPropagation();
+        const btn = e.target;
+        if (btn.classList.contains('out-of-stock') || btn.disabled) return;
+
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i>';
+
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        fetch('/cart/items', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrf,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                product_id: productId,
+                qty: 1
+            })
         })
-        .then(r => r.json())
+        .then(res => res.json())
         .then(data => {
-            renderSearchResults(query, data.items || [], data.is_fallback || false);
+            if (data.status === 'success' || data.success) {
+                if (window.Store) {
+                    Store.emit('toast', { type: 'success', message: data.message || 'Added to cart' });
+                    Store.emit('cart:updated', { count: data.cart_count || data.total_items });
+                }
+            } else {
+                if (window.Store) Store.emit('toast', { type: 'error', message: data.message || 'Error adding to cart' });
+            }
         })
         .catch(err => {
-            console.error('Error fetching suggestions', err);
-            modalBody.innerHTML = `<div style="text-align:center;padding:30px;color:#EF4444;">Unable to load search results right now.</div>`;
+            console.error('AJAX add-to-cart error', err);
+            if (window.Store) Store.emit('toast', { type: 'error', message: 'Added to cart!' });
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
         });
-    }
+    };
 
-    function openSearchModal(initialQuery = '') {
-        buildSearchModal();
-        modalBackdrop.classList.add('open');
-        document.body.style.overflow = 'hidden';
+    function renderDefaultContent(dropdown) {
+        if (!dropdown) return;
+        dropdown.innerHTML = '';
 
-        if (initialQuery) {
-            modalInput.value = initialQuery;
-        }
-        fetchSuggestions(modalInput.value.trim());
-
-        setTimeout(() => modalInput.focus(), 100);
-    }
-
-    function closeSearchModal() {
-        if (!modalBackdrop) return;
-        modalBackdrop.classList.remove('open');
-        document.body.style.overflow = '';
-    }
-
-    function renderSearchResults(query, items, isFallback) {
-        if (!modalBody) return;
-
-        const brands = items.filter(i => i.type === 'brand');
-        const categories = items.filter(i => i.type === 'category');
-        const products = items.filter(i => i.type === 'product');
-
+        const history = getHistory();
         let html = '';
 
-        if (isFallback && query) {
-            html += `<div style="background:#FEF3C7;color:#92400E;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;margin-bottom:16px;">
-                Showing catalog recommendations for "${query}"
-            </div>`;
-        }
-
-        html += `<div class="sf-search-grid-3col">`;
-
-        // Left Column: Categories & Brands
-        html += `<div>`;
-        if (categories.length > 0) {
-            html += `<div class="sf-search-col-title"><i class="bi bi-grid-fill" style="color:#C9A84C;"></i> Categories</div>`;
-            html += `<div class="sf-search-pills-wrap">`;
-            categories.forEach(c => {
-                html += `<a href="${c.url}" class="sf-search-pill"><i class="bi bi-arrow-right-short"></i> ${c.title}</a>`;
+        // 1. Recent Searches
+        if (history.length > 0) {
+            html += `<div class="sf-search-section-title">Recent Searches</div>`;
+            html += `<div class="sf-search-tags-container">`;
+            history.forEach(item => {
+                html += `<div class="sf-search-tag" onclick="window.location.href='/search?q=${encodeURIComponent(item)}'">
+                    ${item}
+                    <span class="sf-search-tag-remove" onclick="window.addSearchProductToCartRemoveHistory(event, '${item.replace(/'/g, "\\'")}')"><i class="bi bi-x"></i></span>
+                </div>`;
             });
             html += `</div>`;
         }
 
-        if (brands.length > 0) {
-            html += `<div class="sf-search-col-title"><i class="bi bi-patch-check-fill" style="color:#C9A84C;"></i> Brands</div>`;
-            html += `<div class="sf-search-pills-wrap">`;
-            brands.forEach(b => {
-                html += `<a href="${b.url}" class="sf-search-pill">${b.title}</a>`;
-            });
-            html += `</div>`;
-        }
-
-        html += `<div class="sf-search-col-title"><i class="bi bi-graph-up-arrow" style="color:#C9A84C;"></i> Popular Searches</div>`;
-        html += `<div class="sf-search-pills-wrap">
-            <a href="/search?q=Perfume" class="sf-search-pill">Perfume</a>
-            <a href="/search?q=Attar" class="sf-search-pill">Attar</a>
-            <a href="/search?q=Oud" class="sf-search-pill">Oud</a>
-        </div>`;
+        // 2. Trending Searches
+        html += `<div class="sf-search-section-title">Trending Searches</div>`;
+        html += `<div class="sf-search-tags-container">`;
+        trendingSearches.forEach(item => {
+            html += `<a href="/search?q=${encodeURIComponent(item)}" class="sf-search-tag">
+                <i class="bi bi-graph-up" style="font-size: 10px;"></i> ${item}
+            </a>`;
+        });
         html += `</div>`;
 
-        // Right Column: Products Grid
-        html += `<div>`;
-        html += `<div class="sf-search-col-title"><i class="bi bi-bag-check-fill" style="color:#C9A84C;"></i> ${query ? 'Results' : 'Popular Products'} (${products.length})</div>`;
-        html += `<div class="sf-search-products-grid">`;
-
-        products.forEach(p => {
-            html += `<div class="sf-search-card" onclick="window.location.href='${p.url}'">
-                <div>
-                    <div class="sf-search-card-img-wrap">
-                        ${p.discount > 0 ? `<span class="sf-search-card-disc">${p.discount}% OFF</span>` : ''}
-                        ${p.image ? `<img src="${p.image}" class="sf-search-card-img" alt="${p.title}">` : '<i class="bi bi-bag" style="font-size:28px;color:#D1D5DB;"></i>'}
-                    </div>
-                    <div class="sf-search-card-title">${p.title}</div>
-                    <div class="sf-search-card-prices">
-                        <span class="sf-search-card-price">${p.price}</span>
-                        ${p.compare_price ? `<span class="sf-search-card-compare">${p.compare_price}</span>` : ''}
-                    </div>
-                </div>
-                ${p.in_stock ? `
-                    <button type="button" class="sf-search-card-btn" onclick="window.addSearchProductToCart(event, ${p.id})">+ Quick Add</button>
-                ` : `
-                    <button type="button" class="sf-search-card-btn" style="background:#F3F4F6;color:#9CA3AF;" disabled>Sold Out</button>
-                `}
-            </div>`;
+        // 3. Popular Categories
+        html += `<div class="sf-search-section-title">Popular Categories</div>`;
+        html += `<div class="sf-search-tags-container">`;
+        popularCategories.forEach(cat => {
+            html += `<a href="${cat.url}" class="sf-search-tag">${cat.name}</a>`;
         });
+        html += `</div>`;
 
-        html += `</div></div></div>`;
-
-        modalBody.innerHTML = html;
+        dropdown.innerHTML = html;
     }
 
-    // Global Delegated Click Handler (Works 100% on Mobile & Desktop)
-    document.addEventListener('click', function (e) {
-        const target = e.target;
-        const searchInput = target.closest('input[type="search"], input[name="q"], .search-input, .sf-header-search-input, #site-search-input');
-        const searchBtn = target.closest('.sf-search-toggle, button[aria-label="Search"], a[aria-label="Search"]');
+    window.addSearchProductToCartRemoveHistory = removeHistoryItem;
 
-        if (searchInput && !searchInput.classList.contains('sf-search-modal-input')) {
-            e.preventDefault();
-            openSearchModal(searchInput.value);
-        } else if (searchBtn && !searchBtn.closest('.sf-search-modal-header')) {
-            e.preventDefault();
-            openSearchModal();
+    function initSearchInput(input) {
+        if (!input) return;
+
+        let wrapper = input.parentElement;
+        if (!wrapper.classList.contains('sf-search-wrapper')) {
+            wrapper = document.createElement('div');
+            wrapper.className = 'sf-search-wrapper';
+            input.parentNode.insertBefore(wrapper, input);
+            wrapper.appendChild(input);
+            const form = wrapper.closest('form');
+            if (form) {
+                const btn = form.querySelector('button[type="submit"]');
+                if (btn) wrapper.appendChild(btn);
+            }
         }
-    });
+
+        let dropdown = wrapper.querySelector('.sf-search-dropdown');
+        if (!dropdown) {
+            dropdown = document.createElement('div');
+            dropdown.className = 'sf-search-dropdown';
+            wrapper.appendChild(dropdown);
+        }
+
+        input.setAttribute('autocomplete', 'off');
+
+        let debounceTimeout;
+
+        input.addEventListener('focus', function () {
+            const val = this.value.trim();
+            if (val === '') {
+                renderDefaultContent(dropdown);
+            }
+            dropdown.classList.add('open');
+        });
+
+        const form = input.closest('form');
+        if (form) {
+            form.addEventListener('submit', function () {
+                saveHistory(input.value);
+            });
+        }
+
+        input.addEventListener('input', function () {
+            const val = this.value.trim();
+            clearTimeout(debounceTimeout);
+
+            if (val === '') {
+                renderDefaultContent(dropdown);
+                return;
+            }
+
+            dropdown.innerHTML = `<div class="sf-search-no-results"><i class="bi bi-arrow-repeat spin" style="display:inline-block;animation:spin 1s linear infinite;margin-right:6px;"></i> Searching...</div>`;
+
+            debounceTimeout = setTimeout(() => {
+                fetch('/api/search/suggest?q=' + encodeURIComponent(val), {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    dropdown.innerHTML = '';
+                    const items = data.items || [];
+
+                    if (items.length === 0) {
+                        dropdown.innerHTML = `<div class="sf-search-no-results">No products found for "${val}"</div>`;
+                        return;
+                    }
+
+                    const categories = items.filter(i => i.type === 'category');
+                    const products = items.filter(i => i.type === 'product');
+
+                    let html = '';
+
+                    // 1. Categories
+                    if (categories.length > 0) {
+                        html += `<div class="sf-search-section-title">Categories</div>`;
+                        categories.forEach(cat => {
+                            html += `<a href="${cat.url}" class="sf-search-item">
+                                <div class="sf-search-item-img"><i class="bi bi-grid"></i></div>
+                                <div class="sf-search-item-info">
+                                    <div class="sf-search-item-title">${cat.title}</div>
+                                </div>
+                            </a>`;
+                        });
+                    }
+
+                    // 2. Products
+                    if (products.length > 0) {
+                        html += `<div class="sf-search-section-title">Products</div>`;
+                        products.forEach(p => {
+                            html += `<a href="${p.url}" class="sf-search-item" onclick="saveHistory('${p.title.replace(/'/g, "\\'")}')">
+                                ${p.image ? `<img src="${p.image}" class="sf-search-item-img" alt="${p.title}">` : '<div class="sf-search-item-img"><i class="bi bi-bag"></i></div>'}
+                                <div class="sf-search-item-info">
+                                    <div class="sf-search-item-title">${p.title}</div>
+                                    <div class="sf-search-item-meta">
+                                        <span class="sf-search-item-price">${p.price}</span>
+                                        ${p.compare_price ? `<span class="sf-search-item-compare">${p.compare_price}</span>` : ''}
+                                        ${p.discount > 0 ? `<span class="sf-search-item-discount">${p.discount}% OFF</span>` : ''}
+                                    </div>
+                                </div>
+                                ${p.in_stock ? `
+                                    <button class="sf-search-item-add" onclick="window.addSearchProductToCart(event, ${p.id})">Add</button>
+                                ` : `
+                                    <button class="sf-search-item-add out-of-stock" disabled>Sold Out</button>
+                                `}
+                            </a>`;
+                        });
+                    }
+
+                    dropdown.innerHTML = html;
+                })
+                .catch(err => {
+                    console.error('Error fetching suggestions', err);
+                });
+            }, 200);
+        });
+
+        // Hide when clicking outside
+        document.addEventListener('click', function (e) {
+            if (!wrapper.contains(e.target)) {
+                dropdown.classList.remove('open');
+            }
+        });
+    }
+
+    function initAll() {
+        const inputs = document.querySelectorAll('input[type="search"], input[name="q"], .search-input, .sf-header-search-input, #site-search-input');
+        inputs.forEach(initSearchInput);
+    }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', buildSearchModal);
+        document.addEventListener('DOMContentLoaded', initAll);
     } else {
-        buildSearchModal();
+        initAll();
     }
 })();
