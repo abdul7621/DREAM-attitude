@@ -110,7 +110,7 @@ class SearchController extends Controller
     public function suggest(Request $request): JsonResponse
     {
         $q = trim((string) $request->query('q', ''));
-        if (strlen($q) < 2) {
+        if (strlen($q) < 1) {
             return response()->json(['items' => []]);
         }
 
@@ -121,30 +121,80 @@ class SearchController extends Controller
         }
 
         $like = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $q).'%';
-        $rows = Product::query()
+        $items = collect();
+
+        // 1. Matches in Brands
+        $matchedBrands = \App\Models\Brand::where('is_active', true)
+            ->where('name', 'like', $like)
+            ->limit(2)
+            ->get();
+        foreach ($matchedBrands as $brand) {
+            $items->push([
+                'title' => $brand->name,
+                'type'  => 'brand',
+                'url'   => route('brand.show', $brand->slug),
+                'image' => $brand->logo ? asset('storage/' . $brand->logo) : null,
+            ]);
+        }
+
+        // 2. Matches in Categories
+        $matchedCategories = \App\Models\Category::where('is_active', true)
+            ->where('name', 'like', $like)
+            ->limit(2)
+            ->get();
+        foreach ($matchedCategories as $cat) {
+            $items->push([
+                'title' => $cat->name,
+                'type'  => 'category',
+                'url'   => route('category.show', $cat->slug),
+            ]);
+        }
+
+        // 3. Matches in Products
+        $products = Product::query()
             ->where('status', Product::STATUS_ACTIVE)
             ->where(function ($query) use ($like): void {
-                $query->where('name', 'like', $like)->orWhere('sku', 'like', $like);
+                $query->where('name', 'like', $like)
+                      ->orWhere('sku', 'like', $like)
+                      ->orWhere('brand', 'like', $like);
             })
             ->with(['variants', 'images'])
-            ->orderBy('name')
-            ->limit(10)
+            ->limit(6)
             ->get();
 
-        $items = $rows->map(function (Product $p) {
-            $firstImage = $p->images->first();
-            $imageUrl = $firstImage ? asset('storage/' . $firstImage->image_path) : asset('images/placeholder.png');
-            $priceRetail = $p->variants->first()?->price_retail ?? 0;
-            $comparePrice = $p->variants->first()?->compare_at_price;
+        $pricing = app(\App\Services\PricingService::class);
+        $currencySvc = app(\App\Services\CurrencyService::class);
 
-            return [
+        foreach ($products as $p) {
+            $variant = $p->variants->firstWhere('is_active', true) ?? $p->variants->first();
+            $img = $p->images->firstWhere('is_primary', true) ?? $p->images->first();
+
+            $price = 0;
+            $compare = null;
+            $discount = 0;
+            if ($variant) {
+                $price = $pricing ? $pricing->unitPriceForCustomer($variant, auth()->user(), 1) : ($variant->price_retail ?? 0);
+                $compare = $variant->compare_at_price;
+                if ($compare && $compare > $price) {
+                    $discount = round((($compare - $price) / $compare) * 100);
+                }
+            }
+
+            $isOutOfStock = !$p->isActive() || ($variant && $variant->track_inventory && $variant->stock_qty <= 0);
+
+            $items->push([
+                'id' => $p->id,
                 'title' => $p->name,
+                'type' => 'product',
                 'url' => route('product.show', $p),
-                'price' => '₹' . number_format($priceRetail, 2),
-                'compare_price' => $comparePrice ? '₹' . number_format($comparePrice, 2) : null,
-                'image' => $imageUrl,
-            ];
-        });
+                'image' => $img ? asset('storage/' . ($img->image_path ?? $img->path)) : null,
+                'price' => $price > 0 ? ($currencySvc ? $currencySvc->format($price) : '₹' . number_format($price, 2)) : 'Price on request',
+                'compare_price' => ($compare && $compare > $price) ? ($currencySvc ? $currencySvc->format($compare) : '₹' . number_format($compare, 2)) : null,
+                'discount' => $discount,
+                'in_stock' => !$isOutOfStock,
+                'variant_title' => ($variant && $variant->title !== 'Default Title') ? $variant->title : null,
+            ]);
+        }
 
         return response()->json(['items' => $items]);
     }

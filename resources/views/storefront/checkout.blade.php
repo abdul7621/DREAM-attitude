@@ -374,6 +374,31 @@
                         </div>
                     </div>
 
+                    {{-- Rewards Wallet Credit Card --}}
+                    @if(auth()->check())
+                        @php
+                            $userCredit = (float) (auth()->user()->store_credit_balance ?? 0);
+                        @endphp
+                        @if($userCredit > 0)
+                        <div style="background: rgba(201,168,76,0.08); border: 1.5px solid var(--color-gold); border-radius: var(--radius-md); margin-bottom: 24px; padding: 20px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <div style="font-weight: 700; color: var(--color-text-primary); font-size: 14px; display:flex; align-items:center; gap:8px;">
+                                        <i class="bi bi-wallet2" style="color:var(--color-gold); font-size:18px;"></i> Redeem Dream Attitude Rewards Balance
+                                    </div>
+                                    <div style="font-size: 12px; color: var(--color-text-secondary); margin-top: 4px;">
+                                        You have <strong style="color:var(--color-gold);">₹{{ number_format($userCredit, 2) }}</strong> store credit available in your wallet.
+                                    </div>
+                                </div>
+                                <div class="form-check form-switch" style="margin:0;">
+                                    <input class="form-check-input" type="checkbox" name="use_store_credit" value="1" id="useStoreCreditToggle" checked style="cursor: pointer; width: 2.5em; height: 1.25em;">
+                                    <label class="form-check-label ps-2 mt-1 fw-bold" for="useStoreCreditToggle" style="cursor: pointer; font-size:12px; color:var(--color-text-primary);">Apply Credit</label>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                    @endif
+
                     {{-- Payment Info --}}
                     @php
                         $copy = app(\App\Services\SettingsService::class)->get('conversion_copy.checkout', config('commerce.conversion_copy.checkout'));

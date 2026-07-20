@@ -104,16 +104,46 @@
 
     {{-- Shipment --}}
     @if ($order->shipments->isNotEmpty())
-    @php $ship = $order->shipments->first(); @endphp
+    @php
+        $ship = $order->shipments->first();
+        // Dynamic fallback tracking URL if null
+        $effectiveTrackingUrl = $ship->tracking_url;
+        if (!$effectiveTrackingUrl && $ship->awb) {
+            $carrierKey = strtolower($ship->carrier ?? '');
+            if (str_contains($carrierKey, 'ithink')) {
+                $effectiveTrackingUrl = 'https://ithinklogistics.com/track?awb=' . urlencode($ship->awb);
+            } elseif (str_contains($carrierKey, 'delhivery')) {
+                $effectiveTrackingUrl = 'https://www.delhivery.com/track/package/' . urlencode($ship->awb);
+            } elseif (str_contains($carrierKey, 'dtdc')) {
+                $effectiveTrackingUrl = 'https://www.dtdc.in/tracking/shipment-tracking.asp?strCnNo=' . urlencode($ship->awb);
+            } elseif (str_contains($carrierKey, 'bluedart')) {
+                $effectiveTrackingUrl = 'https://www.bluedart.com/tracking?key=' . urlencode($ship->awb);
+            }
+        }
+    @endphp
     <div class="sf-account-card" style="border-color: var(--color-border) !important;">
-        <div style="font-weight:600;color:var(--color-text-primary);font-size:14px;margin-bottom:12px;">Shipment</div>
-        <p style="color:var(--color-text-secondary);font-size:13px;margin-bottom:8px;">Status: <strong style="color:var(--color-text-primary);">{{ $ship->status }}</strong></p>
-        @if ($ship->awb)
-            <p style="color:var(--color-text-secondary);font-size:13px;margin-bottom:8px;">AWB: <strong style="color:var(--color-text-primary);">{{ $ship->awb }}</strong></p>
-        @endif
-        @if ($ship->tracking_url)
-            <a href="{{ $ship->tracking_url }}" target="_blank" style="color:var(--color-gold);font-size:12px;text-transform:uppercase;letter-spacing:1px;text-decoration:none;border:1px solid var(--color-gold);padding:8px 16px;border-radius:var(--radius-sm);display:inline-block;">Track Package →</a>
-        @endif
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <div style="font-weight:600;color:var(--color-text-primary);font-size:14px;"><i class="bi bi-truck" style="color:var(--color-gold);margin-right:6px;"></i>Shipment & Tracking Details</div>
+            <span class="sf-badge {{ $ship->status === 'delivered' ? 'delivered' : 'processing' }}">{{ ucfirst($ship->status) }}</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:16px;font-size:13px;color:var(--color-text-secondary);">
+            <div>Carrier: <strong style="color:var(--color-text-primary);">{{ ucfirst($ship->carrier ?? 'Standard Courier') }}</strong></div>
+            @if ($ship->awb)
+                <div>AWB / Waybill: <strong style="color:var(--color-text-primary);" id="shipAwbText">{{ $ship->awb }}</strong>
+                    <button type="button" onclick="navigator.clipboard.writeText('{{ $ship->awb }}'); this.innerText='Copied!'; setTimeout(()=>this.innerText='Copy', 2000);" style="background:var(--color-bg-elevated);border:1px solid var(--color-border);padding:2px 8px;border-radius:4px;font-size:11px;cursor:pointer;margin-left:4px;">Copy</button>
+                </div>
+            @endif
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;">
+            @if ($effectiveTrackingUrl)
+                <a href="{{ $effectiveTrackingUrl }}" target="_blank" style="background:var(--color-gold);color:#000000;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;text-decoration:none;padding:10px 20px;border-radius:var(--radius-sm);display:inline-flex;align-items:center;gap:6px;">
+                    <i class="bi bi-geo-alt-fill"></i> Track Package Live ➔
+                </a>
+            @endif
+            <a href="https://wa.me/919876543210?text={{ urlencode('Hi Dream Attitude Team, I need help with my Order #'.$order->order_number.($ship->awb ? ' (AWB: '.$ship->awb.')' : '')) }}" target="_blank" style="background:#25D366;color:#FFFFFF;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;text-decoration:none;padding:10px 20px;border-radius:var(--radius-sm);display:inline-flex;align-items:center;gap:6px;">
+                <i class="bi bi-whatsapp"></i> WhatsApp Order Support
+            </a>
+        </div>
     </div>
     @endif
 
