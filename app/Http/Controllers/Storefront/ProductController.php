@@ -17,11 +17,34 @@ class ProductController extends Controller
         private readonly SettingsService $settings
     ) {}
 
-    public function show(Product $product): View
+    public function show(Product $product)
     {
         abort_unless($product->isActive(), 404);
 
         $product->load(['variants', 'images', 'category']);
+
+        // Check if Quick View JSON requested
+        if (request()->query('qv') == '1' || request()->ajax()) {
+            $selectedVariant = $product->variants->firstWhere('is_active', true) ?? $product->variants->first();
+            return response()->json([
+                'id' => $product->id,
+                'name' => $product->name,
+                'slug' => $product->slug,
+                'short_description' => $product->short_description,
+                'description' => $product->description,
+                'price_retail' => $selectedVariant?->price_retail ?? 0,
+                'compare_at_price' => $selectedVariant?->compare_at_price,
+                'images' => $product->images->map(fn($img) => asset('storage/' . $img->path)),
+                'variants' => $product->variants->where('is_active', true)->map(fn($v) => [
+                    'id' => $v->id,
+                    'title' => $v->title,
+                    'price' => $v->price_retail,
+                    'compare_price' => $v->compare_at_price,
+                    'stock_qty' => $v->stock_qty,
+                    'track_inventory' => $v->track_inventory,
+                ])->values()
+            ]);
+        }
 
         // Log recently viewed (track)
         if (auth()->check()) {

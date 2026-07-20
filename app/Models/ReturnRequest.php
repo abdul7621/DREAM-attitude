@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ReturnRequest extends Model
 {
     protected $fillable = [
-        'order_id', 'user_id', 'reason', 'images', 'status', 'resolution',
+        'order_id', 'user_id', 'type', 'reason', 'images', 'status', 'resolution',
         'store_credit_amount', 'admin_notes',
     ];
 

@@ -30,8 +30,20 @@ class AccountController extends Controller
 
         $wishlistCount = Wishlist::where('user_id', $user->id)->count();
 
+        // Recently Viewed items
+        $recentViewedIds = \App\Models\RecentlyViewed::where('user_id', $user->id)
+            ->orderByDesc('viewed_at')
+            ->limit(6)
+            ->pluck('product_id');
+        $recentlyViewed = \App\Models\Product::whereIn('id', $recentViewedIds)
+            ->with(['variants', 'images'])
+            ->get();
+
+        // Loyalty points balance
+        $loyaltyBalance = \App\Models\StoreCreditBalance::where('user_id', $user->id)->first()?->balance ?? 0;
+
         return view('storefront.account.dashboard', compact(
-            'user', 'recentOrders', 'totalOrders', 'totalSpent', 'wishlistCount'
+            'user', 'recentOrders', 'totalOrders', 'totalSpent', 'wishlistCount', 'recentlyViewed', 'loyaltyBalance'
         ));
     }
 
@@ -54,6 +66,30 @@ class AccountController extends Controller
         $order->load(['orderItems', 'shipments', 'returnRequests']);
 
         return view('storefront.account.order-show', compact('order'));
+    }
+
+    public function cancelOrder(Order $order): RedirectResponse
+    {
+        abort_unless($order->user_id === Auth::id(), 403);
+
+        // Can only cancel if order status is placed or pending
+        if (!in_array($order->order_status, ['placed', 'pending'])) {
+            return back()->with('error', 'This order cannot be cancelled as it is already being processed.');
+        }
+
+        $order->update([
+            'order_status' => 'cancelled'
+        ]);
+
+        // Log to Audit Log
+        \App\Models\AuditLog::create([
+            'user_id' => Auth::id(),
+            'event' => 'order_cancelled_by_customer',
+            'description' => "Order #{$order->order_number} cancelled by customer.",
+            'meta' => ['order_id' => $order->id]
+        ]);
+
+        return redirect()->route('account.orders.show', $order)->with('success', 'Your order has been cancelled.');
     }
 
     // ── Profile ─────────────────────────────────────────────
@@ -169,5 +205,22 @@ class AccountController extends Controller
 
         return redirect()->route('cart.index')
             ->with('success', "All {$added} items from order #{$order->order_number} added to cart.");
+    }
+
+    public function redeemLoyaltyPoints(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        $data = $request->validate([
+            'amount' => 'required|numeric|min:10', // Minimum 10 points
+        ]);
+
+        try {
+            $loyaltyService = app(\App\Services\LoyaltyService::class);
+            $coupon = $loyaltyService->convertPointsToCoupon($user, (float) $data['amount']);
+            
+            return back()->with('success', "Successfully redeemed points! Your coupon code is: {$coupon->code}. Use it at checkout.");
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
     }
 }

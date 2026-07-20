@@ -25,10 +25,19 @@ class ReviewController extends Controller
     public function update(Request $request, Review $review): RedirectResponse
     {
         $data = $request->validate([
-            'is_approved' => 'required|boolean',
+            'is_approved' => 'nullable|boolean',
+            'seller_reply' => 'nullable|string|max:2000',
         ]);
 
-        $review->update(['is_approved' => $data['is_approved']]);
+        $updateData = [];
+        if ($request->has('is_approved')) {
+            $updateData['is_approved'] = (bool) $data['is_approved'];
+        }
+        if ($request->has('seller_reply')) {
+            $updateData['seller_reply'] = $data['seller_reply'];
+        }
+
+        $review->update($updateData);
 
         Cache::forget('dashboard_kpi');
 

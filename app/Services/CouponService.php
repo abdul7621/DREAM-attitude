@@ -55,6 +55,11 @@ class CouponService
         if (! $coupon->isValidNow()) {
             throw new RuntimeException(__('Coupon is not valid.'));
         }
+        if ($coupon->user_id !== null) {
+            if (!auth()->check() || auth()->id() !== $coupon->user_id) {
+                throw new RuntimeException(__('This coupon is restricted to a specific account.'));
+            }
+        }
         if ((float) $subtotal < (float) $coupon->min_subtotal) {
             throw new RuntimeException(__('Minimum order value not met for this coupon.'));
         }

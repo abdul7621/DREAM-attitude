@@ -216,6 +216,10 @@
            class="sidebar-link {{ request()->routeIs('admin.coupons.*') ? 'active' : '' }}">
             <i class="bi bi-ticket-perforated"></i> Coupons & Discounts
         </a>
+        <a href="{{ route('admin.search-synonyms.index') }}"
+           class="sidebar-link {{ request()->routeIs('admin.search-synonyms.*') ? 'active' : '' }}">
+            <i class="bi bi-search"></i> Search Synonyms
+        </a>
         <a href="{{ route('admin.reviews.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.reviews.*') ? 'active' : '' }}">
             <i class="bi bi-star-half"></i> Reviews

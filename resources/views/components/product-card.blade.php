@@ -32,6 +32,16 @@
             style="min-width: 48px; min-height: 48px; display: flex; align-items: center; justify-content: center;">
             <i class="bi bi-heart"></i>
         </button>
+        
+        <!-- Quick View Button -->
+        <button type="button"
+            class="sf-quickview-btn"
+            data-product-slug="{{ $product->slug }}"
+            title="Quick View"
+            aria-label="Quick View"
+            style="position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%) translateY(10px); opacity: 0; transition: all 0.25s ease; background: rgba(255,255,255,0.95); border: none; border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 600; color: #0A0A0A; box-shadow: 0 4px 10px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 6px; cursor: pointer; z-index: 10;">
+            <i class="bi bi-eye"></i> Quick View
+        </button>
         @if ($compare && $compare > $price)
             <span class="badge">SAVE ₹{{ number_format($compare - $price, 0) }}</span>
         @elseif ($product->is_bestseller)

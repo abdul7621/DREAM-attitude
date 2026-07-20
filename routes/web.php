@@ -62,6 +62,7 @@ Route::get('/p/{product:slug}', [ProductController::class, 'show'])->name('produ
 
 // Reviews (submit - auth not strictly required; visible to public)
 Route::post('/p/{product}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+Route::post('/reviews/{review}/vote', [ReviewController::class, 'vote'])->name('reviews.vote')->middleware('auth');
 
 // ── Cart ───────────────────────────────────────────────────────────────────
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
@@ -105,8 +106,10 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
     Route::get('orders', [AccountController::class, 'orders'])->name('orders');
     Route::get('orders/{order}', [AccountController::class, 'orderShow'])->name('orders.show');
     Route::get('orders/{order}/invoice', [\App\Http\Controllers\InvoiceController::class, 'customerDownload'])->name('orders.invoice');
+    Route::post('orders/{order}/cancel', [AccountController::class, 'cancelOrder'])->name('orders.cancel');
     Route::post('orders/{order}/return', [ReturnRequestController::class, 'store'])->name('orders.return.store');
     Route::post('orders/{order}/reorder', [AccountController::class, 'reorder'])->name('orders.reorder');
+    Route::post('loyalty/redeem', [AccountController::class, 'redeemLoyaltyPoints'])->name('loyalty.redeem');
     Route::get('returns', [ReturnRequestController::class, 'index'])->name('returns');
 
     // Profile
@@ -172,6 +175,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('products/{product}/force', [AdminProductController::class, 'forceDestroy'])->name('products.forceDestroy');
     Route::resource('products', AdminProductController::class)->except(['show']);
     Route::resource('categories', AdminCategoryController::class)->except(['show']);
+
+    // Search Synonyms
+    Route::resource('search-synonyms', \App\Http\Controllers\Admin\SearchSynonymController::class)->only(['index', 'store', 'destroy']);
 
     // Coupons
     Route::resource('coupons', AdminCouponController::class)->except(['show']);

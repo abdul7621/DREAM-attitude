@@ -578,6 +578,200 @@ function toggleMobileSearch() {
         </div>
     </div>
 </div>
+
+{{-- Quick View Modal --}}
+<div class="sf-quickview-modal-overlay" id="quickViewModalOverlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1060; align-items: center; justify-content: center; padding: 16px; opacity: 0; transition: opacity 0.3s ease;">
+    <div class="sf-quickview-modal-content" style="background: var(--color-bg-primary); border-radius: 16px; width: 100%; max-width: 800px; max-height: 90vh; overflow-y: auto; position: relative; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid var(--color-border); transform: scale(0.95); transition: transform 0.3s ease;">
+        
+        <!-- Close Button -->
+        <button type="button" class="btn-close-qv" onclick="closeQuickView()" style="position: absolute; right: 16px; top: 16px; background: none; border: none; font-size: 24px; color: var(--color-text-muted); cursor: pointer; z-index: 110;">
+            <i class="bi bi-x-lg"></i>
+        </button>
+
+        <div class="row g-0" style="flex: 1;">
+            <!-- Left Column: Gallery -->
+            <div class="col-md-6 p-4 d-flex flex-column align-items-center justify-content-center bg-light" style="border-right: 1px solid var(--color-border); min-height: 300px; position: relative;">
+                <div id="qv-badge-save" class="badge bg-danger position-absolute" style="top: 16px; left: 16px; z-index: 100; display: none;">SAVE</div>
+                <img id="qv-main-image" src="" alt="" class="img-fluid rounded shadow-sm" style="max-height: 350px; object-fit: contain;">
+                <div id="qv-thumbnails" class="d-flex gap-2 mt-3 overflow-x-auto w-100 justify-content-center" style="max-width: 100%;"></div>
+            </div>
+
+            <!-- Right Column: Product details -->
+            <div class="col-md-6 p-4 d-flex flex-column">
+                <h3 id="qv-product-name" class="h4 fw-bold mb-2" style="color: var(--color-text-primary); margin-top: 20px;"></h3>
+                <p id="qv-short-desc" class="text-muted small mb-3"></p>
+
+                <div class="price-row mb-4">
+                    <span id="qv-price-retail" class="fs-4 fw-bold text-success"></span>
+                    <span id="qv-compare-price" class="text-muted text-decoration-line-through ms-2 small"></span>
+                </div>
+
+                <!-- Product Form -->
+                <form id="qv-add-to-cart-form" action="{{ route('cart.items.store') }}" method="POST" class="mt-auto">
+                    @csrf
+                    <input type="hidden" name="variant_id" id="qv-variant-id">
+                    
+                    <!-- Variant Selector -->
+                    <div id="qv-variants-container" class="mb-4">
+                        <label class="form-label small fw-bold mb-2">Select Option</label>
+                        <div id="qv-variant-chips" class="d-flex flex-wrap gap-2"></div>
+                    </div>
+
+                    <!-- Quantity and Button -->
+                    <div class="d-flex gap-3 align-items-center">
+                        <div class="input-group" style="width: 120px; display: flex; align-items: center;">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="changeQvQty(-1)"><i class="bi bi-dash"></i></button>
+                            <input type="number" name="qty" id="qv-qty-input" class="form-control form-control-sm text-center" value="1" min="1" readonly style="border-left:0; border-right:0;">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="changeQvQty(1)"><i class="bi bi-plus"></i></button>
+                        </div>
+
+                        <button type="submit" id="qv-submit-btn" class="btn btn-primary flex-grow-1" style="border-radius: 8px; font-weight: 600; padding: 10px 16px;">
+                            Add to Cart
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+var qvProductData = null;
+
+function closeQuickView() {
+    var overlay = document.getElementById('quickViewModalOverlay');
+    var content = overlay.querySelector('.sf-quickview-modal-content');
+    if (overlay) {
+        overlay.style.opacity = '0';
+        content.style.transform = 'scale(0.95)';
+        setTimeout(function() {
+            overlay.style.display = 'none';
+        }, 300);
+    }
+}
+
+function changeQvQty(val) {
+    var inp = document.getElementById('qv-qty-input');
+    var current = parseInt(inp.value) || 1;
+    var newval = current + val;
+    if (newval < 1) newval = 1;
+    inp.value = newval;
+}
+
+// Global click event to catch quick view clicks
+document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.sf-quickview-btn');
+    if (!btn) return;
+    e.preventDefault();
+
+    var slug = btn.dataset.productSlug;
+    if (!slug) return;
+
+    fetch('/p/' + slug + '?qv=1', {
+        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        qvProductData = data;
+        
+        // Populate fields
+        document.getElementById('qv-product-name').textContent = data.name;
+        document.getElementById('qv-short-desc').textContent = data.short_description || '';
+        
+        // Image Gallery
+        var mainImg = document.getElementById('qv-main-image');
+        mainImg.src = data.images[0] || '/images/placeholder.png';
+        
+        var thumbs = document.getElementById('qv-thumbnails');
+        thumbs.innerHTML = '';
+        if (data.images.length > 1) {
+            data.images.forEach(img => {
+                var thumb = document.createElement('img');
+                thumb.src = img;
+                thumb.style.width = '50px';
+                thumb.style.height = '50px';
+                thumb.style.objectFit = 'cover';
+                thumb.style.cursor = 'pointer';
+                thumb.className = 'border rounded p-1';
+                thumb.onclick = function() { mainImg.src = img; };
+                thumbs.appendChild(thumb);
+            });
+        }
+
+        // Reset Qty
+        document.getElementById('qv-qty-input').value = 1;
+
+        // Render variants
+        var chips = document.getElementById('qv-variant-chips');
+        chips.innerHTML = '';
+        
+        var isSingleVariant = data.variants.length === 1 && (data.variants[0].title.toLowerCase() === 'default title' || data.variants[0].title.trim() === '');
+        
+        if (isSingleVariant) {
+            document.getElementById('qv-variants-container').style.display = 'none';
+            selectQvVariant(data.variants[0]);
+        } else {
+            document.getElementById('qv-variants-container').style.display = 'block';
+            data.variants.forEach((v, index) => {
+                var chip = document.createElement('button');
+                chip.type = 'button';
+                chip.className = 'btn btn-sm btn-outline-secondary' + (index === 0 ? ' active' : '');
+                chip.style.margin = '2px';
+                chip.textContent = v.title;
+                chip.onclick = function() {
+                    chips.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                    chip.classList.add('active');
+                    selectQvVariant(v);
+                };
+                chips.appendChild(chip);
+            });
+            selectQvVariant(data.variants[0]);
+        }
+
+        // Show Modal
+        var overlay = document.getElementById('quickViewModalOverlay');
+        var content = overlay.querySelector('.sf-quickview-modal-content');
+        overlay.style.display = 'flex';
+        setTimeout(function() {
+            overlay.style.opacity = '1';
+            content.style.transform = 'scale(1)';
+        }, 50);
+    });
+});
+
+function selectQvVariant(v) {
+    document.getElementById('qv-variant-id').value = v.id;
+    document.getElementById('qv-price-retail').textContent = '₹' + parseFloat(v.price).toFixed(2);
+    
+    var compEl = document.getElementById('qv-compare-price');
+    var badgeEl = document.getElementById('qv-badge-save');
+    
+    if (v.compare_price && parseFloat(v.compare_price) > parseFloat(v.price)) {
+        compEl.textContent = '₹' + parseFloat(v.compare_price).toFixed(2);
+        compEl.style.display = 'inline';
+        
+        var saveAmt = parseFloat(v.compare_price) - parseFloat(v.price);
+        badgeEl.textContent = 'SAVE ₹' + saveAmt.toFixed(0);
+        badgeEl.style.display = 'block';
+    } else {
+        compEl.style.display = 'none';
+        badgeEl.style.display = 'none';
+    }
+
+    var submitBtn = document.getElementById('qv-submit-btn');
+    if (v.track_inventory && parseInt(v.stock_qty) <= 0) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Out of Stock';
+        submitBtn.className = 'btn btn-secondary flex-grow-1';
+    } else {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Add to Cart';
+        submitBtn.className = 'btn btn-primary flex-grow-1';
+    }
+}
+</script>
+
 <script>
     window.__sideCartConfig = {
         freeThreshold: 500,
@@ -588,6 +782,8 @@ function toggleMobileSearch() {
     // Global AJAX Add to Cart for product grids is handled globally in store.js
 </script>
 <script defer src="{{ asset('js/side-cart.js') }}?v={{ @filemtime(public_path('js/side-cart.js')) ?: '1' }}"></script>
+
+@include('partials.whatsapp_widget')
 
 </body>
 </html>

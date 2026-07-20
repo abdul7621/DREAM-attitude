@@ -136,6 +136,15 @@ class Order extends Model
             if (!empty($logChanges) && auth()->check()) {
                 AuditLog::log('order_updated', $order, $logOriginal, $logChanges);
             }
+
+            // Trigger loyalty points allocation when status updates to delivered
+            if (array_key_exists('order_status', $changes) && $changes['order_status'] === 'delivered') {
+                try {
+                    app(\App\Services\LoyaltyService::class)->allocatePoints($order);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::error("Loyalty point allocation failed: " . $e->getMessage());
+                }
+            }
         });
     }
 

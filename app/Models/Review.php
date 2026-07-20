@@ -9,7 +9,7 @@ class Review extends Model
 {
     protected $fillable = [
         'product_id', 'user_id', 'reviewer_name', 'email', 'rating', 'body', 'images',
-        'is_approved', 'verified_purchase',
+        'is_approved', 'verified_purchase', 'hair_type', 'skin_type', 'helpful_count', 'seller_reply',
     ];
 
     protected function casts(): array
@@ -36,5 +36,10 @@ class Review extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function votes(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ReviewVote::class);
     }
 }

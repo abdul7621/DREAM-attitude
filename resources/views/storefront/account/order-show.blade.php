@@ -5,10 +5,42 @@
     <i class="bi bi-receipt" style="color:var(--color-gold);"></i>Order {{ Str::limit($order->order_number, 20) }}
 </h1>
 
+{{-- Order Progress Timeline --}}
+@php
+    $statusSteps = ['placed', 'confirmed', 'packed', 'shipped', 'delivered'];
+    $currentStepIdx = array_search(strtolower($order->order_status), $statusSteps);
+    if (strtolower($order->order_status) === 'pending') $currentStepIdx = 0;
+    
+    $isCancelled = strtolower($order->order_status) === 'cancelled';
+@endphp
+
+@if (!$isCancelled)
+<div class="sf-account-card mb-4" style="padding: 24px; border-color: var(--color-border) !important;">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-text-muted);">
+        <span>Ordered</span>
+        <span>Confirmed</span>
+        <span>Packed</span>
+        <span>Dispatched</span>
+        <span>Delivered</span>
+    </div>
+    <div style="display: flex; align-items: center; position: relative; height: 6px; background: rgba(0,0,0,0.05); border-radius: 4px; margin: 0 10px;">
+        <div style="position: absolute; left: 0; top: 0; bottom: 0; width: {{ $currentStepIdx !== false ? ($currentStepIdx / 4) * 100 : 0 }}%; background: var(--color-gold); border-radius: 4px; transition: width 0.5s ease;"></div>
+        
+        @for($s = 0; $s < 5; $s++)
+            <div style="position: absolute; left: {{ ($s / 4) * 100 }}%; transform: translateX(-50%); width: 14px; height: 14px; border-radius: 50%; background: {{ $currentStepIdx !== false && $currentStepIdx >= $s ? 'var(--color-gold)' : '#e2e8f0' }}; border: 3px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.08); z-index: 10;"></div>
+        @endfor
+    </div>
+</div>
+@else
+<div class="sf-account-card mb-4" style="border-color: #dc3545 !important; background: rgba(220,53,69,0.04); color: #dc3545; font-weight: 600; font-size: 13px; padding: 16px 20px;">
+    <i class="bi bi-x-circle-fill me-2"></i> This order has been cancelled.
+</div>
+@endif
+
 <div style="display:grid;gap:24px;grid-template-columns:1fr;">
 
     {{-- Order Items --}}
-    <div class="sf-account-card" style="padding:0;overflow:hidden;">
+    <div class="sf-account-card" style="padding:0;overflow:hidden; border-color: var(--color-border) !important;">
         <div style="padding:14px 20px;border-bottom:1px solid var(--color-border);color:var(--color-text-primary);font-weight:600;font-size:14px;">Order Items</div>
         <div style="overflow-x:auto;">
             <table style="width:100%;border-collapse:collapse;">
@@ -41,7 +73,7 @@
     </div>
 
     {{-- Order Summary --}}
-    <div class="sf-account-card">
+    <div class="sf-account-card" style="border-color: var(--color-border) !important;">
         <div style="font-weight:600;color:var(--color-text-primary);font-size:14px;margin-bottom:16px;">Summary</div>
         <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
             <span style="color:var(--color-text-secondary);font-size:13px;">Status</span>
@@ -73,7 +105,7 @@
     {{-- Shipment --}}
     @if ($order->shipments->isNotEmpty())
     @php $ship = $order->shipments->first(); @endphp
-    <div class="sf-account-card">
+    <div class="sf-account-card" style="border-color: var(--color-border) !important;">
         <div style="font-weight:600;color:var(--color-text-primary);font-size:14px;margin-bottom:12px;">Shipment</div>
         <p style="color:var(--color-text-secondary);font-size:13px;margin-bottom:8px;">Status: <strong style="color:var(--color-text-primary);">{{ $ship->status }}</strong></p>
         @if ($ship->awb)
@@ -87,34 +119,63 @@
 
     {{-- Return request --}}
     @if ($order->order_status === 'delivered' && $order->returnRequests->isEmpty())
-    <div class="sf-account-card" style="border-color:rgba(201,168,76,0.3);">
-        <div style="font-weight:600;color:var(--color-gold);font-size:14px;margin-bottom:12px;">Request a Return</div>
+    <div class="sf-account-card" style="border-color:rgba(201,168,76,0.3) !important;">
+        <div style="font-weight:600;color:var(--color-gold);font-size:14px;margin-bottom:12px;">Request a Return / Replacement</div>
         <form action="{{ route('account.orders.return.store', $order) }}" method="post">
             @csrf
             <div style="margin-bottom:12px;">
-                <label class="sf-label">Reason for return</label>
+                <label class="sf-label">Reason for request *</label>
                 <textarea name="reason" class="sf-input" rows="3" required placeholder="Please describe the issue..." style="resize:vertical;"></textarea>
             </div>
-            <button type="submit" class="sf-btn-primary" style="width:auto;padding:0 24px;height:40px;font-size:12px;">Submit Return Request</button>
+            
+            <div style="margin-bottom:16px;">
+                <label class="sf-label">Request Type *</label>
+                <div style="display: flex; gap: 16px; align-items: center; margin-top: 4px;">
+                    <label style="font-size: 13px; color: var(--color-text-primary); cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <input type="radio" name="type" value="refund" checked> Refund (Store Credit)
+                    </label>
+                    <label style="font-size: 13px; color: var(--color-text-primary); cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <input type="radio" name="type" value="replacement"> Replacement
+                    </label>
+                </div>
+            </div>
+            
+            <button type="submit" class="sf-btn-primary" style="width:auto;padding:0 24px;height:40px;font-size:12px;">Submit Request</button>
         </form>
     </div>
     @elseif ($order->returnRequests->isNotEmpty())
         @php $ret = $order->returnRequests->first(); @endphp
-        <div class="sf-account-card" style="display:flex;align-items:center;gap:8px;color:var(--color-text-secondary);font-size:13px;">
+        <div class="sf-account-card" style="display:flex;align-items:center;gap:8px;color:var(--color-text-secondary);font-size:13px; border-color: var(--color-border) !important;">
             <i class="bi bi-info-circle" style="color:var(--color-gold);"></i>
-            Return request submitted — Status: <strong style="color:var(--color-text-primary);">{{ $ret->status }}</strong>
+            <span>
+                {{ ucfirst($ret->type ?? 'return') }} request submitted — Status: <strong style="color:var(--color-text-primary);">{{ $ret->status }}</strong>
+            </span>
         </div>
     @endif
 
     {{-- Actions --}}
     <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
-        <form action="{{ route('account.orders.reorder', $order) }}" method="post">
+        <form action="{{ route('account.orders.reorder', $order) }}" method="post" style="display:inline;">
             @csrf
             <button type="submit" style="background:transparent;border:1px solid var(--color-gold);color:var(--color-gold);padding:10px 20px;border-radius:var(--radius-sm);font-size:12px;text-transform:uppercase;letter-spacing:1px;cursor:pointer;transition:var(--transition);">
                 <i class="bi bi-arrow-repeat" style="margin-right:4px;"></i>Reorder This
             </button>
         </form>
-        <a href="{{ route('account.orders') }}" style="color:var(--color-text-muted);font-size:12px;text-transform:uppercase;letter-spacing:0.5px;text-decoration:none;">← All Orders</a>
+
+        <a href="{{ route('account.orders.invoice', $order) }}" class="text-decoration-none" style="display:inline-flex; align-items:center; gap:6px; border:1px solid var(--color-border); color:var(--color-text-primary); padding:10px 20px; border-radius:var(--radius-sm); font-size:12px; text-transform:uppercase; letter-spacing:1px;">
+            <i class="bi bi-file-pdf text-danger"></i> Invoice PDF
+        </a>
+
+        @if(in_array($order->order_status, ['placed', 'pending']))
+            <form action="{{ route('account.orders.cancel', $order) }}" method="post" onsubmit="return confirm('Are you sure you want to cancel this order?');" style="display:inline;">
+                @csrf
+                <button type="submit" style="background:transparent; border:1px solid #dc3545; color:#dc3545; padding:10px 20px; border-radius:var(--radius-sm); font-size:12px; text-transform:uppercase; letter-spacing:1px; cursor:pointer;">
+                    <i class="bi bi-x-circle"></i> Cancel Order
+                </button>
+            </form>
+        @endif
+
+        <a href="{{ route('account.orders') }}" style="color:var(--color-text-muted);font-size:12px;text-transform:uppercase;letter-spacing:0.5px;text-decoration:none; margin-left: auto;">← All Orders</a>
     </div>
 </div>
 @endsection

@@ -29,6 +29,7 @@ class ReturnRequestController extends Controller
 
         $data = $request->validate([
             'reason' => 'required|string|max:2000',
+            'type'   => 'required|string|in:refund,replacement',
         ]);
 
         // Prevent duplicate open return for same order
@@ -38,12 +39,13 @@ class ReturnRequestController extends Controller
             ->exists();
 
         if ($existing) {
-            return back()->with('error', 'A return request for this order is already open.');
+            return back()->with('error', 'A return/replacement request for this order is already open.');
         }
 
         ReturnRequest::query()->create([
             'order_id' => $order->id,
             'user_id'  => Auth::id(),
+            'type'     => $data['type'],
             'reason'   => $data['reason'],
             'status'   => 'requested',
         ]);

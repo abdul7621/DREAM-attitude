@@ -429,5 +429,24 @@ if (window.Store) {
     }, 3000);
 })();
 @endif
+
+// Mobile Sticky Cart Bar Toggle
+(function() {
+    var stickyBar = document.querySelector('.sf-sticky-cart-bar');
+    var mainBuyBtn = document.getElementById('buyNowBtn') || document.getElementById('addToCartBtn');
+    if (!stickyBar || !mainBuyBtn) return;
+
+    var obs = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                stickyBar.classList.remove('show');
+            } else {
+                stickyBar.classList.add('show');
+            }
+        });
+    }, { threshold: 0 });
+
+    obs.observe(mainBuyBtn);
+})();
 </script>
 @endpush

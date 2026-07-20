@@ -4514,3 +4514,36 @@ html { scroll-behavior: smooth; }
     display: none !important;
   }
 }
+
+/* Quick View Styles */
+.sf-product-img-wrap {
+  position: relative;
+  overflow: hidden;
+}
+.sf-product-img-wrap:hover .sf-quickview-btn {
+  opacity: 1 !important;
+  transform: translateX(-50%) translateY(0) !important;
+}
+@media (max-width: 768px) {
+  .sf-quickview-btn {
+    display: none !important;
+  }
+}
+
+/* Mobile Sticky Add to Cart Overrides */
+.sf-sticky-cart-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  transform: translateY(100%);
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  z-index: 1040;
+  box-shadow: 0 -8px 20px rgba(0,0,0,0.1);
+  display: flex !important;
+}
+.sf-sticky-cart-bar.show {
+  transform: translateY(0) !important;
+  opacity: 1 !important;
+}
