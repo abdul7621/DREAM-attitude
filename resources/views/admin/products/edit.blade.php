@@ -30,9 +30,8 @@
                 <input type="text" name="sku" value="{{ old('sku', $product->sku) }}" class="form-control">
             </div>
             <div class="col-12">
-                <label class="form-label fw-semibold">Short description <span class="text-danger">*</span> <span class="text-muted fw-normal">(100-150 chars ideal)</span></label>
-                <input type="text" name="short_description" id="shortDescInput" value="{{ old('short_description', $product->short_description) }}" class="form-control" maxlength="160" placeholder="e.g. A lightweight argan oil shampoo that controls frizz and restores natural shine.">
-                <div class="form-text"><span id="shortDescCount">0</span>/160 characters — Appears on category pages and top of product page. Keep it crisp.</div>
+                <label class="form-label fw-semibold">Short description <span class="text-danger">*</span></label>
+                <input type="text" name="short_description" id="shortDescInput" value="{{ old('short_description', $product->short_description) }}" class="form-control" placeholder="e.g. A lightweight argan oil shampoo that controls frizz and restores natural shine.">
             </div>
             <div class="col-12">
                 <label class="form-label">Description</label>
@@ -117,9 +116,8 @@
                 <textarea name="meta[how_to_use]" rows="2" class="form-control">{{ old('meta.how_to_use', $product->meta['how_to_use'] ?? '') }}</textarea>
             </div>
             <div class="col-12">
-                <label class="form-label fw-semibold">FAQ <span class="text-danger">*No ## Headings*</span></label>
+                <label class="form-label fw-semibold">FAQ</label>
                 <textarea name="meta[faq]" rows="4" class="form-control" placeholder="Q: Is it suitable for daily use?&#10;A: Yes, it is very gentle.">{{ old('meta.faq', isset($product->meta['faq']) ? (is_array($product->meta['faq']) ? json_encode($product->meta['faq'], JSON_PRETTY_PRINT) : $product->meta['faq']) : '') }}</textarea>
-                <div class="form-text text-danger fw-bold"><i class="bi bi-exclamation-triangle"></i> DO NOT use ## or ### headings. If you want a structured FAQ, provide a JSON array. Otherwise, just write simple text.</div>
             </div>
             <div class="col-md-6">
                 <label class="form-label">Offer Message</label>
@@ -136,19 +134,16 @@
         <p class="text-muted small mb-3">These fields power the product page conversion blocks — hook the customer, promise results, build trust.</p>
         <div class="row g-3">
             <div class="col-12">
-                <label class="form-label fw-semibold">Problem Hook <span class="badge bg-secondary">Shows above price</span> <span class="text-danger">*Limit 80 Chars*</span></label>
-                <input type="text" name="meta[problem_hook]" id="hookInput" class="form-control" value="{{ old('meta.problem_hook', $product->meta['problem_hook'] ?? '') }}" maxlength="80" placeholder="e.g. Struggling with hair fall, dryness or dull skin?">
-                <div class="form-text text-danger fw-bold"><i class="bi bi-exclamation-triangle"></i> DO NOT use ## headings or long paragraphs. EXACTLY 1 short line (max 80 chars). <span id="hookCount" class="text-dark">0</span>/80</div>
+                <label class="form-label fw-semibold">Problem Hook <span class="badge bg-secondary">Shows above price</span></label>
+                <input type="text" name="meta[problem_hook]" id="hookInput" class="form-control" value="{{ old('meta.problem_hook', $product->meta['problem_hook'] ?? '') }}" placeholder="e.g. Struggling with hair fall, dryness or dull skin?">
             </div>
             <div class="col-12">
-                <label class="form-label fw-semibold">Result Promise <span class="badge bg-warning text-dark">High impact</span> <span class="text-danger">*Limit 100 Chars*</span></label>
-                <input type="text" name="meta[result_promise]" id="promiseInput" class="form-control" value="{{ old('meta.result_promise', $product->meta['result_promise'] ?? '') }}" maxlength="100" placeholder="e.g. See visible results in just 7 days — or full refund.">
-                <div class="form-text text-danger fw-bold"><i class="bi bi-exclamation-triangle"></i> DO NOT use ## headings. Just 1 bold statement. <span id="promiseCount" class="text-dark">0</span>/100</div>
+                <label class="form-label fw-semibold">Result Promise <span class="badge bg-warning text-dark">High impact</span></label>
+                <input type="text" name="meta[result_promise]" id="promiseInput" class="form-control" value="{{ old('meta.result_promise', $product->meta['result_promise'] ?? '') }}" placeholder="e.g. See visible results in just 7 days — or full refund.">
             </div>
             <div class="col-12">
                 <label class="form-label fw-semibold">Trust Proof <span class="badge bg-success">After buy buttons</span></label>
-                <textarea name="meta[trust_proof]" rows="2" class="form-control" maxlength="250" placeholder="e.g. 10,000+ orders shipped. Rated 4.8/5 by verified buyers.&#10;Dermatologist tested. 100% natural ingredients.">{{ old('meta.trust_proof', $product->meta['trust_proof'] ?? '') }}</textarea>
-                <div class="form-text">Keep it to 2-3 short lines. DO NOT write essays here.</div>
+                <textarea name="meta[trust_proof]" rows="2" class="form-control" placeholder="e.g. 10,000+ orders shipped. Rated 4.8/5 by verified buyers.&#10;Dermatologist tested. 100% natural ingredients.">{{ old('meta.trust_proof', $product->meta['trust_proof'] ?? '') }}</textarea>
             </div>
             <div class="col-12">
                 <label class="form-label fw-semibold">Volume Pricing (Bundle Deals) <span class="badge bg-info text-dark">JSON format</span></label>

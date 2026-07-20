@@ -132,9 +132,12 @@
     </nav>
     
     <div class="sf-header-nav">
-        <form action="{{ route('search') }}" method="get" role="search">
+        <form action="{{ route('search') }}" method="get" role="search" class="sf-desktop-search">
             <input type="search" name="q" class="search-input" placeholder="Search products…" aria-label="Search">
         </form>
+        <button type="button" class="sf-search-toggle sf-mobile-only" onclick="toggleMobileSearch()" aria-label="Search" style="background:none; border:none; color:var(--color-gold); font-size:20px; cursor:pointer; display:none;">
+            <i class="bi bi-search"></i>
+        </button>
         @auth
             <a href="{{ route('account.dashboard') }}" class="cart-icon ps-3"><i class="bi bi-person-circle"></i></a>
         @else
@@ -150,6 +153,33 @@
         </button>
     </div>
 </header>
+
+{{-- Mobile Search Overlay --}}
+<div class="sf-mobile-search-overlay" id="mobileSearchOverlay" style="display: none; background: var(--color-bg-primary); border-bottom: 1px solid var(--color-border); padding: 10px 16px; position: sticky; top: 60px; z-index: 99; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+    <form action="{{ route('search') }}" method="get" role="search" style="width: 100%;">
+        <div style="display: flex; width: 100%; position: relative;">
+            <input type="search" name="q" placeholder="Search products…" aria-label="Search" style="width: 100%; border: 1px solid var(--color-border); padding: 8px 16px; padding-right: 44px; border-radius: 24px; background: var(--color-bg-elevated); color: var(--color-text-primary); outline: none; font-size: 14px;">
+            <button type="submit" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--color-gold); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                <i class="bi bi-search"></i>
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+function toggleMobileSearch() {
+    var overlay = document.getElementById('mobileSearchOverlay');
+    if (overlay) {
+        if (overlay.style.display === 'none') {
+            overlay.style.display = 'block';
+            var inp = overlay.querySelector('input');
+            if (inp) inp.focus();
+        } else {
+            overlay.style.display = 'none';
+        }
+    }
+}
+</script>
 
 {{-- ── Mobile Drawer ──────────────────────────────────────────── --}}
 <div class="sf-drawer-overlay" id="drawerOverlay" onclick="document.getElementById('mobileDrawer').classList.remove('open'); this.classList.remove('open');"></div>

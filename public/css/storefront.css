@@ -4501,3 +4501,16 @@ html { scroll-behavior: smooth; }
 .sf-mobile-checkout-btn:active { transform: scale(0.98); }
 .sf-mobile-checkout-btn::after { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%); transform: skewX(-25deg); animation: btnShimmer 3s infinite; }
 @keyframes btnShimmer { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
+
+/* Custom Mobile Search Styles */
+.sf-mobile-only {
+  display: none !important;
+}
+@media (max-width: 768px) {
+  .sf-mobile-only {
+    display: inline-block !important;
+  }
+  .sf-desktop-search {
+    display: none !important;
+  }
+}

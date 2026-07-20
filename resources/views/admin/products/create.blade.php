@@ -30,9 +30,8 @@
                 <input type="text" name="sku" value="{{ old('sku') }}" class="form-control">
             </div>
             <div class="col-12">
-                <label class="form-label fw-semibold">Short description <span class="text-danger">*</span> <span class="text-muted fw-normal">(100-150 chars ideal)</span></label>
-                <input type="text" name="short_description" id="shortDescInput" value="{{ old('short_description') }}" class="form-control" maxlength="160" placeholder="e.g. A lightweight argan oil shampoo that controls frizz and restores natural shine.">
-                <div class="form-text"><span id="shortDescCount">0</span>/160 characters — Keep it crisp.</div>
+                <label class="form-label fw-semibold">Short description <span class="text-danger">*</span></label>
+                <input type="text" name="short_description" id="shortDescInput" value="{{ old('short_description') }}" class="form-control" placeholder="e.g. A lightweight argan oil shampoo that controls frizz and restores natural shine.">
             </div>
             <div class="col-12">
                 <label class="form-label">Description (HTML ok)</label>
