@@ -239,7 +239,7 @@
                 <div class="py-3 text-muted">
                     <i class="bi bi-cloud-arrow-up-fill text-primary fs-1 mb-2"></i>
                     <p class="mb-1 fw-bold">Drag & Drop Images here or click to browse</p>
-                    <p class="small text-secondary mb-0">Supports JPG, PNG, WEBP, AVIF (Max 5MB each)</p>
+                    <p class="small text-secondary mb-0">Supports JPG, PNG, WEBP, AVIF (Max 100MB each)</p>
                 </div>
             </div>
             {{-- Live Previews --}}
@@ -309,13 +309,23 @@
             }, false);
         });
 
-        ['dragleave', 'drop'].forEach(eventName => {
-            zone.addEventListener(eventName, function (e) {
-                e.preventDefault();
-                zone.style.borderColor = '';
-                zone.style.background = '';
-            }, false);
-        });
+        // Dragleave reset
+        zone.addEventListener('dragleave', function (e) {
+            e.preventDefault();
+            zone.style.borderColor = '';
+            zone.style.background = '';
+        }, false);
+
+        // Handle drop
+        zone.addEventListener('drop', function (e) {
+            e.preventDefault();
+            zone.style.borderColor = '';
+            zone.style.background = '';
+            if (e.dataTransfer && e.dataTransfer.files.length > 0) {
+                input.files = e.dataTransfer.files;
+                input.dispatchEvent(new Event('change'));
+            }
+        }, false);
 
         input.addEventListener('change', function () {
             previewContainer.innerHTML = '';

@@ -15,12 +15,12 @@ use Illuminate\Support\Facades\Storage;
 class ImageOptimizerService
 {
     // Context-based max widths (never upscale beyond original)
-    public const MAX_PRODUCT  = 600;
+    public const MAX_PRODUCT  = 1600;
     public const MAX_CATEGORY = 500;
     public const MAX_HERO     = 1400;
     public const MAX_THUMB    = 400;
 
-    private int $quality = 75;
+    private int $quality = 85;
 
     /**
      * Optimize an image already stored on the public disk.
