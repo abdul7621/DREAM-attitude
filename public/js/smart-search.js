@@ -380,7 +380,13 @@
                     const items = data.items || [];
 
                     if (items.length === 0) {
-                        dropdown.innerHTML = `<div class="sf-search-no-results">No products found for "${val}"</div>`;
+                        let html = `<div class="sf-search-no-results">No direct matches for "${val}". Explore popular categories:</div>`;
+                        html += `<div class="sf-search-tags-container">`;
+                        popularCategories.forEach(cat => {
+                            html += `<a href="${cat.url}" class="sf-search-tag">${cat.name}</a>`;
+                        });
+                        html += `</div>`;
+                        dropdown.innerHTML = html;
                         return;
                     }
 

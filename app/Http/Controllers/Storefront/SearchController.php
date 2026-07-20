@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\SearchSynonym;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
@@ -14,18 +15,9 @@ class SearchController extends Controller
 {
     public function index(Request $request): View
     {
-        $originalQuery = trim((string) $request->query('q', ''));
-        $q = $originalQuery;
-
-        // Apply synonym mapping if available
-        $mappedQuery = null;
-        if ($q !== '') {
-            $synonym = SearchSynonym::where('term', strtolower($q))->first();
-            if ($synonym) {
-                $q = $synonym->replace_with;
-                $mappedQuery = $q;
-            }
-        }
+        $rawQ = trim((string) $request->query('q', ''));
+        $q = $this->preprocessQuery($rawQ);
+        $suggestion = null;
 
         $query = Product::query()->where('status', Product::STATUS_ACTIVE);
 
@@ -34,7 +26,7 @@ class SearchController extends Controller
             $query->where(function ($qBuilder) use ($like, $q): void {
                 $qBuilder->where('name', 'like', $like)
                     ->orWhere('sku', 'like', $like)
-                    ->orWhere('brand', 'like', $like);
+                    ->orWhere('short_description', 'like', $like);
                 if (DB::connection()->getDriverName() === 'mysql' && strlen($q) >= 3) {
                     $qBuilder->orWhereRaw('SOUNDEX(name) = SOUNDEX(?)', [$q]);
                 }
@@ -46,109 +38,63 @@ class SearchController extends Controller
             ->paginate(24)
             ->withQueryString();
 
-        $spellingSuggestion = null;
+        // If no products found, try Levenshtein spell correction
+        if ($products->total() === 0 && strlen($q) >= 3) {
+            $correctedQ = $this->getSpellingCorrection($q);
+            if ($correctedQ && $correctedQ !== $q) {
+                $suggestion = $correctedQ;
+                
+                // Re-run query with corrected spelling
+                $correctedQuery = Product::query()->where('status', Product::STATUS_ACTIVE);
+                $correctedLike = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $correctedQ).'%';
+                $correctedQuery->where(function ($qBuilder) use ($correctedLike, $correctedQ): void {
+                    $qBuilder->where('name', 'like', $correctedLike)
+                        ->orWhere('sku', 'like', $correctedLike)
+                        ->orWhere('short_description', 'like', $correctedLike);
+                    if (DB::connection()->getDriverName() === 'mysql' && strlen($correctedQ) >= 3) {
+                        $qBuilder->orWhereRaw('SOUNDEX(name) = SOUNDEX(?)', [$correctedQ]);
+                    }
+                });
+                $products = $correctedQuery->with(['variants', 'images'])
+                    ->orderByDesc('id')
+                    ->paginate(24)
+                    ->withQueryString();
+            }
+        }
+
+        // Bestsellers fallback for No-Result page
         $bestsellers = collect();
-
-        // If no products found, find spelling correction using Levenshtein distance
-        if ($products->isEmpty() && $q !== '') {
-            $allNames = Product::where('status', Product::STATUS_ACTIVE)->pluck('name')->toArray();
-            $closest = null;
-            $shortest = -1;
-            $qLower = strtolower($q);
-
-            foreach ($allNames as $name) {
-                $nameLower = strtolower($name);
-                // Extract words from the name to check individual words too
-                $words = explode(' ', $nameLower);
-                foreach ($words as $word) {
-                    $wordClean = preg_replace('/[^a-z0-9]/', '', $word);
-                    if (strlen($wordClean) < 3) continue;
-
-                    $lev = levenshtein($qLower, $wordClean);
-                    if ($lev === 0) {
-                        $closest = $name;
-                        $shortest = 0;
-                        break 2;
-                    }
-                    if ($lev <= 2 && ($shortest < 0 || $lev < $shortest)) {
-                        $closest = $name;
-                        $shortest = $lev;
-                    }
-                }
-
-                // Fallback to checking full string similarity
-                $levFull = levenshtein($qLower, $nameLower);
-                if ($levFull <= 4 && ($shortest < 0 || $levFull < $shortest)) {
-                    $closest = $name;
-                    $shortest = $levFull;
-                }
-            }
-
-            if ($closest && $shortest > 0) {
-                $spellingSuggestion = $closest;
-            }
-
-            // Fetch Bestsellers for fallback display
+        if ($products->total() === 0) {
             $bestsellers = Product::where('status', Product::STATUS_ACTIVE)
                 ->where('is_bestseller', true)
                 ->with(['variants', 'images'])
-                ->limit(8)
+                ->take(4)
                 ->get();
-            
             if ($bestsellers->isEmpty()) {
                 $bestsellers = Product::where('status', Product::STATUS_ACTIVE)
                     ->with(['variants', 'images'])
-                    ->orderByDesc('id')
-                    ->limit(8)
+                    ->take(4)
                     ->get();
             }
         }
 
-        return view('storefront.search', compact('products', 'originalQuery', 'q', 'mappedQuery', 'spellingSuggestion', 'bestsellers'));
+        return view('storefront.search', compact('products', 'q', 'rawQ', 'suggestion', 'bestsellers'));
     }
 
     public function suggest(Request $request): JsonResponse
     {
         $q = trim((string) $request->query('q', ''));
-        
-        // If query is empty, return dynamic active categories & featured products
         if (strlen($q) < 1) {
-            $categories = \App\Models\Category::where('is_active', true)->limit(6)->get(['id', 'name', 'slug']);
-            $bestsellers = Product::where('status', Product::STATUS_ACTIVE)
-                ->where('is_bestseller', true)
-                ->with(['variants', 'images'])
-                ->limit(4)
-                ->get();
-            if ($bestsellers->isEmpty()) {
-                $bestsellers = Product::where('status', Product::STATUS_ACTIVE)
-                    ->with(['variants', 'images'])
-                    ->limit(4)
-                    ->get();
-            }
-
-            $items = collect();
-            foreach ($categories as $cat) {
-                $items->push([
-                    'title' => $cat->name,
-                    'type'  => 'category',
-                    'url'   => route('category.show', $cat->slug),
-                ]);
-            }
-            $this->formatProductsResponse($bestsellers, $items);
-
-            return response()->json(['items' => $items, 'is_default' => true]);
+            return response()->json(['items' => []]);
         }
 
-        // Apply synonym mapping in suggestion
-        $synonym = SearchSynonym::where('term', strtolower($q))->first();
-        if ($synonym) {
-            $q = $synonym->replace_with;
-        }
+        // Apply synonyms to the suggestion query
+        $processedQuery = $this->preprocessQuery($q);
+        $like = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $processedQuery).'%';
 
-        $like = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $q).'%';
         $items = collect();
 
-        // 1. Matches in Categories
+        // 1. Matches in Categories (limit 4)
         $matchedCategories = \App\Models\Category::where('is_active', true)
             ->where('name', 'like', $like)
             ->limit(4)
@@ -161,7 +107,7 @@ class SearchController extends Controller
             ]);
         }
 
-        // 2. Matches in Products (name, sku, short_description)
+        // 2. Matches in Products (limit 8)
         $products = Product::query()
             ->where('status', Product::STATUS_ACTIVE)
             ->where(function ($query) use ($like): void {
@@ -170,65 +116,22 @@ class SearchController extends Controller
                       ->orWhere('short_description', 'like', $like);
             })
             ->with(['variants', 'images'])
-            ->limit(6)
+            ->limit(8)
             ->get();
 
-        // Fuzzy Fallback if exact LIKE matches are 0
-        if ($products->isEmpty() && strlen($q) >= 2) {
-            $words = preg_split('/[^a-zA-Z0-9]+/', strtolower($q));
-            $firstWord = $words[0] ?? $q;
-            
-            $fuzzyLike = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $firstWord).'%';
-            $products = Product::query()
-                ->where('status', Product::STATUS_ACTIVE)
-                ->where(function ($query) use ($fuzzyLike, $firstWord): void {
-                    $query->where('name', 'like', $fuzzyLike);
-                    if (DB::connection()->getDriverName() === 'mysql' && strlen($firstWord) >= 3) {
-                        $query->orWhereRaw('SOUNDEX(name) = SOUNDEX(?)', [$firstWord]);
-                    }
-                })
-                ->with(['variants', 'images'])
-                ->limit(6)
-                ->get();
-        }
-
-        // Bestsellers fallback if products still empty
-        $isFallback = false;
-        if ($products->isEmpty()) {
-            $isFallback = true;
-            $products = Product::where('status', Product::STATUS_ACTIVE)
-                ->where('is_bestseller', true)
-                ->with(['variants', 'images'])
-                ->limit(4)
-                ->get();
-            if ($products->isEmpty()) {
-                $products = Product::where('status', Product::STATUS_ACTIVE)
-                    ->with(['variants', 'images'])
-                    ->limit(4)
-                    ->get();
-            }
-        }
-
-        $this->formatProductsResponse($products, $items);
-
-        return response()->json(['items' => $items, 'is_fallback' => $isFallback]);
-    }
-
-    private function formatProductsResponse($products, $items): void
-    {
         $pricing = app(\App\Services\PricingService::class);
         $currencySvc = app(\App\Services\CurrencyService::class);
 
         foreach ($products as $p) {
             $variant = $p->variants->firstWhere('is_active', true) ?? $p->variants->first();
             $img = $p->images->firstWhere('is_primary', true) ?? $p->images->first();
-
+            
             $price = 0;
             $compare = null;
             $discount = 0;
             if ($variant) {
                 $price = $pricing ? $pricing->unitPriceForCustomer($variant, auth()->user(), 1) : ($variant->price_retail ?? 0);
-                $compare = $variant->compare_at_price;
+                $compare = $variant->compare_at_price ?? null;
                 if ($compare && $compare > $price) {
                     $discount = round((($compare - $price) / $compare) * 100);
                 }
@@ -248,6 +151,93 @@ class SearchController extends Controller
                 'in_stock' => !$isOutOfStock,
                 'variant_title' => ($variant && $variant->title !== 'Default Title') ? $variant->title : null,
             ]);
+        }
+
+        return response()->json(['items' => $items]);
+    }
+
+    private function preprocessQuery(string $q): string
+    {
+        $q = strtolower(trim($q));
+        if ($q === '') return '';
+
+        try {
+            // Load synonyms from cache
+            $synonyms = Cache::rememberForever('search_synonyms_list', function() {
+                return SearchSynonym::all(['term', 'replace_with']);
+            });
+
+            foreach ($synonyms as $synonym) {
+                $term = strtolower(trim($synonym->term));
+                $replace = strtolower(trim($synonym->replace_with));
+                
+                if (str_contains($q, $term)) {
+                    $q = str_replace($term, $replace, $q);
+                }
+            }
+        } catch (\Throwable $e) {
+            // Fallback if table doesn't exist yet
+        }
+
+        return $q;
+    }
+
+    private function getSpellingCorrection(string $q): ?string
+    {
+        try {
+            $words = Cache::remember('catalog_words', 1440, function() {
+                $names = Product::where('status', Product::STATUS_ACTIVE)->pluck('name');
+                $allWords = [];
+                foreach ($names as $name) {
+                    $tokens = preg_split('/[^a-zA-Z0-9]+/', strtolower($name));
+                    foreach ($tokens as $token) {
+                        if (strlen($token) >= 3) {
+                            $allWords[$token] = true;
+                        }
+                    }
+                }
+                return array_keys($allWords);
+            });
+
+            if (empty($words)) return null;
+
+            $inputWords = explode(' ', $q);
+            $correctedWords = [];
+            $hasCorrection = false;
+
+            foreach ($inputWords as $word) {
+                if (strlen($word) < 3) {
+                    $correctedWords[] = $word;
+                    continue;
+                }
+
+                if (in_array($word, $words)) {
+                    $correctedWords[] = $word;
+                    continue;
+                }
+
+                $closest = null;
+                $shortestDist = 3;
+
+                foreach ($words as $catalogWord) {
+                    $dist = @levenshtein($word, $catalogWord);
+                    if ($dist !== false && $dist < $shortestDist) {
+                        $closest = $catalogWord;
+                        $shortestDist = $dist;
+                    }
+                }
+
+                if ($closest) {
+                    $correctedWords[] = $closest;
+                    $hasCorrection = true;
+                } else {
+                    $correctedWords[] = $word;
+                }
+            }
+
+            return $hasCorrection ? implode(' ', $correctedWords) : null;
+        } catch (\Throwable $e) {
+            return null;
         }
     }
 }
