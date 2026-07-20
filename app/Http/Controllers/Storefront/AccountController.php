@@ -39,11 +39,8 @@ class AccountController extends Controller
             ->with(['variants', 'images'])
             ->get();
 
-        // Loyalty points balance
-        $loyaltyBalance = \App\Models\StoreCreditBalance::where('user_id', $user->id)->first()?->balance ?? 0;
-
         return view('storefront.account.dashboard', compact(
-            'user', 'recentOrders', 'totalOrders', 'totalSpent', 'wishlistCount', 'recentlyViewed', 'loyaltyBalance'
+            'user', 'recentOrders', 'totalOrders', 'totalSpent', 'wishlistCount', 'recentlyViewed'
         ));
     }
 
@@ -82,12 +79,7 @@ class AccountController extends Controller
         ]);
 
         // Log to Audit Log
-        \App\Models\AuditLog::create([
-            'user_id' => Auth::id(),
-            'event' => 'order_cancelled_by_customer',
-            'description' => "Order #{$order->order_number} cancelled by customer.",
-            'meta' => ['order_id' => $order->id]
-        ]);
+        \App\Models\AuditLog::log('order_cancelled_by_customer', $order);
 
         return redirect()->route('account.orders.show', $order)->with('success', 'Your order has been cancelled.');
     }
@@ -205,6 +197,17 @@ class AccountController extends Controller
 
         return redirect()->route('cart.index')
             ->with('success', "All {$added} items from order #{$order->order_number} added to cart.");
+    }
+
+    public function loyaltyDashboard(): View
+    {
+        $user = Auth::user();
+        $loyaltyBalance = \App\Models\StoreCreditBalance::where('user_id', $user->id)->first()?->balance ?? 0;
+        $ledger = \App\Models\StoreCreditLedger::where('user_id', $user->id)
+            ->orderByDesc('id')
+            ->paginate(15);
+
+        return view('storefront.account.loyalty', compact('user', 'loyaltyBalance', 'ledger'));
     }
 
     public function redeemLoyaltyPoints(Request $request): RedirectResponse

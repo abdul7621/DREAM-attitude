@@ -21,33 +21,6 @@
         </div>
     </div>
 
-    {{-- Loyalty Wallet Panel --}}
-    <div class="sf-account-card sf-account-panel mb-4" style="border-color: rgba(201,168,76,0.3) !important; background: rgba(201,168,76,0.02);">
-        <div class="sf-account-panel-header" style="background: rgba(201,168,76,0.05); color: var(--color-gold); font-weight: bold; border-bottom: 1px solid rgba(201,168,76,0.15);">
-            <i class="bi bi-wallet2 me-2"></i> Loyalty Reward Wallet
-        </div>
-        <div class="p-4">
-            <div class="row align-items-center g-3">
-                <div class="col-md-6">
-                    <div style="font-size: 13px; color: var(--color-text-secondary);">Available Points Balance</div>
-                    <div style="font-size: 32px; font-weight: 700; color: var(--color-gold); margin-top: 4px;">{{ number_format($loyaltyBalance, 0) }} pts</div>
-                    <div style="font-size: 11px; color: var(--color-text-muted); margin-top: 4px;">1 Point = ₹1 Store Discount. Points are earned automatically on order delivery.</div>
-                </div>
-                <div class="col-md-6">
-                    <form action="{{ route('account.loyalty.redeem') }}" method="post" class="border p-3 rounded bg-white">
-                        @csrf
-                        <div class="fw-semibold small mb-2 text-dark">Redeem Points for Discount Coupon</div>
-                        <div class="input-group">
-                            <input type="number" name="amount" class="form-control form-control-sm" placeholder="Min 10 points" min="10" max="{{ (int) $loyaltyBalance }}" required>
-                            <button type="submit" class="btn btn-sm btn-primary" style="background: var(--color-gold); border-color: var(--color-gold); color: white;">Convert to Coupon</button>
-                        </div>
-                        <div class="form-text small" style="font-size: 10px; margin-top: 4px; color: var(--color-text-muted);">Coupon will be restricted to your account and valid for 90 days.</div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
     {{-- Recent Orders --}}
     <div class="sf-account-card sf-account-panel">
         <div class="sf-account-panel-header">Recent Orders</div>

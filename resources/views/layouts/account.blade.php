@@ -33,6 +33,11 @@
           {{ request()->routeIs('account.orders*') 
              ? 'active' : '' }}">
           My Orders</a>
+        <a href="{{ route('account.loyalty') }}"
+          class="sf-sidebar-link
+          {{ request()->routeIs('account.loyalty*') 
+             ? 'active' : '' }}">
+          Loyalty Wallet</a>
         <a href="{{ route('account.profile') }}"
           class="sf-sidebar-link
           {{ request()->routeIs('account.profile*') 

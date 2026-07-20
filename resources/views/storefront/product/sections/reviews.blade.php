@@ -1,28 +1,95 @@
+<style>
+.sf-review-header-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+    margin-bottom: 40px;
+}
+@media (min-width: 768px) {
+    .sf-review-header-grid {
+        grid-template-columns: 280px 1fr;
+    }
+}
+.sf-star-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+.sf-star-label-text {
+    width: 50px;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+}
+.sf-star-bar-bg {
+    flex-grow: 1;
+    height: 8px;
+    background: rgba(0,0,0,0.05);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+.sf-star-bar-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background-color: var(--color-gold);
+    border-radius: 4px;
+}
+.sf-star-count-text {
+    width: 30px;
+    text-align: right;
+    color: var(--color-text-muted);
+}
+.sf-review-form-container {
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    margin-top: 32px;
+}
+.sf-review-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+}
+.review-thumb:hover {
+    opacity: 0.85;
+    transform: scale(1.03);
+}
+.review-thumb {
+    transition: all 0.2s ease;
+}
+</style>
+
 <section class="sf-section" style="border-top:1px solid var(--color-border);">
     <div class="sf-container">
 
         {{-- Review Header & Rating Breakdown --}}
-        <div class="row g-4 mb-5">
-            <div class="col-md-4">
-                <h2 class="sf-section-title mb-3">Customer Reviews</h2>
+        <div class="sf-review-header-grid">
+            <div>
+                <h2 class="sf-section-title" style="margin-bottom: 12px;">Customer Reviews</h2>
                 @if ($reviewCount > 0)
-                    <div class="d-flex align-items-center gap-3">
-                        <span class="display-5 fw-bold" style="color:var(--color-gold);">{{ number_format($avgRating, 1) }}</span>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <span style="color:var(--color-gold);font-size:36px;font-weight:700;">{{ number_format($avgRating, 1) }}</span>
                         <div>
-                            <div style="color:var(--color-gold);font-size:18px;">
+                            <div style="color:var(--color-gold);font-size:16px;">
                                 @for ($i = 1; $i <= 5; $i++)
                                     <i class="bi bi-star{{ $i <= round($avgRating) ? '-fill' : '' }}"></i>
                                 @endfor
                             </div>
-                            <div class="text-muted small">Based on {{ $reviewCount }} {{ Str::plural('review', $reviewCount) }}</div>
+                            <div style="color:var(--color-text-muted);font-size:12px;margin-top:2px;">Based on {{ $reviewCount }} {{ Str::plural('review', $reviewCount) }}</div>
                         </div>
                     </div>
                 @else
-                    <p class="text-muted small">No reviews yet. Be the first to review!</p>
+                    <p style="color:var(--color-text-muted);font-size:13px;">No reviews yet. Be the first to review!</p>
                 @endif
             </div>
 
-            <div class="col-md-8">
+            <div>
                 @if ($reviewCount > 0)
                     @php
                         $stars = [5 => 0, 4 => 0, 3 => 0, 2 => 0, 1 => 0];
@@ -30,15 +97,15 @@
                             if (isset($stars[$r->rating])) $stars[$r->rating]++;
                         }
                     @endphp
-                    <div class="d-flex flex-column gap-2" style="max-width: 450px;">
+                    <div style="max-width: 450px; display: flex; flex-direction: column; gap: 4px;">
                         @foreach ($stars as $star => $count)
                             @php $pct = ($count / $reviewCount) * 100; @endphp
-                            <div class="d-flex align-items-center gap-3" style="font-size: 13px;">
-                                <span style="width: 50px;" class="text-nowrap">{{ $star }} star</span>
-                                <div class="progress flex-grow-1" style="height: 8px; border-radius: 4px; background: rgba(0,0,0,0.05);">
-                                    <div class="progress-bar" role="progressbar" style="width: {{ $pct }}%; background-color: var(--color-gold); border-radius: 4px;"></div>
+                            <div class="sf-star-row">
+                                <span class="sf-star-label-text">{{ $star }} star</span>
+                                <div class="sf-star-bar-bg">
+                                    <div class="sf-star-bar-fill" style="width: {{ $pct }}%;"></div>
                                 </div>
-                                <span style="width: 40px;" class="text-end text-muted">{{ $count }}</span>
+                                <span class="sf-star-count-text">{{ $count }}</span>
                             </div>
                         @endforeach
                     </div>
@@ -46,105 +113,107 @@
             </div>
         </div>
 
-        {{-- Review Cards --}}
+        {{-- Review Cards Slider --}}
         @if ($reviewCount > 0)
-            <div class="sf-review-slider mb-5" id="productReviewSlider" style="overflow-x: auto; padding-bottom: 15px;">
-                <div class="sf-review-track d-flex gap-3" id="productReviewTrack" style="scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;">
+            <div class="sf-review-slider" id="productReviewSlider" style="margin-bottom:32px;">
+                <div class="sf-review-track" id="productReviewTrack">
                     @foreach ($reviews as $review)
-                        <div class="sf-review-slide" style="flex: 0 0 350px; scroll-snap-align: start;">
-                            <div class="sf-review-card h-100 p-4 border rounded bg-white shadow-sm d-flex flex-column" style="border-color: var(--color-border) !important;">
-                                <div class="d-flex justify-content-between align-items-start mb-3">
-                                    <div class="sf-review-stars" style="color:var(--color-gold); font-size: 14px;">
-                                        @for ($i = 1; $i <= 5; $i++)
-                                            <i class="bi bi-star{{ $i <= $review->rating ? '-fill' : '' }}"></i>
-                                        @endfor
+                        <div class="sf-review-slide">
+                            <div class="sf-review-card" style="box-shadow:none; border:1px solid var(--color-border); border-radius:var(--radius-md); padding:20px; display:flex; flex-direction:column; justify-content:space-between; height:100%;">
+                                
+                                <div>
+                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                                        <div class="sf-review-stars" style="color:var(--color-gold); font-size:14px;">
+                                            @for ($i = 1; $i <= 5; $i++)
+                                                <i class="bi bi-star{{ $i <= $review->rating ? '-fill' : '' }}"></i>
+                                            @endfor
+                                        </div>
+                                        @if ($review->verified_purchase)
+                                            <span style="color:#25d366; font-size:11px; font-weight:600; display:flex; align-items:center; gap:4px;">
+                                                <i class="bi bi-patch-check-fill"></i> Verified Buy
+                                            </span>
+                                        @endif
                                     </div>
-                                    @if ($review->verified_purchase)
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle d-flex align-items-center gap-1 py-1 px-2" style="font-size: 10px; border-radius: 12px;">
-                                            <i class="bi bi-patch-check-fill"></i> Verified Buy
-                                        </span>
+
+                                    {{-- Hair/Skin Metadata --}}
+                                    @if ($review->hair_type || $review->skin_type)
+                                        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+                                            @if ($review->hair_type)
+                                                <span style="background:var(--color-bg-elevated); color:var(--color-text-secondary); border:1px solid var(--color-border); font-size:10px; padding:2px 8px; border-radius:4px;">Hair: {{ $review->hair_type }}</span>
+                                            @endif
+                                            @if ($review->skin_type)
+                                                <span style="background:var(--color-bg-elevated); color:var(--color-text-secondary); border:1px solid var(--color-border); font-size:10px; padding:2px 8px; border-radius:4px;">Skin: {{ $review->skin_type }}</span>
+                                            @endif
+                                        </div>
+                                    @endif
+
+                                    <p class="sf-review-text" style="margin:0 0 16px 0; font-size:14px; font-style:italic; line-height:1.6; color:var(--color-text-secondary);">"{{ $review->body }}"</p>
+
+                                    {{-- Review Images Gallery --}}
+                                    @if (!empty($review->images))
+                                        <div style="display:flex; gap:8px; margin-bottom:16px;">
+                                            @foreach ($review->images as $path)
+                                                <img src="{{ asset('storage/' . $path) }}" alt="Review Photo" class="review-thumb" style="width:48px; height:48px; object-fit:cover; border-radius:4px; border:1px solid var(--color-border); cursor:pointer;" onclick="openReviewLightbox('{{ asset('storage/' . $path) }}')">
+                                            @endforeach
+                                        </div>
+                                    @endif
+
+                                    {{-- Seller Reply --}}
+                                    @if ($review->seller_reply)
+                                        <div style="background:var(--color-bg-elevated); border-left:3px solid var(--color-gold); padding:10px 14px; border-radius:0 4px 4px 0; margin-bottom:16px; font-size:12px;">
+                                            <div style="font-weight:600; color:var(--color-text-primary); margin-bottom:4px;"><i class="bi bi-chat-left-dots-fill" style="color:var(--color-gold); margin-right:4px;"></i>Store Reply:</div>
+                                            <p style="margin:0; color:var(--color-text-secondary); line-height:1.5;">{{ $review->seller_reply }}</p>
+                                        </div>
                                     @endif
                                 </div>
 
-                                {{-- User Metadata (Hair/Skin Type) --}}
-                                @if ($review->hair_type || $review->skin_type)
-                                    <div class="mb-3 d-flex flex-wrap gap-2">
-                                        @if ($review->hair_type)
-                                            <span class="badge bg-light text-secondary border px-2 py-1" style="font-size: 10px; border-radius: 8px;">Hair: {{ $review->hair_type }}</span>
-                                        @endif
-                                        @if ($review->skin_type)
-                                            <span class="badge bg-light text-secondary border px-2 py-1" style="font-size: 10px; border-radius: 8px;">Skin: {{ $review->skin_type }}</span>
-                                        @endif
-                                    </div>
-                                @endif
-
-                                <p class="sf-review-text flex-grow-1 text-secondary mb-3" style="font-size: 14px; line-height: 1.6; font-style: italic;">"{{ $review->body }}"</p>
-
-                                {{-- Attached Photos Gallery --}}
-                                @if (!empty($review->images))
-                                    <div class="d-flex gap-2 mb-3">
-                                        @foreach ($review->images as $path)
-                                            <img src="{{ asset('storage/' . $path) }}" alt="Review Image" class="rounded border review-thumb" style="width: 48px; height: 48px; object-fit: cover; cursor: pointer;" onclick="openReviewLightbox('{{ asset('storage/' . $path) }}')">
-                                        @endforeach
-                                    </div>
-                                @endif
-
-                                {{-- Seller Response Block --}}
-                                @if ($review->seller_reply)
-                                    <div class="p-3 bg-light rounded border mb-3" style="font-size: 12px; border-color: rgba(201,168,76,0.2) !important; border-left: 3px solid var(--color-gold) !important;">
-                                        <div class="fw-bold text-dark mb-1"><i class="bi bi-chat-left-dots-fill text-warning me-1"></i> Store Reply:</div>
-                                        <p class="mb-0 text-muted">{{ $review->seller_reply }}</p>
-                                    </div>
-                                @endif
-
-                                <div class="d-flex align-items-center justify-content-between mt-auto pt-3 border-top" style="border-color: rgba(0,0,0,0.05) !important;">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <div class="sf-review-avatar" style="width: 32px; height: 32px; border-radius: 50%; background: var(--color-gold); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">
-                                            {{ strtoupper(mb_substr($review->reviewer_name, 0, 1)) }}
-                                        </div>
-                                        <div class="text-start">
-                                            <div class="fw-semibold small" style="color: var(--color-text-primary);">{{ $review->reviewer_name }}</div>
-                                            <div class="text-muted" style="font-size: 10px;">{{ $review->created_at->diffForHumans() }}</div>
+                                <div style="display:flex; align-items:center; justify-content:space-between; margin-top:auto; padding-top:12px; border-top:1px solid var(--color-border);">
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <div class="sf-review-avatar" style="width:28px; height:28px; font-size:11px;">{{ strtoupper(mb_substr($review->reviewer_name, 0, 1)) }}</div>
+                                        <div style="text-align:left;">
+                                            <div class="sf-reviewer-name" style="font-size:12px; font-weight:600; color:var(--color-text-primary);">{{ $review->reviewer_name }}</div>
+                                            <div style="font-size:10px; color:var(--color-text-muted);">{{ $review->created_at->diffForHumans() }}</div>
                                         </div>
                                     </div>
-
-                                    {{-- Helpful vote button --}}
-                                    <button type="button" class="btn btn-sm btn-link text-decoration-none text-muted p-0 d-flex align-items-center gap-1 helpful-vote-btn" onclick="voteReview({{ $review->id }}, this)" style="font-size: 12px;">
+                                    
+                                    {{-- Upvote --}}
+                                    <button type="button" onclick="voteReview({{ $review->id }}, this)" style="background:none; border:none; color:var(--color-text-muted); cursor:pointer; font-size:12px; display:flex; align-items:center; gap:4px; padding:0; transition:color 0.2s;">
                                         <i class="bi bi-hand-thumbs-up"></i> Helpful (<span class="helpful-count">{{ $review->helpful_count }}</span>)
                                     </button>
                                 </div>
+
                             </div>
                         </div>
                     @endforeach
                 </div>
             </div>
         @else
-            <div class="text-center py-5 px-4 mb-5 rounded border" style="background: var(--color-bg-surface); border-color: var(--color-border) !important;">
-                <i class="bi bi-chat-square-text text-muted mb-3" style="font-size:32px;"></i>
-                <p class="text-muted small mb-0">No reviews yet. Be the first to share your thoughts!</p>
+            <div style="text-align:center;padding:32px 20px;background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:32px;">
+                <i class="bi bi-chat-square-text" style="font-size:32px;color:var(--color-gold);display:block;margin-bottom:12px;"></i>
+                <p style="color:var(--color-text-muted);font-size:14px;margin:0;">No reviews yet. Be the first to review!</p>
             </div>
         @endif
 
         {{-- Write a Review Form --}}
-        <div class="card shadow-sm border p-4 rounded" style="background: var(--color-bg-elevated); border-color: var(--color-border) !important;">
-            <h3 class="h6 fw-bold mb-4 text-uppercase" style="letter-spacing: 0.5px; color: var(--color-text-primary);">
-                <i class="bi bi-pencil-square text-warning me-2"></i>Write a Review
+        <div class="sf-review-form-container">
+            <h3 style="color:var(--color-text-primary);font-size:16px;font-weight:500;text-transform:uppercase;letter-spacing:1px;margin-bottom:20px;display:flex;align-items:center;">
+                <i class="bi bi-pencil-square" style="color:var(--color-gold);margin-right:8px;"></i>Write a Review
             </h3>
 
             <form action="{{ route('reviews.store', $product) }}" method="post" enctype="multipart/form-data">
                 @csrf
-                <div class="row g-3 mb-3">
-                    <div class="col-md-4">
-                        <label class="form-label small fw-bold">Your Name *</label>
-                        <input type="text" name="reviewer_name" class="form-control" required value="{{ auth()->user()?->name ?? old('reviewer_name') }}">
+                <div class="sf-review-form-grid">
+                    <div>
+                        <label class="sf-label">Your Name *</label>
+                        <input type="text" name="reviewer_name" class="sf-input" required value="{{ auth()->user()?->name ?? old('reviewer_name') }}">
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label small fw-bold">Email Address *</label>
-                        <input type="email" name="email" class="form-control" required value="{{ auth()->user()?->email ?? old('email') }}">
+                    <div>
+                        <label class="sf-label">Email Address *</label>
+                        <input type="email" name="email" class="sf-input" required value="{{ auth()->user()?->email ?? old('email') }}">
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label small fw-bold">Rating *</label>
-                        <select name="rating" class="form-select" required>
+                    <div>
+                        <label class="sf-label">Rating *</label>
+                        <select name="rating" class="sf-input" required style="appearance:auto;-webkit-appearance:auto; background:#fff;">
                             @for($i = 5; $i >= 1; $i--)
                                 <option value="{{ $i }}">{{ str_repeat('★', $i) }}{{ str_repeat('☆', 5 - $i) }} ({{ $i }})</option>
                             @endfor
@@ -152,32 +221,31 @@
                     </div>
                 </div>
 
-                {{-- Hair & Skin Type options --}}
-                <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label small fw-bold">Hair Type (Optional)</label>
-                        <input type="text" name="hair_type" class="form-control" placeholder="e.g. Oily, Dry, Fine, Thick, Curly" value="{{ old('hair_type') }}">
+                {{-- Hair & Skin optional details --}}
+                <div class="sf-review-form-grid">
+                    <div>
+                        <label class="sf-label">Hair Type (Optional)</label>
+                        <input type="text" name="hair_type" class="sf-input" placeholder="e.g. Oily, Dry, Fine, Thick, Curly" value="{{ old('hair_type') }}">
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label small fw-bold">Skin Type (Optional)</label>
-                        <input type="text" name="skin_type" class="form-control" placeholder="e.g. Sensitive, Combination, Dry, Oily" value="{{ old('skin_type') }}">
+                    <div>
+                        <label class="sf-label">Skin Type (Optional)</label>
+                        <input type="text" name="skin_type" class="sf-input" placeholder="e.g. Sensitive, Combination, Dry, Oily" value="{{ old('skin_type') }}">
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label small fw-bold">Your Review *</label>
-                    <textarea name="body" rows="4" class="form-control" required style="resize:vertical;" placeholder="Tell us how you liked the product..."></textarea>
+                <div style="margin-bottom:20px;">
+                    <label class="sf-label">Your Review *</label>
+                    <textarea name="body" rows="4" class="sf-input" required style="resize:vertical;min-height:100px;line-height:1.6;" placeholder="Tell us how you liked the product..."></textarea>
                 </div>
 
-                {{-- Image uploads field --}}
-                <div class="mb-4">
-                    <label class="form-label small fw-bold">Add Photos (Optional)</label>
-                    <input type="file" name="images[]" class="form-control" multiple accept="image/*">
-                    <div class="form-text small">Select up to 3 photos (Max 2MB each).</div>
+                <div style="margin-bottom:24px;">
+                    <label class="sf-label">Add Photos (Optional)</label>
+                    <input type="file" name="images[]" class="sf-input" multiple accept="image/*" style="padding: 8px 12px; background: #fff; height: auto;">
+                    <div style="font-size:11px; color:var(--color-text-muted); margin-top:4px;">Select up to 3 photos (Max 2MB each).</div>
                 </div>
 
-                <button type="submit" class="btn btn-primary px-4 py-2" style="border-radius: 8px; font-weight: 600;">
-                    <i class="bi bi-send me-1"></i>Submit Review
+                <button type="submit" class="sf-btn-primary" style="width:auto;padding:0 32px;height:42px;font-size:12px;">
+                    <i class="bi bi-send" style="margin-right:6px;"></i>Submit Review
                 </button>
             </form>
         </div>
@@ -218,11 +286,9 @@ function voteReview(reviewId, btn) {
         var countSpan = btn.querySelector('.helpful-count');
         if (countSpan) countSpan.textContent = data.helpful_count;
         if (data.voted) {
-            btn.classList.add('voted');
-            btn.style.color = 'var(--color-success)';
+            btn.style.color = '#25d366';
         } else {
-            btn.classList.remove('voted');
-            btn.style.color = '';
+            btn.style.color = 'var(--color-text-muted)';
         }
     })
     .catch(() => {});

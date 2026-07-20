@@ -109,6 +109,7 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
     Route::post('orders/{order}/cancel', [AccountController::class, 'cancelOrder'])->name('orders.cancel');
     Route::post('orders/{order}/return', [ReturnRequestController::class, 'store'])->name('orders.return.store');
     Route::post('orders/{order}/reorder', [AccountController::class, 'reorder'])->name('orders.reorder');
+    Route::get('loyalty', [AccountController::class, 'loyaltyDashboard'])->name('loyalty');
     Route::post('loyalty/redeem', [AccountController::class, 'redeemLoyaltyPoints'])->name('loyalty.redeem');
     Route::get('returns', [ReturnRequestController::class, 'index'])->name('returns');
 
