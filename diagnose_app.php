@@ -15,7 +15,7 @@ function color($text, $colorCode) {
 
 echo color("=== starting system diagnostics ===\n", "36");
 
-// 1. Syntax Check (Linting) PHP Files
+// 1. Syntax Check (Linting) PHP Files via token_get_all (exec free for Shared Hosting)
 echo "\n" . color("Step 1: Checking syntax of PHP files...", "33") . "\n";
 $folders = ['app', 'config', 'routes', 'database/migrations', 'database/seeders'];
 $invalidFiles = [];
@@ -33,22 +33,27 @@ foreach ($folders as $folder) {
         $filePath = $file[0];
         $totalFiles++;
         
-        // Run php -l (lint check)
-        $output = [];
-        $returnVar = 0;
-        exec("php -l " . escapeshellarg($filePath) . " 2>&1", $output, $returnVar);
-        
-        if ($returnVar !== 0) {
+        // Pure PHP syntax check without exec()
+        $content = file_get_contents($filePath);
+        try {
+            // token_get_all with TOKEN_PARSE throws ParseError if syntax is invalid
+            token_get_all($content, TOKEN_PARSE);
+        } catch (\ParseError $e) {
             $invalidFiles[] = [
                 'file' => $filePath,
-                'error' => implode("\n", $output)
+                'error' => $e->getMessage() . " on line " . $e->getLine()
             ];
             echo color("✗", "31");
-        } else {
-            // Echo tiny progress dot
-            if ($totalFiles % 50 === 0) {
-                echo ".";
-            }
+        } catch (\Throwable $e) {
+            $invalidFiles[] = [
+                'file' => $filePath,
+                'error' => $e->getMessage()
+            ];
+            echo color("✗", "31");
+        }
+        
+        if ($totalFiles % 50 === 0) {
+            echo ".";
         }
     }
 }
