@@ -180,12 +180,12 @@
 
     // Config & state variables
     const maxHistoryCount = 5;
-    const trendingSearches = ["Perfume", "Attar", "Oud", "Musk", "Luxury Fragrance"];
+    const trendingSearches = ["Shampoo", "Hair Oil", "Face Wash", "Conditioner", "Hair Serum"];
     const popularCategories = [
-        { name: "Perfumes", url: "/search?q=Perfume" },
-        { name: "Attars", url: "/search?q=Attar" },
-        { name: "Oud Collection", url: "/search?q=Oud" },
-        { name: "Luxury Fragrances", url: "/search?q=Fragrance" }
+        { name: "Shampoo", url: "/search?q=Shampoo" },
+        { name: "Hair Oil", url: "/search?q=Hair+Oil" },
+        { name: "Face Wash", url: "/search?q=Face+Wash" },
+        { name: "Conditioner", url: "/search?q=Conditioner" }
     ];
 
     function getHistory() {
@@ -412,10 +412,23 @@
                     if (products.length > 0) {
                         html += `<div class="sf-search-section-title">Products</div>`;
                         products.forEach(p => {
+                            // Build star rating HTML
+                            let starsHtml = '';
+                            if (p.rating && p.rating > 0) {
+                                const fullStars = Math.floor(p.rating);
+                                const halfStar  = (p.rating - fullStars) >= 0.5;
+                                let starStr = '';
+                                for (let i = 0; i < fullStars; i++) starStr += '★';
+                                if (halfStar) starStr += '½';
+                                starsHtml = `<span style="color:#f59e0b;font-size:10px;letter-spacing:0;">${starStr}</span>`
+                                           + (p.rating_count > 0 ? `<span style="color:#9ca3af;font-size:10px;">(${p.rating_count})</span>` : '');
+                            }
+
                             html += `<a href="${p.url}" class="sf-search-item" onclick="saveHistory('${p.title.replace(/'/g, "\\'")}')">
                                 ${p.image ? `<img src="${p.image}" class="sf-search-item-img" alt="${p.title}">` : '<div class="sf-search-item-img"><i class="bi bi-bag"></i></div>'}
                                 <div class="sf-search-item-info">
                                     <div class="sf-search-item-title">${p.title}</div>
+                                    ${starsHtml ? `<div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">${starsHtml}</div>` : ''}
                                     <div class="sf-search-item-meta">
                                         <span class="sf-search-item-price">${p.price}</span>
                                         ${p.compare_price ? `<span class="sf-search-item-compare">${p.compare_price}</span>` : ''}

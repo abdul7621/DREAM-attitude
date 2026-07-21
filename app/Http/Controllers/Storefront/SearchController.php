@@ -115,17 +115,18 @@ class SearchController extends Controller
                       ->orWhere('sku', 'like', $like)
                       ->orWhere('short_description', 'like', $like);
             })
+            ->withAvg(['reviews' => fn($q) => $q->where('is_approved', true)], 'rating')
+            ->withCount(['reviews' => fn($q) => $q->where('is_approved', true)])
             ->with(['variants', 'images'])
             ->limit(8)
             ->get();
 
         $pricing = app(\App\Services\PricingService::class);
-        $currencySvc = app(\App\Services\CurrencyService::class);
 
         foreach ($products as $p) {
             $variant = $p->variants->firstWhere('is_active', true) ?? $p->variants->first();
             $img = $p->images->firstWhere('is_primary', true) ?? $p->images->first();
-            
+
             $price = 0;
             $compare = null;
             $discount = 0;
@@ -139,17 +140,23 @@ class SearchController extends Controller
 
             $isOutOfStock = !$p->isActive() || ($variant && $variant->track_inventory && $variant->stock_qty <= 0);
 
+            // Avg rating from approved reviews
+            $avgRating = round((float) ($p->reviews_avg_rating ?? 0), 1);
+            $ratingCount = (int) ($p->reviews_count ?? 0);
+
             $items->push([
-                'id' => $p->id,
-                'title' => $p->name,
-                'type' => 'product',
-                'url' => route('product.show', $p),
-                'image' => $img ? asset('storage/' . ($img->image_path ?? $img->path)) : null,
-                'price' => $price > 0 ? ($currencySvc ? $currencySvc->format($price) : '₹' . number_format($price, 2)) : 'Price on request',
-                'compare_price' => ($compare && $compare > $price) ? ($currencySvc ? $currencySvc->format($compare) : '₹' . number_format($compare, 2)) : null,
-                'discount' => $discount,
-                'in_stock' => !$isOutOfStock,
+                'id'            => $p->id,
+                'title'         => $p->name,
+                'type'          => 'product',
+                'url'           => route('product.show', $p),
+                'image'         => $img ? asset('storage/' . ($img->image_path ?? $img->path)) : null,
+                'price'         => $price > 0 ? ('₹' . number_format((float) $price, 0)) : 'Price on request',
+                'compare_price' => ($compare && $compare > $price) ? ('₹' . number_format((float) $compare, 0)) : null,
+                'discount'      => $discount,
+                'in_stock'      => !$isOutOfStock,
                 'variant_title' => ($variant && $variant->title !== 'Default Title') ? $variant->title : null,
+                'rating'        => $avgRating,
+                'rating_count'  => $ratingCount,
             ]);
         }
 

@@ -35,9 +35,9 @@ return new class extends Migration
             if (!Schema::hasColumn('reviews', 'seller_reply')) {
                 $table->text('seller_reply')->nullable()->after('helpful_count');
             }
-            if (!Schema::hasColumn('reviews', 'photos')) {
-                $table->json('photos')->nullable()->after('seller_reply');
-            }
+            // NOTE: Model uses `images` (json) column — NOT `photos`.
+            // `images` column is created in the base commerce_blueprint migration.
+            // No additional column needed here.
         });
 
         // 3. Review Votes Table
@@ -84,7 +84,7 @@ return new class extends Migration
         Schema::dropIfExists('search_synonyms');
 
         Schema::table('reviews', function (Blueprint $table) {
-            $table->dropColumn(['skin_type', 'hair_type', 'helpful_count', 'seller_reply', 'photos']);
+            $table->dropColumn(['skin_type', 'hair_type', 'helpful_count', 'seller_reply']);
         });
 
         Schema::table('return_requests', function (Blueprint $table) {

@@ -34,17 +34,32 @@
                     <div class="card-body">
                         <a href="{{ route('product.show', $product) }}" class="product-name">{{ Str::limit($product->name, 40) }}</a>
                         @if ($variant)
+                            @php
+                                $isOos = $variant->track_inventory && $variant->stock_qty <= 0;
+                            @endphp
                             <div class="price-row">
                                 <span class="sale-price">₹{{ number_format($variant->price_retail, 0) }}</span>
                                 @if ($variant->compare_at_price && $variant->compare_at_price > $variant->price_retail)
                                     <span class="mrp">₹{{ number_format($variant->compare_at_price, 0) }}</span>
                                 @endif
                             </div>
+                            {{-- Add to Cart --}}
+                            <button
+                                onclick="window.addSearchProductToCart(event, {{ $product->id }})"
+                                {{ $isOos ? 'disabled' : '' }}
+                                style="width:100%;margin-top:10px;background:{{ $isOos ? 'var(--color-bg-elevated)' : 'var(--color-gold)' }};color:{{ $isOos ? 'var(--color-text-muted)' : '#000' }};border:none;padding:9px 0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;border-radius:var(--radius-sm);cursor:{{ $isOos ? 'not-allowed' : 'pointer' }};transition:var(--transition);"
+                            >
+                                @if($isOos)
+                                    <i class="bi bi-x-circle me-1"></i> Sold Out
+                                @else
+                                    <i class="bi bi-bag-plus me-1"></i> Add to Cart
+                                @endif
+                            </button>
                         @endif
-                        <form action="{{ route('account.wishlist.destroy', $wish) }}" method="post" style="margin-top:auto;">
+                        <form action="{{ route('account.wishlist.destroy', $wish) }}" method="post" style="margin-top:8px;">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" style="width:100%;margin-top:10px;background:transparent;border:1px solid var(--color-error);color:var(--color-error);padding:8px 0;font-size:10px;text-transform:uppercase;letter-spacing:1px;border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition);">
+                            <button type="submit" style="width:100%;background:transparent;border:1px solid var(--color-error);color:var(--color-error);padding:7px 0;font-size:10px;text-transform:uppercase;letter-spacing:1px;border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition);">
                                 <i class="bi bi-trash" style="margin-right:4px;"></i>Remove
                             </button>
                         </form>

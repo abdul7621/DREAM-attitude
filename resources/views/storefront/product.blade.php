@@ -287,10 +287,25 @@
         var stickyVariant = document.getElementById('stickyVariant');
         if (stickyVariant && vname) stickyVariant.textContent = '- ' + vname;
 
+        // Urgency label — uses data-template & data-cap from title_price.blade.php
+        var urgencyWrap  = document.getElementById('urgencyWrap');
         var urgencyLabel = document.getElementById('urgencyLabel');
-        if(urgencyLabel) {
-            var msg = urgencyLabel.innerHTML;
-            urgencyLabel.innerHTML = msg.replace(/\d+/, Math.min(stock, {{ $product->meta['stock_display_cap'] ?? 80 }}));
+        var oosBanner    = document.getElementById('outOfStockLabel');
+        if (urgencyWrap && urgencyLabel) {
+            if (track && stock > 0) {
+                var tpl = urgencyWrap.getAttribute('data-template') || '🔥 Selling Fast! Only {stock} Left – Order Now!';
+                var cap = parseInt(urgencyWrap.getAttribute('data-cap') || '80', 10);
+                urgencyLabel.textContent = tpl.replace('{stock}', Math.min(stock, cap));
+                urgencyWrap.style.display = 'flex';
+                if (oosBanner) oosBanner.style.display = 'none';
+            } else if (track && stock <= 0) {
+                urgencyWrap.style.display = 'none';
+                if (oosBanner) oosBanner.style.display = 'flex';
+            } else {
+                // No inventory tracking — hide both
+                urgencyWrap.style.display = 'none';
+                if (oosBanner) oosBanner.style.display = 'none';
+            }
         }
 
         var stickyCompare = document.getElementById('stickyCompare');
