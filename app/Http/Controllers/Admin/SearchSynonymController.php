@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SearchSynonym;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class SearchSynonymController extends Controller
@@ -29,12 +30,16 @@ class SearchSynonymController extends Controller
             'replace_with' => strtolower(trim($data['replace_with'])),
         ]);
 
+        Cache::forget('search_synonyms_list'); // Clear cache so new synonym applies instantly
+
         return redirect()->route('admin.search-synonyms.index')->with('success', 'Synonym added successfully.');
     }
 
     public function destroy(SearchSynonym $searchSynonym): RedirectResponse
     {
         $searchSynonym->delete();
+
+        Cache::forget('search_synonyms_list'); // Clear cache so deletion reflects instantly
 
         return redirect()->route('admin.search-synonyms.index')->with('success', 'Synonym deleted successfully.');
     }

@@ -169,8 +169,8 @@ class SearchController extends Controller
         if ($q === '') return '';
 
         try {
-            // Load synonyms from cache
-            $synonyms = Cache::rememberForever('search_synonyms_list', function() {
+            // Load synonyms — 10 min cache, cleared when admin adds/removes synonyms
+            $synonyms = Cache::remember('search_synonyms_list', 600, function () {
                 return SearchSynonym::all(['term', 'replace_with']);
             });
 
