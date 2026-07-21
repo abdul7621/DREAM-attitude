@@ -242,8 +242,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('notification-templates', \App\Http\Controllers\Admin\NotificationTemplateController::class)->only(['index', 'edit', 'update']);
 
     // Menu Builder
-    Route::resource('menus', \App\Http\Controllers\Admin\MenuController::class);
-    Route::resource('menus.items', \App\Http\Controllers\Admin\MenuItemController::class)->except(['index', 'show']);
+    Route::resource('menus', \App\Http\Controllers\Admin\MenuController::class)->except(['show']);
+    Route::resource('menus.items', \App\Http\Controllers\Admin\MenuItemController::class)->only(['store', 'update', 'destroy']);
 
     // Redirects
     Route::resource('redirects', AdminRedirectController::class)->except(['show']);
