@@ -91,15 +91,49 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        // ── Pending Returns (real-time) ──────────────────────
-        $pendingReturns = ReturnRequest::where('status', 'requested')->count();
+        // ── Data Quality Warning: Empty Categories with matching products (5 min TTL) ──────
+        $dataQualityWarnings = Cache::remember('dashboard_data_quality', 300, function () {
+            $warnings = [];
+            $categories = \App\Models\Category::where('is_active', true)->get();
+            
+            foreach ($categories as $cat) {
+                // Count direct products
+                $directCount = Product::where('category_id', $cat->id)->count();
+                if ($directCount === 0) {
+                    $words = array_filter(explode(' ', preg_replace('/\s+/', ' ', $cat->name)));
+                    if (!empty($words)) {
+                        $searchQuery = Product::query()->where('status', Product::STATUS_ACTIVE);
+                        $searchQuery->where(function ($qBuilder) use ($words): void {
+                            foreach ($words as $word) {
+                                $wordLike = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $word).'%';
+                                $qBuilder->where(function ($subBuilder) use ($wordLike): void {
+                                    $subBuilder->where('name', 'like', $wordLike)
+                                        ->orWhere('sku', 'like', $wordLike)
+                                        ->orWhere('short_description', 'like', $wordLike);
+                                });
+                            }
+                        });
+                        
+                        $matchCount = $searchQuery->count();
+                        if ($matchCount > 0) {
+                            $warnings[] = [
+                                'category_id' => $cat->id,
+                                'category_name' => $cat->name,
+                                'match_count' => $matchCount,
+                            ];
+                        }
+                    }
+                }
+            }
+            return $warnings;
+        });
 
         return view('admin.dashboard', compact(
             'todayOrders', 'todayRevenue', 'totalRevenue', 'pendingOrders',
             'aov', 'codOrders', 'prepaidOrders',
             'revenueChart', 'topProducts',
             'lowStockVariants', 'recentOrders', 'recentReviews', 'pendingReturns',
-            'highRiskCod', 'pendingReviewsCount'
+            'highRiskCod', 'pendingReviewsCount', 'dataQualityWarnings'
         ));
     }
 }

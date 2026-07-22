@@ -58,6 +58,60 @@ class CategoryController extends Controller
 
         $products = $query->paginate(24)->appends(request()->query());
 
+        // Transparent In-Place Search Fallback if 0 products are linked to the category
+        if ($products->total() === 0) {
+            $words = array_filter(explode(' ', preg_replace('/\s+/', ' ', $category->name)));
+            if (!empty($words)) {
+                $fallbackQuery = Product::query()
+                    ->where('status', Product::STATUS_ACTIVE)
+                    ->withAvg(['reviews' => fn($q) => $q->where('is_approved', true)], 'rating')
+                    ->withCount(['reviews' => fn($q) => $q->where('is_approved', true)])
+                    ->with(['variants', 'images']);
+
+                $fallbackQuery->where(function ($qBuilder) use ($words): void {
+                    foreach ($words as $word) {
+                        $wordLike = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $word).'%';
+                        $qBuilder->where(function ($subBuilder) use ($wordLike): void {
+                            $subBuilder->where('name', 'like', $wordLike)
+                                ->orWhere('sku', 'like', $wordLike)
+                                ->orWhere('short_description', 'like', $wordLike);
+                        });
+                    }
+                });
+
+                // Apply sorting to fallback query
+                switch (request('sort')) {
+                    case 'price_asc':
+                        $fallbackQuery->orderBy(
+                            \App\Models\ProductVariant::select('price_retail')
+                                ->whereColumn('product_id', 'products.id')
+                                ->where('is_active', true)
+                                ->orderBy('price_retail')
+                                ->limit(1),
+                            'asc'
+                        );
+                        break;
+                    case 'price_desc':
+                        $fallbackQuery->orderByDesc(
+                            \App\Models\ProductVariant::select('price_retail')
+                                ->whereColumn('product_id', 'products.id')
+                                ->where('is_active', true)
+                                ->orderBy('price_retail')
+                                ->limit(1)
+                        );
+                        break;
+                    case 'bestseller':
+                        $fallbackQuery->orderByDesc('is_bestseller')->latest();
+                        break;
+                    default:
+                        $fallbackQuery->latest();
+                        break;
+                }
+
+                $products = $fallbackQuery->paginate(24)->appends(request()->query());
+            }
+        }
+
         return view('storefront.category', compact('category', 'products'));
     }
 }

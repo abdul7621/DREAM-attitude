@@ -16,3 +16,6 @@
   - [x] Line-total quantity multiplication for both unit price and MRP on the Cart page.
   - [x] Multiplied line-total and MRP added to the AJAX Cart data API.
   - [x] Side Cart Drawer updated to display line totals and crossed-out MRP totals.
+- [x] **Category Mapping UX & Data Quality Improvements**:
+  - [x] Transparent In-Place Search fallback on Empty Category pages (re-routes query dynamically via token matching to avoid blank pages).
+  - [x] Admin Dashboard data quality alerts displaying categories with 0 products but matching text-search catalog items with a direct link to fix category mappings.

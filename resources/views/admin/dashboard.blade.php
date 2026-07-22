@@ -6,6 +6,20 @@
     <span class="small text-muted">{{ now()->format('l, d M Y') }}</span>
 </div>
 
+@if(isset($dataQualityWarnings) && !empty($dataQualityWarnings))
+    <div class="alert alert-warning border-warning bg-warning bg-opacity-10 d-flex flex-column gap-2 mb-4">
+        <h6 class="fw-bold mb-0 text-dark" style="font-size: 14px;"><i class="bi bi-exclamation-triangle-fill text-warning me-2"></i> Catalog Data Quality Alerts</h6>
+        <div class="row g-2">
+            @foreach($dataQualityWarnings as $warn)
+                <div class="col-12 d-flex justify-content-between align-items-center bg-white p-2 rounded border border-warning border-opacity-25 shadow-sm">
+                    <span class="small text-dark text-opacity-75">Category <strong>"{{ $warn['category_name'] }}"</strong> has <strong>{{ $warn['match_count'] }}</strong> matching products in the catalog, but none are linked.</span>
+                    <a href="{{ route('admin.categories.edit', $warn['category_id']) }}" class="btn btn-sm btn-warning text-dark fw-bold py-1 px-3 ms-3" style="font-size: 11px; border-radius: 20px;">Fix Category Mapping</a>
+                </div>
+            @endforeach
+        </div>
+    </div>
+@endif
+
 {{-- ── KPI Cards ──────────────────────────────────────────── --}}
 <div class="row g-3 mb-4">
     <div class="col-6 col-xl-3">
