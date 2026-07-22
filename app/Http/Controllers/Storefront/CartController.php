@@ -34,6 +34,11 @@ class CartController extends Controller
         
         $items = [];
         foreach ($lines as $row) {
+            $compareAt = $row['variant']->compare_at_price;
+            $unitPrice = (float) $row['unit_price'];
+            $showMrp = $compareAt && (float) $compareAt > $unitPrice;
+            $lineCompareTotal = $compareAt ? ($compareAt * $row['item']->qty) : null;
+
             $items[] = [
                 'item_id' => $row['item']->id,
                 'variant_id' => $row['variant']->id,
@@ -41,9 +46,12 @@ class CartController extends Controller
                 'variant' => $row['variant']->title,
                 'url' => route('product.show', $row['product']->slug),
                 'qty' => $row['item']->qty,
-                'unit_price' => (float) $row['unit_price'],
-                'unit_price_formatted' => '₹' . number_format((float) $row['unit_price'], 2),
+                'unit_price' => $unitPrice,
+                'unit_price_formatted' => '₹' . number_format($unitPrice, 0),
                 'line_total' => (float) $row['line_total'],
+                'line_total_formatted' => '₹' . number_format((float) $row['line_total'], 0),
+                'line_compare_total' => $lineCompareTotal ? (float) $lineCompareTotal : null,
+                'line_compare_total_formatted' => ($showMrp && $lineCompareTotal) ? '₹' . number_format((float) $lineCompareTotal, 0) : null,
                 'image' => $row['product']->primaryImage() ? asset('storage/'.$row['product']->primaryImage()->path) : 'https://placehold.co/100',
             ];
         }

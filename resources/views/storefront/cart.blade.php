@@ -80,10 +80,12 @@
                                                 $compareAt = $row['variant']->compare_at_price;
                                                 $unitPrice = (float) $row['unit_price'];
                                                 $showMrp = $compareAt && (float) $compareAt > $unitPrice;
+                                                $lineTotal = $unitPrice * $item->qty;
+                                                $lineCompare = $compareAt ? ((float) $compareAt * $item->qty) : null;
                                             @endphp
-                                            {{ config('commerce.currency_symbol', '₹') }}{{ number_format($unitPrice, 0) }}
-                                            @if($showMrp)
-                                                <span class="sf-cart-item-mrp">{{ config('commerce.currency_symbol', '₹') }}{{ number_format((float) $compareAt, 0) }}</span>
+                                            {{ config('commerce.currency_symbol', '₹') }}{{ number_format($lineTotal, 0) }}
+                                            @if($showMrp && $lineCompare)
+                                                <span class="sf-cart-item-mrp">{{ config('commerce.currency_symbol', '₹') }}{{ number_format((float) $lineCompare, 0) }}</span>
                                             @endif
                                         </div>
                                     </div>

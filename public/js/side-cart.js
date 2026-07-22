@@ -103,7 +103,10 @@
                 <div class="sc-item-info">
                     <a href="${item.url}" class="sc-item-name">${item.name}</a>
                     ${item.variant ? `<small class="text-muted">${item.variant}</small>` : ''}
-                    <div class="sc-item-price">${item.unit_price_formatted || ('₹' + parseFloat(item.unit_price).toLocaleString('en-IN'))}</div>
+                    <div class="sc-item-price">
+                        ${item.line_total_formatted || ('₹' + parseFloat(item.line_total).toLocaleString('en-IN'))}
+                        ${item.line_compare_total_formatted ? `<span style="text-decoration: line-through; color: #9ca3af; font-size: 11px; margin-left: 6px;">${item.line_compare_total_formatted}</span>` : ''}
+                    </div>
                     <div class="sc-item-actions">
                         <div class="sc-qty">
                             <button type="button" class="sc-qty-btn" data-action="decrease" data-id="${item.item_id}">−</button>
