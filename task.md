@@ -6,3 +6,13 @@
 - [x] **Issue 6**: Cart count badge positioning logic.
 - [x] **Issue 7**: Cart Count UI missing/broken.
 - [x] **Issue 8**: Profile / Account Page UI.
+- [x] **Search System Improvements**:
+  - [x] Token-based multi-word search matching (AND logic) for desktop/mobile search & suggestions.
+  - [x] Synonym ordering by term length DESC to replace longer phrases first.
+  - [x] Mobile search button redirection directly to dedicated search page (removed duplicate mobileSearchOverlay).
+  - [x] N+1 Query & Database performance optimization (eager loaded review aggregates, relationLoaded check in `primaryImage()`).
+  - [x] Dynamic popular tags derived from active catalog categories instead of hardcoded lists.
+- [x] **Cart Pricing Improvements**:
+  - [x] Line-total quantity multiplication for both unit price and MRP on the Cart page.
+  - [x] Multiplied line-total and MRP added to the AJAX Cart data API.
+  - [x] Side Cart Drawer updated to display line totals and crossed-out MRP totals.

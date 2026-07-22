@@ -34,14 +34,16 @@
         </form>
 
         {{-- Popular Search Tags --}}
-        <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 14px; align-items: center;">
-            <span style="font-size: 11px; color: #9CA3AF; text-transform: uppercase; font-weight: 600;">Popular:</span>
-            @foreach(['Perfume', 'Attar', 'Oud', 'Musk', 'Shampoo', 'Skin Care'] as $tag)
-                <a href="{{ route('search', ['q' => $tag]) }}" style="font-size: 11px; color: #4B5563; background: #FFFFFF; border: 1px solid #EAEAEA; padding: 4px 10px; border-radius: 12px; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--color-gold)';this.style.color='var(--color-gold)';" onmouseout="this.style.borderColor='#EAEAEA';this.style.color='#4B5563';">
-                    {{ $tag }}
-                </a>
-            @endforeach
-        </div>
+        @if(isset($popularTags) && $popularTags->isNotEmpty())
+            <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 14px; align-items: center;">
+                <span style="font-size: 11px; color: #9CA3AF; text-transform: uppercase; font-weight: 600;">Popular:</span>
+                @foreach($popularTags as $cat)
+                    <a href="{{ route('search', ['q' => $cat->name]) }}" style="font-size: 11px; color: #4B5563; background: #FFFFFF; border: 1px solid #EAEAEA; padding: 4px 10px; border-radius: 12px; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--color-gold)';this.style.color='var(--color-gold)';" onmouseout="this.style.borderColor='#EAEAEA';this.style.color='#4B5563';">
+                        {{ $cat->name }}
+                    </a>
+                @endforeach
+            </div>
+        @endif
     </div>
 </div>
 

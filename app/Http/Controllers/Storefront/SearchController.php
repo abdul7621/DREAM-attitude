@@ -22,18 +22,28 @@ class SearchController extends Controller
         $query = Product::query()->where('status', Product::STATUS_ACTIVE);
 
         if ($q !== '') {
-            $like = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $q).'%';
-            $query->where(function ($qBuilder) use ($like, $q): void {
-                $qBuilder->where('name', 'like', $like)
-                    ->orWhere('sku', 'like', $like)
-                    ->orWhere('short_description', 'like', $like);
-                if (DB::connection()->getDriverName() === 'mysql' && strlen($q) >= 3) {
-                    $qBuilder->orWhereRaw('SOUNDEX(name) = SOUNDEX(?)', [$q]);
-                }
-            });
+            $words = array_filter(explode(' ', preg_replace('/\s+/', ' ', $q)));
+            if (!empty($words)) {
+                $query->where(function ($qBuilder) use ($words, $q): void {
+                    foreach ($words as $word) {
+                        $wordLike = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $word).'%';
+                        $qBuilder->where(function ($subBuilder) use ($wordLike): void {
+                            $subBuilder->where('name', 'like', $wordLike)
+                                ->orWhere('sku', 'like', $wordLike)
+                                ->orWhere('short_description', 'like', $wordLike);
+                        });
+                    }
+                    if (DB::connection()->getDriverName() === 'mysql' && strlen($q) >= 3) {
+                        $qBuilder->orWhereRaw('SOUNDEX(name) = SOUNDEX(?)', [$q]);
+                    }
+                });
+            }
         }
 
-        $products = $query->with(['variants', 'images'])
+        $products = $query
+            ->withAvg(['reviews' => fn($q) => $q->where('is_approved', true)], 'rating')
+            ->withCount(['reviews' => fn($q) => $q->where('is_approved', true)])
+            ->with(['variants', 'images'])
             ->orderByDesc('id')
             ->paginate(24)
             ->withQueryString();
@@ -46,16 +56,26 @@ class SearchController extends Controller
                 
                 // Re-run query with corrected spelling
                 $correctedQuery = Product::query()->where('status', Product::STATUS_ACTIVE);
-                $correctedLike = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $correctedQ).'%';
-                $correctedQuery->where(function ($qBuilder) use ($correctedLike, $correctedQ): void {
-                    $qBuilder->where('name', 'like', $correctedLike)
-                        ->orWhere('sku', 'like', $correctedLike)
-                        ->orWhere('short_description', 'like', $correctedLike);
-                    if (DB::connection()->getDriverName() === 'mysql' && strlen($correctedQ) >= 3) {
-                        $qBuilder->orWhereRaw('SOUNDEX(name) = SOUNDEX(?)', [$correctedQ]);
-                    }
-                });
-                $products = $correctedQuery->with(['variants', 'images'])
+                $correctedWords = array_filter(explode(' ', preg_replace('/\s+/', ' ', $correctedQ)));
+                if (!empty($correctedWords)) {
+                    $correctedQuery->where(function ($qBuilder) use ($correctedWords, $correctedQ): void {
+                        foreach ($correctedWords as $word) {
+                            $wordLike = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $word).'%';
+                            $qBuilder->where(function ($subBuilder) use ($wordLike): void {
+                                $subBuilder->where('name', 'like', $wordLike)
+                                    ->orWhere('sku', 'like', $wordLike)
+                                    ->orWhere('short_description', 'like', $wordLike);
+                            });
+                        }
+                        if (DB::connection()->getDriverName() === 'mysql' && strlen($correctedQ) >= 3) {
+                            $qBuilder->orWhereRaw('SOUNDEX(name) = SOUNDEX(?)', [$correctedQ]);
+                        }
+                    });
+                }
+                $products = $correctedQuery
+                    ->withAvg(['reviews' => fn($q) => $q->where('is_approved', true)], 'rating')
+                    ->withCount(['reviews' => fn($q) => $q->where('is_approved', true)])
+                    ->with(['variants', 'images'])
                     ->orderByDesc('id')
                     ->paginate(24)
                     ->withQueryString();
@@ -67,18 +87,29 @@ class SearchController extends Controller
         if ($products->total() === 0) {
             $bestsellers = Product::where('status', Product::STATUS_ACTIVE)
                 ->where('is_bestseller', true)
+                ->withAvg(['reviews' => fn($q) => $q->where('is_approved', true)], 'rating')
+                ->withCount(['reviews' => fn($q) => $q->where('is_approved', true)])
                 ->with(['variants', 'images'])
                 ->take(4)
                 ->get();
             if ($bestsellers->isEmpty()) {
                 $bestsellers = Product::where('status', Product::STATUS_ACTIVE)
+                    ->withAvg(['reviews' => fn($q) => $q->where('is_approved', true)], 'rating')
+                    ->withCount(['reviews' => fn($q) => $q->where('is_approved', true)])
                     ->with(['variants', 'images'])
                     ->take(4)
                     ->get();
             }
         }
 
-        return view('storefront.search', compact('products', 'q', 'rawQ', 'suggestion', 'bestsellers'));
+        // Get dynamic popular categories / tags instead of hardcoding
+        $popularTags = Cache::remember('search_popular_tags', 3600, function() {
+            return \App\Models\Category::where('is_active', true)
+                ->limit(6)
+                ->get(['id', 'name', 'slug']);
+        });
+
+        return view('storefront.search', compact('products', 'q', 'rawQ', 'suggestion', 'bestsellers', 'popularTags'));
     }
 
     public function suggest(Request $request): JsonResponse
@@ -108,13 +139,23 @@ class SearchController extends Controller
         }
 
         // 2. Matches in Products (limit 8)
-        $products = Product::query()
-            ->where('status', Product::STATUS_ACTIVE)
-            ->where(function ($query) use ($like): void {
-                $query->where('name', 'like', $like)
-                      ->orWhere('sku', 'like', $like)
-                      ->orWhere('short_description', 'like', $like);
-            })
+        $suggestWords = array_filter(explode(' ', preg_replace('/\s+/', ' ', $processedQuery)));
+        $productsQuery = Product::query()->where('status', Product::STATUS_ACTIVE);
+
+        if (!empty($suggestWords)) {
+            $productsQuery->where(function ($qBuilder) use ($suggestWords): void {
+                foreach ($suggestWords as $word) {
+                    $wordLike = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $word).'%';
+                    $qBuilder->where(function ($subBuilder) use ($wordLike): void {
+                        $subBuilder->where('name', 'like', $wordLike)
+                            ->orWhere('sku', 'like', $wordLike)
+                            ->orWhere('short_description', 'like', $wordLike);
+                    });
+                }
+            });
+        }
+
+        $products = $productsQuery
             ->withAvg(['reviews' => fn($q) => $q->where('is_approved', true)], 'rating')
             ->withCount(['reviews' => fn($q) => $q->where('is_approved', true)])
             ->with(['variants', 'images'])
@@ -169,9 +210,11 @@ class SearchController extends Controller
         if ($q === '') return '';
 
         try {
-            // Load synonyms — 10 min cache, cleared when admin adds/removes synonyms
+            // Load synonyms — 10 min cache, ordered by term length DESC so longer terms match first
             $synonyms = Cache::remember('search_synonyms_list', 600, function () {
-                return SearchSynonym::all(['term', 'replace_with']);
+                return SearchSynonym::query()
+                    ->orderByRaw('LENGTH(term) DESC')
+                    ->get(['term', 'replace_with']);
             });
 
             foreach ($synonyms as $synonym) {
