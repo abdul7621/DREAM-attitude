@@ -43,6 +43,7 @@ class DashboardController extends Controller
                     ->where('order_status', Order::ORDER_STATUS_PLACED)
                     ->where('grand_total', '>=', 5000)->count(),
                 'pendingReviewsCount' => Review::where('is_approved', false)->count(),
+                'pendingReturns' => ReturnRequest::where('status', 'pending')->count(),
             ];
         });
 
