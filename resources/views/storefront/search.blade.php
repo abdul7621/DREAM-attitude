@@ -102,16 +102,10 @@
                 
                 <div style="display:flex;align-items:center;gap:12px;">
                     <select onchange="window.location=this.value" class="sf-input" style="width:auto;min-width:200px;padding:8px 14px;font-size:13px;background:#FFFFFF;border:1.5px solid #EAEAEA;border-radius:20px;cursor:pointer;outline:none;">
-                        @php
-                            $currentUrl = request()->fullUrlWithQuery(['sort' => '']);
-                            $currentUrl = str_replace('sort=&', '', $currentUrl);
-                            $currentUrl = str_replace('?sort=', '?', $currentUrl);
-                            $separator = str_contains($currentUrl, '?') ? '&' : '?';
-                        @endphp
-                        <option value="{{ $currentUrl.$separator }}sort=newest" {{ request('sort','newest')=='newest'?'selected':'' }}>Sort by latest</option>
-                        <option value="{{ $currentUrl.$separator }}sort=price_asc" {{ request('sort')=='price_asc'?'selected':'' }}>Sort by price: low to high</option>
-                        <option value="{{ $currentUrl.$separator }}sort=price_desc" {{ request('sort')=='price_desc'?'selected':'' }}>Sort by price: high to low</option>
-                        <option value="{{ $currentUrl.$separator }}sort=bestseller" {{ request('sort')=='bestseller'?'selected':'' }}>Sort by popularity</option>
+                        <option value="{{ request()->fullUrlWithQuery(['sort' => 'newest']) }}" {{ request('sort','newest')=='newest'?'selected':'' }}>Sort by latest</option>
+                        <option value="{{ request()->fullUrlWithQuery(['sort' => 'price_asc']) }}" {{ request('sort')=='price_asc'?'selected':'' }}>Sort by price: low to high</option>
+                        <option value="{{ request()->fullUrlWithQuery(['sort' => 'price_desc']) }}" {{ request('sort')=='price_desc'?'selected':'' }}>Sort by price: high to low</option>
+                        <option value="{{ request()->fullUrlWithQuery(['sort' => 'bestseller']) }}" {{ request('sort')=='bestseller'?'selected':'' }}>Sort by popularity</option>
                     </select>
                 </div>
             </div>

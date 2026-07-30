@@ -19,32 +19,94 @@ class SearchController extends Controller
         $q = $this->preprocessQuery($rawQ);
         $suggestion = null;
 
+        // Collect matching category IDs for category name/slug matches
+        $matchedCategoryIds = collect();
+        if ($q !== '') {
+            $matchingCategories = \App\Models\Category::where('is_active', true)
+                ->where(function ($catQuery) use ($q): void {
+                    $qLike = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $q).'%';
+                    $catQuery->where('name', 'like', $qLike)
+                             ->orWhere('slug', 'like', $qLike);
+                })
+                ->get();
+
+            foreach ($matchingCategories as $mCat) {
+                $matchedCategoryIds->push($mCat->id);
+                $childIds = $mCat->children()->where('is_active', true)->pluck('id');
+                if ($childIds->isNotEmpty()) {
+                    $matchedCategoryIds = $matchedCategoryIds->merge($childIds);
+                }
+            }
+            $matchedCategoryIds = $matchedCategoryIds->unique()->filter();
+        }
+
         $query = Product::query()->where('status', Product::STATUS_ACTIVE);
 
         if ($q !== '') {
             $words = array_filter(explode(' ', preg_replace('/\s+/', ' ', $q)));
-            if (!empty($words)) {
-                $query->where(function ($qBuilder) use ($words, $q): void {
-                    foreach ($words as $word) {
-                        $wordLike = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $word).'%';
-                        $qBuilder->where(function ($subBuilder) use ($wordLike): void {
-                            $subBuilder->where('name', 'like', $wordLike)
-                                ->orWhere('sku', 'like', $wordLike)
-                                ->orWhere('short_description', 'like', $wordLike);
-                        });
-                    }
-                    if (DB::connection()->getDriverName() === 'mysql' && strlen($q) >= 3) {
-                        $qBuilder->orWhereRaw('SOUNDEX(name) = SOUNDEX(?)', [$q]);
-                    }
-                });
-            }
+            $query->where(function ($qBuilder) use ($words, $q, $matchedCategoryIds): void {
+                if ($matchedCategoryIds->isNotEmpty()) {
+                    $qBuilder->orWhereIn('category_id', $matchedCategoryIds);
+                }
+
+                if (!empty($words)) {
+                    $qBuilder->orWhere(function ($phraseBuilder) use ($words): void {
+                        foreach ($words as $word) {
+                            $wordLike = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $word).'%';
+                            $phraseBuilder->where(function ($subBuilder) use ($wordLike): void {
+                                $subBuilder->where('name', 'like', $wordLike)
+                                    ->orWhere('sku', 'like', $wordLike)
+                                    ->orWhere('short_description', 'like', $wordLike)
+                                    ->orWhere('description', 'like', $wordLike)
+                                    ->orWhere('brand', 'like', $wordLike)
+                                    ->orWhere('tags', 'like', $wordLike)
+                                    ->orWhereHas('category', function($cQ) use ($wordLike) {
+                                        $cQ->where('name', 'like', $wordLike);
+                                    });
+                            });
+                        }
+                    });
+                }
+
+                if (DB::connection()->getDriverName() === 'mysql' && strlen($q) >= 3) {
+                    $qBuilder->orWhereRaw('SOUNDEX(name) = SOUNDEX(?)', [$q]);
+                }
+            });
+        }
+
+        // Apply Sorting
+        switch ($request->query('sort')) {
+            case 'price_asc':
+                $query->orderBy(
+                    \App\Models\ProductVariant::select('price_retail')
+                        ->whereColumn('product_id', 'products.id')
+                        ->where('is_active', true)
+                        ->orderBy('price_retail')
+                        ->limit(1),
+                    'asc'
+                );
+                break;
+            case 'price_desc':
+                $query->orderByDesc(
+                    \App\Models\ProductVariant::select('price_retail')
+                        ->whereColumn('product_id', 'products.id')
+                        ->where('is_active', true)
+                        ->orderBy('price_retail')
+                        ->limit(1)
+                );
+                break;
+            case 'bestseller':
+                $query->orderByDesc('is_bestseller')->latest();
+                break;
+            default:
+                $query->latest();
+                break;
         }
 
         $products = $query
             ->withAvg(['reviews' => fn($q) => $q->where('is_approved', true)], 'rating')
             ->withCount(['reviews' => fn($q) => $q->where('is_approved', true)])
             ->with(['variants', 'images'])
-            ->orderByDesc('id')
             ->paginate(24)
             ->withQueryString();
 
@@ -64,7 +126,10 @@ class SearchController extends Controller
                             $qBuilder->where(function ($subBuilder) use ($wordLike): void {
                                 $subBuilder->where('name', 'like', $wordLike)
                                     ->orWhere('sku', 'like', $wordLike)
-                                    ->orWhere('short_description', 'like', $wordLike);
+                                    ->orWhere('short_description', 'like', $wordLike)
+                                    ->orWhere('description', 'like', $wordLike)
+                                    ->orWhere('brand', 'like', $wordLike)
+                                    ->orWhere('tags', 'like', $wordLike);
                             });
                         }
                         if (DB::connection()->getDriverName() === 'mysql' && strlen($correctedQ) >= 3) {
@@ -72,11 +137,39 @@ class SearchController extends Controller
                         }
                     });
                 }
+
+                switch ($request->query('sort')) {
+                    case 'price_asc':
+                        $correctedQuery->orderBy(
+                            \App\Models\ProductVariant::select('price_retail')
+                                ->whereColumn('product_id', 'products.id')
+                                ->where('is_active', true)
+                                ->orderBy('price_retail')
+                                ->limit(1),
+                            'asc'
+                        );
+                        break;
+                    case 'price_desc':
+                        $correctedQuery->orderByDesc(
+                            \App\Models\ProductVariant::select('price_retail')
+                                ->whereColumn('product_id', 'products.id')
+                                ->where('is_active', true)
+                                ->orderBy('price_retail')
+                                ->limit(1)
+                        );
+                        break;
+                    case 'bestseller':
+                        $correctedQuery->orderByDesc('is_bestseller')->latest();
+                        break;
+                    default:
+                        $correctedQuery->latest();
+                        break;
+                }
+
                 $products = $correctedQuery
                     ->withAvg(['reviews' => fn($q) => $q->where('is_approved', true)], 'rating')
                     ->withCount(['reviews' => fn($q) => $q->where('is_approved', true)])
                     ->with(['variants', 'images'])
-                    ->orderByDesc('id')
                     ->paginate(24)
                     ->withQueryString();
             }

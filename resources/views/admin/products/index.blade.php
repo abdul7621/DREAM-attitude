@@ -33,7 +33,7 @@
                 <option value="force_delete">Permanent Delete</option>
             </select>
             <button type="submit" form="bulk-form" class="btn btn-sm btn-outline-primary me-3" id="bulk-submit" disabled>Apply</button>
-            <a class="btn btn-sm btn-primary" href="{{ route('admin.products.create') }}">Add product</a>
+            <a class="btn btn-sm btn-primary" href="{{ route('admin.products.create', array_filter(['page' => request('page'), 'search' => request('search'), 'category_id' => request('category_id')])) }}">Add product</a>
         </div>
     </div>
 
@@ -83,7 +83,7 @@
                         </td>
                         <td class="text-end">
                             <a class="btn btn-sm btn-outline-info" href="{{ route('product.show', $p->slug) }}" target="_blank">View</a>
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.products.edit', $p) }}">Edit</a>
+                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.products.edit', array_merge([$p], array_filter(['page' => request('page'), 'search' => request('search'), 'category_id' => request('category_id')]))) }}">Edit</a>
                             
                             @if(!$p->trashed())
                             <button type="submit" form="del-form-{{ $p->id }}" class="btn btn-sm btn-outline-warning">Archive</button>

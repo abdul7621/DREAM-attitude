@@ -72,10 +72,10 @@
             <div class="sf-cat-toolbar">
                 <span class="sf-cat-count">{{ $products->total() }} Products</span>
                 <select onchange="window.location=this.value" class="sf-input sf-cat-sort">
-                    <option value="?sort=newest" {{ request('sort','newest')=='newest'?'selected':'' }}>Newest First</option>
-                    <option value="?sort=price_asc" {{ request('sort')=='price_asc'?'selected':'' }}>Price: Low → High</option>
-                    <option value="?sort=price_desc" {{ request('sort')=='price_desc'?'selected':'' }}>Price: High → Low</option>
-                    <option value="?sort=bestseller" {{ request('sort')=='bestseller'?'selected':'' }}>Bestsellers</option>
+                    <option value="{{ request()->fullUrlWithQuery(['sort' => 'newest']) }}" {{ request('sort','newest')=='newest'?'selected':'' }}>Newest First</option>
+                    <option value="{{ request()->fullUrlWithQuery(['sort' => 'price_asc']) }}" {{ request('sort')=='price_asc'?'selected':'' }}>Price: Low → High</option>
+                    <option value="{{ request()->fullUrlWithQuery(['sort' => 'price_desc']) }}" {{ request('sort')=='price_desc'?'selected':'' }}>Price: High → Low</option>
+                    <option value="{{ request()->fullUrlWithQuery(['sort' => 'bestseller']) }}" {{ request('sort')=='bestseller'?'selected':'' }}>Bestsellers</option>
                 </select>
             </div>
             <div class="sf-product-grid">

@@ -31,7 +31,7 @@
             </div>
             <div class="col-12">
                 <label class="form-label fw-semibold">Short description <span class="text-danger">*</span></label>
-                <input type="text" name="short_description" id="shortDescInput" value="{{ old('short_description', $product->short_description) }}" class="form-control" placeholder="e.g. A lightweight argan oil shampoo that controls frizz and restores natural shine.">
+                <textarea name="short_description" id="shortDescInput" rows="3" class="form-control" placeholder="e.g. A lightweight argan oil shampoo that controls frizz and restores natural shine.">{{ old('short_description', $product->short_description) }}</textarea>
             </div>
             <div class="col-12">
                 <label class="form-label">Description</label>
@@ -213,22 +213,27 @@
         @error('variants')<div class="text-danger small">{{ $message }}</div>@enderror
 
         <hr class="my-4">
-        <h2 class="h6">Images</h2>
-        <div class="row g-2 mb-3">
-            @foreach ($product->images as $img)
-                <div class="col-6 col-md-3">
-                    <div class="border rounded p-2">
-                        <img src="{{ asset('storage/'.$img->path) }}" class="img-fluid mb-2" alt="">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="remove_image_ids[]" value="{{ $img->id }}" id="rm{{ $img->id }}">
-                            <label class="form-check-label small" for="rm{{ $img->id }}">Remove</label>
+        <h2 class="h6">Current Product Images <small class="text-muted fw-normal">(Drag cards to reorder — 1st card is Main Cover)</small></h2>
+        <div class="row g-2 mb-3" id="existingImagesContainer">
+            @foreach ($product->images as $index => $img)
+                <div class="col-6 col-md-3 existing-image-card" draggable="true" style="cursor: grab;">
+                    <input type="hidden" name="existing_image_ids[]" value="{{ $img->id }}">
+                    <div class="border rounded p-2 bg-white position-relative shadow-sm text-center" style="height: 100%;">
+                        <span class="existing-rank-badge badge {{ $index === 0 ? 'bg-success' : 'bg-secondary' }} position-absolute top-0 start-0 m-1 z-3" style="font-size: 10px;">
+                            {{ $index === 0 ? 'Cover #1' : '#' . ($index + 1) }}
+                        </span>
+                        <img src="{{ asset('storage/'.$img->path) }}" class="img-fluid rounded mb-2" alt="" style="height: 120px; width: 100%; object-fit: cover; pointer-events: none;">
+                        <div class="form-check d-flex align-items-center justify-content-center gap-1 mt-1">
+                            <input class="form-check-input mt-0" type="checkbox" name="remove_image_ids[]" value="{{ $img->id }}" id="rm{{ $img->id }}">
+                            <label class="form-check-label small text-danger fw-semibold" for="rm{{ $img->id }}" style="font-size: 11px;">Remove</label>
                         </div>
                     </div>
                 </div>
             @endforeach
         </div>
+
         <div class="mb-3">
-            <label class="form-label fw-bold">Add Images</label>
+            <label class="form-label fw-bold">Add Additional Images</label>
             <div class="sf-drag-drop-zone border border-2 border-dashed border-primary rounded p-4 text-center bg-light position-relative" id="dragDropZone" style="cursor: pointer; transition: all 0.2s ease;">
                 <input type="file" name="images[]" id="imagesInput" class="position-absolute top-0 start-0 w-100 h-100 opacity-0" multiple accept="image/*" style="cursor: pointer; z-index: 2;">
                 <div class="py-3 text-muted">
@@ -241,8 +246,13 @@
             <div class="row g-2 mt-2" id="liveImagePreviewContainer"></div>
         </div>
 
+        {{-- Hidden redirect params --}}
+        <input type="hidden" name="redirect_page" value="{{ request('page', 1) }}">
+        <input type="hidden" name="redirect_search" value="{{ request('search') }}">
+        <input type="hidden" name="redirect_category_id" value="{{ request('category_id') }}">
+
         <button type="submit" class="btn btn-primary">Update</button>
-        <a href="{{ route('admin.products.index') }}" class="btn btn-link">Back</a>
+        <a href="{{ route('admin.products.index', array_filter(['page' => request('page'), 'search' => request('search'), 'category_id' => request('category_id')])) }}" class="btn btn-link">Back</a>
     </form>
 
     <template id="variantRowTpl">
@@ -276,7 +286,7 @@
     const tbody = document.querySelector('#variantTable tbody');
     const tpl = document.getElementById('variantRowTpl').innerHTML;
     let idx = tbody.querySelectorAll('tr').length;
-    document.getElementById('addVariant').addEventListener('click', function () {
+    document.getElementById('addVariant')?.addEventListener('click', function () {
         const html = tpl.replace(/__I__/g, idx++);
         tbody.insertAdjacentHTML('beforeend', html);
     });
@@ -290,10 +300,118 @@
         });
     }
 
-    // Drag & Drop Image Uploader logic
+    // Existing Images Drag-and-Drop Reordering Logic
+    const existingContainer = document.getElementById('existingImagesContainer');
+    if (existingContainer) {
+        function updateExistingBadges() {
+            const cards = existingContainer.querySelectorAll('.existing-image-card');
+            cards.forEach((card, idx) => {
+                const badge = card.querySelector('.existing-rank-badge');
+                if (badge) {
+                    badge.textContent = idx === 0 ? 'Cover #1' : '#' + (idx + 1);
+                    badge.className = idx === 0 ? 'existing-rank-badge badge bg-success position-absolute top-0 start-0 m-1 z-3' : 'existing-rank-badge badge bg-secondary position-absolute top-0 start-0 m-1 z-3';
+                }
+            });
+        }
+
+        function bindExistingDragEvents() {
+            const cards = existingContainer.querySelectorAll('.existing-image-card');
+            cards.forEach((card, i) => {
+                card.setAttribute('draggable', 'true');
+                card.style.cursor = 'grab';
+
+                card.ondragstart = (e) => {
+                    e.dataTransfer.setData('text/plain', i);
+                    card.classList.add('opacity-50');
+                };
+                card.ondragend = () => {
+                    card.classList.remove('opacity-50');
+                };
+                card.ondragover = (e) => e.preventDefault();
+                card.ondrop = (e) => {
+                    e.preventDefault();
+                    const fromIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
+                    const currentCards = Array.from(existingContainer.querySelectorAll('.existing-image-card'));
+                    if (!isNaN(fromIndex) && currentCards[fromIndex] && currentCards[i]) {
+                        if (fromIndex < i) {
+                            existingContainer.insertBefore(currentCards[fromIndex], currentCards[i].nextSibling);
+                        } else {
+                            existingContainer.insertBefore(currentCards[fromIndex], currentCards[i]);
+                        }
+                        updateExistingBadges();
+                        bindExistingDragEvents();
+                    }
+                };
+            });
+        }
+        bindExistingDragEvents();
+    }
+
+    // New Image Drag & Drop Uploader logic (Cumulative + Reorderable)
     const zone = document.getElementById('dragDropZone');
     const input = document.getElementById('imagesInput');
     const previewContainer = document.getElementById('liveImagePreviewContainer');
+
+    let selectedFiles = []; // Cumulative list of new File objects
+
+    function syncInputFiles() {
+        const dt = new DataTransfer();
+        selectedFiles.forEach(f => dt.items.add(f));
+        input.files = dt.files;
+    }
+
+    function renderPreviews() {
+        if (!previewContainer) return;
+        previewContainer.innerHTML = '';
+
+        selectedFiles.forEach((file, index) => {
+            const col = document.createElement('div');
+            col.className = 'col-6 col-md-3 image-preview-card';
+            col.setAttribute('draggable', 'true');
+            col.setAttribute('data-index', index);
+            col.style.cursor = 'grab';
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                col.innerHTML = `
+                    <div class="border rounded p-2 bg-white position-relative shadow-sm text-center" style="height: 100%;">
+                        <span class="badge bg-primary position-absolute top-0 start-0 m-1 z-3" style="font-size: 10px;">
+                            New #${index + 1}
+                        </span>
+                        <img src="${e.target.result}" class="img-fluid rounded mb-1" style="height: 120px; width: 100%; object-fit: cover; pointer-events: none;">
+                        <div class="small text-truncate fw-semibold text-dark" style="font-size: 11px;">${file.name}</div>
+                        <div class="small text-secondary" style="font-size: 10px;">${(file.size / 1024).toFixed(0)} KB</div>
+                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 rounded-circle p-1 d-flex align-items-center justify-content-center" style="width: 22px; height: 22px; font-size: 10px; z-index: 4;" onclick="window.removeNewFile(${index})">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(file);
+
+            col.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', index);
+                col.classList.add('opacity-50');
+            });
+            col.addEventListener('dragend', () => {
+                col.classList.remove('opacity-50');
+            });
+            col.addEventListener('dragover', (e) => e.preventDefault());
+            col.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const fromIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
+                const toIndex = index;
+                if (!isNaN(fromIndex) && fromIndex !== toIndex) {
+                    const movedFile = selectedFiles.splice(fromIndex, 1)[0];
+                    selectedFiles.splice(toIndex, 0, movedFile);
+                    syncInputFiles();
+                    renderPreviews();
+                }
+            });
+
+            previewContainer.appendChild(col);
+        });
+    }
 
     if (zone && input && previewContainer) {
         ['dragenter', 'dragover'].forEach(eventName => {
@@ -304,63 +422,37 @@
             }, false);
         });
 
-        // Dragleave reset
         zone.addEventListener('dragleave', function (e) {
             e.preventDefault();
             zone.style.borderColor = '';
             zone.style.background = '';
         }, false);
 
-        // Handle drop
         zone.addEventListener('drop', function (e) {
             e.preventDefault();
             zone.style.borderColor = '';
             zone.style.background = '';
             if (e.dataTransfer && e.dataTransfer.files.length > 0) {
-                input.files = e.dataTransfer.files;
-                input.dispatchEvent(new Event('change'));
+                const newFiles = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+                selectedFiles = selectedFiles.concat(newFiles);
+                syncInputFiles();
+                renderPreviews();
             }
         }, false);
 
         input.addEventListener('change', function () {
-            previewContainer.innerHTML = '';
-            const files = Array.from(input.files);
-            
-            if (files.length > 0) {
-                files.forEach((file, index) => {
-                    if (file.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        reader.onload = function (e) {
-                            const col = document.createElement('div');
-                            col.className = 'col-6 col-md-3';
-                            col.innerHTML = `
-                                <div class="border rounded p-2 bg-white position-relative shadow-sm" style="height: 100%;">
-                                    <img src="${e.target.result}" class="img-fluid rounded mb-1" style="height: 120px; width: 100%; object-fit: cover;">
-                                    <div class="small text-truncate fw-semibold text-dark">${file.name}</div>
-                                    <div class="small text-secondary">${(file.size / 1024).toFixed(0)} KB</div>
-                                    <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 rounded-circle p-1 d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; font-size: 10px;" onclick="window.removeSelectedFile(${index})">
-                                        <i class="bi bi-x-lg"></i>
-                                    </button>
-                                </div>
-                            `;
-                            previewContainer.appendChild(col);
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                });
+            if (input.files.length > 0) {
+                const newFiles = Array.from(input.files).filter(f => f.type.startsWith('image/'));
+                selectedFiles = selectedFiles.concat(newFiles);
+                syncInputFiles();
+                renderPreviews();
             }
         });
 
-        window.removeSelectedFile = function (indexToRemove) {
-            const dt = new DataTransfer();
-            const files = input.files;
-            for (let i = 0; i < files.length; i++) {
-                if (i !== indexToRemove) {
-                    dt.items.add(files[i]);
-                }
-            }
-            input.files = dt.files;
-            input.dispatchEvent(new Event('change'));
+        window.removeNewFile = function (indexToRemove) {
+            selectedFiles.splice(indexToRemove, 1);
+            syncInputFiles();
+            renderPreviews();
         };
     }
 })();
