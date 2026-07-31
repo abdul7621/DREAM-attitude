@@ -32,7 +32,7 @@ REMOTE_HOST="147.93.17.66"
 REMOTE_PORT="65002"
 APP_DIR="domains/dreamattitude.al-mhaf.com/dream-app"
 BRANCH="main"
-SSH_CMD="ssh -p ${REMOTE_PORT} ${REMOTE_USER}@${REMOTE_HOST}"
+SSH_CMD="ssh -o StrictHostKeyChecking=no -p ${REMOTE_PORT} ${REMOTE_USER}@${REMOTE_HOST}"
 
 RUN_MIGRATE=false
 if [ "$1" = "--migrate" ]; then

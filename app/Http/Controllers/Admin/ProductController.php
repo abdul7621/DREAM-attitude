@@ -163,7 +163,13 @@ class ProductController extends Controller
         Cache::forget('home_latest');
         Cache::forget('dashboard_kpi');
 
-        return redirect()->route('admin.products.index')->with('status', __('Product created.'));
+        $redirectParams = array_filter([
+            'page' => $request->input('redirect_page'),
+            'search' => $request->input('redirect_search'),
+            'category_id' => $request->input('redirect_category_id'),
+        ]);
+
+        return redirect()->route('admin.products.index', $redirectParams)->with('status', __('Product created.'));
     }
 
     public function edit(Product $product): View
@@ -311,6 +317,17 @@ class ProductController extends Controller
                 ->whereNotIn('id', $existingVariantIds)
                 ->delete();
 
+            $existingImageIds = $request->input('existing_image_ids', []);
+            foreach ($existingImageIds as $position => $imageId) {
+                ProductImage::query()
+                    ->where('product_id', $product->id)
+                    ->whereKey($imageId)
+                    ->update([
+                        'sort_order' => $position,
+                        'is_primary' => ($position === 0),
+                    ]);
+            }
+
             foreach ($request->input('remove_image_ids', []) as $imageId) {
                 $img = ProductImage::query()->where('product_id', $product->id)->whereKey($imageId)->first();
                 if ($img) {
@@ -319,18 +336,21 @@ class ProductController extends Controller
                 }
             }
 
-            $start = (int) $product->images()->max('sort_order') + 1;
+            $maxExistingOrder = $product->images()->max('sort_order');
+            $start = $maxExistingOrder !== null ? ((int) $maxExistingOrder + 1) : 0;
+
             foreach ($request->file('images', []) ?: [] as $i => $file) {
                 if (! $file) {
                     continue;
                 }
                 $path = $file->store('products', 'public');
                 $path = app(ImageOptimizerService::class)->optimize($path, ImageOptimizerService::MAX_PRODUCT);
+                $sortOrder = $start + $i;
                 $product->images()->create([
                     'path' => $path,
                     'alt_text' => $data['name'],
-                    'sort_order' => $start + $i,
-                    'is_primary' => $product->images()->count() === 0 && $i === 0,
+                    'sort_order' => $sortOrder,
+                    'is_primary' => ($sortOrder === 0),
                 ]);
             }
 
@@ -346,7 +366,13 @@ class ProductController extends Controller
         Cache::forget('home_latest');
         Cache::forget('dashboard_kpi');
 
-        return redirect()->route('admin.products.index')->with('status', __('Product updated.'));
+        $redirectParams = array_filter([
+            'page' => $request->input('redirect_page'),
+            'search' => $request->input('redirect_search'),
+            'category_id' => $request->input('redirect_category_id'),
+        ]);
+
+        return redirect()->route('admin.products.index', $redirectParams)->with('status', __('Product updated.'));
     }
 
     public function destroy(Product $product): RedirectResponse

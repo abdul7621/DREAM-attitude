@@ -31,7 +31,7 @@
             </div>
             <div class="col-12">
                 <label class="form-label fw-semibold">Short description <span class="text-danger">*</span></label>
-                <input type="text" name="short_description" id="shortDescInput" value="{{ old('short_description') }}" class="form-control" placeholder="e.g. A lightweight argan oil shampoo that controls frizz and restores natural shine.">
+                <textarea name="short_description" id="shortDescInput" rows="3" class="form-control" placeholder="e.g. A lightweight argan oil shampoo that controls frizz and restores natural shine.">{{ old('short_description') }}</textarea>
             </div>
             <div class="col-12">
                 <label class="form-label">Description (HTML ok)</label>
@@ -117,10 +117,15 @@
                 {{-- Live Previews --}}
                 <div class="row g-2 mt-2" id="liveImagePreviewContainer"></div>
             </div>
+                {{-- Hidden redirect params --}}
+                <input type="hidden" name="redirect_page" value="{{ request('page', 1) }}">
+                <input type="hidden" name="redirect_search" value="{{ request('search') }}">
+                <input type="hidden" name="redirect_category_id" value="{{ request('category_id') }}">
+            </div>
         </div>
         <div class="mt-3">
             <button type="submit" class="btn btn-primary">Save</button>
-            <a href="{{ route('admin.products.index') }}" class="btn btn-link">Cancel</a>
+            <a href="{{ route('admin.products.index', array_filter(['page' => request('page'), 'search' => request('search'), 'category_id' => request('category_id')])) }}" class="btn btn-link">Cancel</a>
         </div>
     </form>
 @endsection
@@ -141,8 +146,70 @@
     const input = document.getElementById('imagesInput');
     const previewContainer = document.getElementById('liveImagePreviewContainer');
 
+    let selectedFiles = []; // Cumulative list of File objects
+
+    function syncInputFiles() {
+        const dt = new DataTransfer();
+        selectedFiles.forEach(f => dt.items.add(f));
+        input.files = dt.files;
+    }
+
+    function renderPreviews() {
+        if (!previewContainer) return;
+        previewContainer.innerHTML = '';
+
+        selectedFiles.forEach((file, index) => {
+            const col = document.createElement('div');
+            col.className = 'col-6 col-md-3 image-preview-card';
+            col.setAttribute('draggable', 'true');
+            col.setAttribute('data-index', index);
+            col.style.cursor = 'grab';
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const isPrimary = index === 0;
+                col.innerHTML = `
+                    <div class="border rounded p-2 bg-white position-relative shadow-sm text-center" style="height: 100%;">
+                        <span class="badge ${isPrimary ? 'bg-success' : 'bg-primary'} position-absolute top-0 start-0 m-1 z-3" style="font-size: 10px;">
+                            ${isPrimary ? '<i class="bi bi-star-fill me-1"></i>Cover #1' : '#' + (index + 1)}
+                        </span>
+                        <img src="${e.target.result}" class="img-fluid rounded mb-1" style="height: 120px; width: 100%; object-fit: cover; pointer-events: none;">
+                        <div class="small text-truncate fw-semibold text-dark" style="font-size: 11px;">${file.name}</div>
+                        <div class="small text-secondary" style="font-size: 10px;">${(file.size / 1024).toFixed(0)} KB</div>
+                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 rounded-circle p-1 d-flex align-items-center justify-content-center" style="width: 22px; height: 22px; font-size: 10px; z-index: 4;" onclick="window.removeNewFile(${index})">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(file);
+
+            // Drag to re-order cards
+            col.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', index);
+                col.classList.add('opacity-50');
+            });
+            col.addEventListener('dragend', () => {
+                col.classList.remove('opacity-50');
+            });
+            col.addEventListener('dragover', (e) => e.preventDefault());
+            col.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const fromIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
+                const toIndex = index;
+                if (!isNaN(fromIndex) && fromIndex !== toIndex) {
+                    const movedFile = selectedFiles.splice(fromIndex, 1)[0];
+                    selectedFiles.splice(toIndex, 0, movedFile);
+                    syncInputFiles();
+                    renderPreviews();
+                }
+            });
+
+            previewContainer.appendChild(col);
+        });
+    }
+
     if (zone && input && previewContainer) {
-        // Dragover highlight
         ['dragenter', 'dragover'].forEach(eventName => {
             zone.addEventListener(eventName, function (e) {
                 e.preventDefault();
@@ -151,66 +218,39 @@
             }, false);
         });
 
-        // Dragleave reset
         zone.addEventListener('dragleave', function (e) {
             e.preventDefault();
             zone.style.borderColor = '';
             zone.style.background = '';
         }, false);
 
-        // Handle drop
+        // Cumulative drop handler
         zone.addEventListener('drop', function (e) {
             e.preventDefault();
             zone.style.borderColor = '';
             zone.style.background = '';
             if (e.dataTransfer && e.dataTransfer.files.length > 0) {
-                input.files = e.dataTransfer.files;
-                input.dispatchEvent(new Event('change'));
+                const newFiles = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+                selectedFiles = selectedFiles.concat(newFiles);
+                syncInputFiles();
+                renderPreviews();
             }
         }, false);
 
-        // Trigger on selection change
+        // Cumulative file browser handler
         input.addEventListener('change', function () {
-            previewContainer.innerHTML = '';
-            const files = Array.from(input.files);
-            
-            if (files.length > 0) {
-                files.forEach((file, index) => {
-                    if (file.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        reader.onload = function (e) {
-                            const col = document.createElement('div');
-                            col.className = 'col-6 col-md-3';
-                            col.innerHTML = `
-                                <div class="border rounded p-2 bg-white position-relative shadow-sm" style="height: 100%;">
-                                    <img src="${e.target.result}" class="img-fluid rounded mb-1" style="height: 120px; width: 100%; object-fit: cover;">
-                                    <div class="small text-truncate fw-semibold text-dark">${file.name}</div>
-                                    <div class="small text-secondary">${(file.size / 1024).toFixed(0)} KB</div>
-                                    <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 rounded-circle p-1 d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; font-size: 10px;" onclick="window.removeSelectedFile(${index})">
-                                        <i class="bi bi-x-lg"></i>
-                                    </button>
-                                </div>
-                            `;
-                            previewContainer.appendChild(col);
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                });
+            if (input.files.length > 0) {
+                const newFiles = Array.from(input.files).filter(f => f.type.startsWith('image/'));
+                selectedFiles = selectedFiles.concat(newFiles);
+                syncInputFiles();
+                renderPreviews();
             }
         });
 
-        // Global helper to remove selected file
-        window.removeSelectedFile = function (indexToRemove) {
-            const dt = new DataTransfer();
-            const files = input.files;
-            for (let i = 0; i < files.length; i++) {
-                if (i !== indexToRemove) {
-                    dt.items.add(files[i]);
-                }
-            }
-            input.files = dt.files;
-            // Trigger change event to redraw
-            input.dispatchEvent(new Event('change'));
+        window.removeNewFile = function (indexToRemove) {
+            selectedFiles.splice(indexToRemove, 1);
+            syncInputFiles();
+            renderPreviews();
         };
     }
 })();
