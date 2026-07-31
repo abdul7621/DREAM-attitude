@@ -90,6 +90,12 @@
             </div>
             {{-- Fix #7: Add to Cart = SECONDARY (outlined) --}}
             <button type="submit" class="sf-pdp-buy" id="addToCartBtn" style="margin-top:0; min-height: 54px; font-size: 16px; border-radius: 8px;"><i class="bi bi-bag-plus me-1"></i> Add to Cart</button>
+            
+            {{-- WhatsApp Wholesale/Retail Enquiry Button --}}
+            <a href="https://wa.me/917096206785?text={{ urlencode('Hi Dream Attitude Team, mujhe "' . $product->name . '" wholesale ya retail me lena hai. Please assist.') }}" target="_blank" class="sf-pdp-whatsapp-enquiry" style="display: flex; align-items: center; justify-content: center; gap: 8px; background: #25D366; color: white; border: none; font-size: 15px; font-weight: 700; text-transform: uppercase; text-decoration: none; min-height: 54px; border-radius: 8px; transition: all 0.2s; margin-top: 8px; width: 100%; box-shadow: 0 4px 12px rgba(37,211,102,0.2);" onmouseover="this.style.background='#20ba5a'" onmouseout="this.style.background='#25D366'">
+                <i class="bi bi-whatsapp" style="font-size: 20px;"></i>
+                Wholesale / Retail Enquiry
+            </a>
         </div>
     </div>
 </div>

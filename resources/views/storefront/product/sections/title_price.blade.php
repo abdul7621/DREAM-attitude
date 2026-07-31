@@ -5,11 +5,16 @@
 
     <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;">
         <h1 class="title">{{ $product->name }}</h1>
-        @auth
-            <button type="button" class="wishlist-heart" data-product-id="{{ $product->id }}" title="Wishlist" style="background:none;border:none;color:var(--color-text-muted);font-size:24px;cursor:pointer;">
-                <i class="bi bi-heart"></i>
+        <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px; flex-shrink: 0;">
+            @auth
+                <button type="button" class="wishlist-heart" data-product-id="{{ $product->id }}" title="Wishlist" style="background:none;border:none;color:var(--color-text-muted);font-size:24px;cursor:pointer;padding:4px;display:flex;align-items:center;justify-content:center;">
+                    <i class="bi bi-heart"></i>
+                </button>
+            @endauth
+            <button type="button" onclick="shareProduct()" title="Share Product" style="background:none;border:none;color:var(--color-text-muted);font-size:22px;cursor:pointer;padding:4px;display:flex;align-items:center;justify-content:center;" aria-label="Share product">
+                <i class="bi bi-share"></i>
             </button>
-        @endauth
+        </div>
     </div>
 
     {{-- Rating summary & Sales Count --}}
@@ -78,3 +83,35 @@
         Out of Stock
     </div>
 </div>
+
+@push('scripts')
+<script>
+function shareProduct() {
+    if (navigator.share) {
+        navigator.share({
+            title: {!! json_encode($product->name) !!},
+            text: "Check out " + {!! json_encode($product->name) !!} + " on Dream Attitude",
+            url: window.location.href
+        }).catch(function(err) { console.log('Error sharing:', err); });
+    } else {
+        navigator.clipboard.writeText(window.location.href).then(function() {
+            if (window.Store) {
+                Store.emit('toast', {type: 'success', message: 'Product link copied to clipboard!'});
+            } else {
+                alert('Product link copied to clipboard!');
+            }
+        }).catch(function() {
+            var tempInput = document.createElement("input");
+            tempInput.value = window.location.href;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+            if (window.Store) {
+                Store.emit('toast', {type: 'success', message: 'Product link copied to clipboard!'});
+            }
+        });
+    }
+}
+</script>
+@endpush
