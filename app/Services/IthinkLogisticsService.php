@@ -143,14 +143,13 @@ class IthinkLogisticsService implements ShippingProviderInterface
     {
         $creds = $this->getCredentials();
         $ss = app(SettingsService::class);
-
         $products = $order->orderItems->map(fn($item) => [
             'product_name' => $item->product_name_snapshot ?? 'Product',
             'product_sku' => $item->sku_snapshot ?? 'SKU-'.$item->id,
             'product_quantity' => (string) $item->qty,
             'product_price' => (string) $item->unit_price,
             'product_tax_rate' => (string) ($order->gst_rate ?? 0),
-            'product_hsn_code' => '',
+            'product_hsn_code' => '33049990',
             'product_discount' => '0'
         ])->toArray();
 

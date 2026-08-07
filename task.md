@@ -22,3 +22,5 @@
 - [x] **Product Sharing & WhatsApp Enquiry Additions**:
   - [x] Amazon-style Share button next to wishlist heart icon using Web Share API and secure fallback.
   - [x] WhatsApp product wholesale/retail enquiry button with pre-filled dynamic product name message.
+- [x] **iThink Logistics API Product Sync Fix**:
+  - [x] Resolved strict type mapping crash in iThink Logistics DTO (`PlatformItlProductsDAO::$hsnCode`) by replacing empty `product_hsn_code` values with a valid default generic HSN code `'33049990'`.
