@@ -199,9 +199,27 @@
             </div>
             <ul class="list-group list-group-flush">
             @forelse ($lowStockVariants as $v)
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span class="small">{{ $v->product->name }} — {{ $v->title }}</span>
-                    <span class="badge bg-danger">{{ $v->stock_qty }}</span>
+                <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                    <div class="d-flex align-items-center gap-2">
+                        @if($v->thumbnail_url)
+                            <img src="{{ $v->thumbnail_url }}" alt="{{ $v->product->name }}" class="rounded border shadow-xs" style="width: 34px; height: 34px; object-fit: cover; background: #fff;" loading="lazy">
+                        @else
+                            <div class="rounded border d-flex align-items-center justify-content-center bg-light text-muted" style="width: 34px; height: 34px;">
+                                <i class="bi bi-image" style="font-size: 0.9rem; color: #adb5bd;"></i>
+                            </div>
+                        @endif
+                        <div>
+                            <a href="{{ route('admin.products.edit', $v->product_id) }}" class="fw-semibold text-dark text-decoration-none small">
+                                {{ $v->product->name }}
+                            </a>
+                            @if($badge = $v->volume_badge)
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-1" style="font-size: 0.7rem; font-weight: 600;">{{ $badge }}</span>
+                            @elseif($v->title && !in_array(strtolower(trim($v->title)), ['default', 'default title', 'default-title']))
+                                <span class="badge bg-secondary-subtle text-secondary ms-1" style="font-size: 0.7rem;">{{ $v->title }}</span>
+                            @endif
+                        </div>
+                    </div>
+                    <span class="badge bg-danger">{{ $v->stock_qty }} left</span>
                 </li>
             @empty
                 <li class="list-group-item text-muted small">All stocked up! 🎉</li>

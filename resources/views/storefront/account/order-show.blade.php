@@ -46,25 +46,44 @@
             <table style="width:100%;border-collapse:collapse;">
                 <thead>
                     <tr style="border-bottom:1px solid var(--color-border);">
-                        <th style="padding:10px 20px;text-align:left;color:var(--color-gold);font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:500;">Product</th>
-                        <th style="padding:10px 20px;text-align:left;color:var(--color-gold);font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:500;">Variant</th>
-                        <th style="padding:10px 20px;text-align:right;color:var(--color-gold);font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:500;">Qty</th>
-                        <th style="padding:10px 20px;text-align:right;color:var(--color-gold);font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:500;">Price</th>
+                        <th style="padding:10px 14px;width:50px;color:var(--color-gold);font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:500;">Item</th>
+                        <th style="padding:10px 14px;text-align:left;color:var(--color-gold);font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:500;">Product</th>
+                        <th style="padding:10px 14px;text-align:left;color:var(--color-gold);font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:500;">Size / Vol</th>
+                        <th style="padding:10px 14px;text-align:center;color:var(--color-gold);font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:500;">Qty</th>
+                        <th style="padding:10px 14px;text-align:right;color:var(--color-gold);font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:500;">Price</th>
                     </tr>
                 </thead>
                 <tbody>
                 @foreach ($order->orderItems as $item)
-                    <tr style="border-bottom:1px solid var(--color-border);">
-                        <td style="padding:12px 20px;color:var(--color-text-primary);font-size:13px;">{{ $item->product_name_snapshot }}</td>
-                        <td style="padding:12px 20px;color:var(--color-text-secondary);font-size:13px;">
-                            @if($item->variant_title_snapshot && !in_array(strtolower(trim($item->variant_title_snapshot)), ['default', 'default title', '']))
+                    <tr style="border-bottom:1px solid var(--color-border);vertical-align:middle;">
+                        <td style="padding:10px 14px;">
+                            @if($item->thumbnail_url)
+                                <img src="{{ $item->thumbnail_url }}" alt="{{ $item->product_name_snapshot }}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid var(--color-border);background:#fff;" loading="lazy">
+                            @else
+                                <div style="width:40px;height:40px;border-radius:4px;border:1px solid var(--color-border);background:var(--color-bg-surface);display:flex;align-items:center;justify-content:center;color:var(--color-text-muted);">
+                                    <i class="bi bi-box-seam" style="font-size:14px;"></i>
+                                </div>
+                            @endif
+                        </td>
+                        <td style="padding:10px 14px;color:var(--color-text-primary);font-size:13px;font-weight:500;">
+                            {{ $item->product_name_snapshot }}
+                        </td>
+                        <td style="padding:10px 14px;color:var(--color-text-secondary);font-size:12px;">
+                            @if($badge = $item->volume_badge)
+                                <span style="display:inline-block;padding:2px 8px;border-radius:3px;background:rgba(201,150,58,0.12);color:var(--color-gold-dark);font-weight:600;font-size:11px;">{{ $badge }}</span>
+                            @elseif($item->variant_title_snapshot && !in_array(strtolower(trim($item->variant_title_snapshot)), ['default', 'default title', '']))
                                 {{ $item->variant_title_snapshot }}
                             @else
                                 —
                             @endif
                         </td>
-                        <td style="padding:12px 20px;text-align:right;color:var(--color-text-secondary);font-size:13px;">{{ $item->qty }}</td>
-                        <td style="padding:12px 20px;text-align:right;color:var(--color-text-primary);font-size:13px;font-weight:500;">₹{{ number_format($item->line_total, 2) }}</td>
+                        <td style="padding:10px 14px;text-align:center;color:var(--color-text-secondary);font-size:13px;">{{ $item->qty }}</td>
+                        <td style="padding:10px 14px;text-align:right;color:var(--color-text-primary);font-size:13px;font-weight:500;">
+                            @if($item->mrp > (float)$item->unit_price)
+                                <div style="font-size:11px;text-decoration:line-through;color:var(--color-text-muted);">₹{{ number_format($item->mrp * $item->qty, 2) }}</div>
+                            @endif
+                            <div style="color:var(--color-gold-dark);font-weight:600;">₹{{ number_format((float) $item->line_total, 2) }}</div>
+                        </td>
                     </tr>
                 @endforeach
                 </tbody>

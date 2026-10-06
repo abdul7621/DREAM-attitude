@@ -76,7 +76,7 @@ class DashboardController extends Controller
             ->where('track_inventory', true)
             ->where('stock_qty', '<=', 5)
             ->where('is_active', true)
-            ->with('product')
+            ->with(['product.images', 'images'])
             ->get();
 
         // ── Recent Orders (real-time) ────────────────────────

@@ -252,20 +252,20 @@ class ReportController extends Controller
         $inStock = ProductVariant::query()
             ->where('track_inventory', true)
             ->where('stock_qty', '>', $threshold)
-            ->with('product')
+            ->with(['product.images', 'images'])
             ->paginate(20, ['*'], 'stock_page');
 
         $lowStock = ProductVariant::query()
             ->where('track_inventory', true)
             ->where('stock_qty', '<=', $threshold)
             ->where('stock_qty', '>', 0)
-            ->with('product')
+            ->with(['product.images', 'images'])
             ->paginate(20, ['*'], 'low_page');
 
         $outOfStock = ProductVariant::query()
             ->where('track_inventory', true)
             ->where('stock_qty', '<=', 0)
-            ->with('product')
+            ->with(['product.images', 'images'])
             ->paginate(20, ['*'], 'oos_page');
 
         return view('admin.reports.inventory', compact('inStock', 'lowStock', 'outOfStock', 'threshold'));

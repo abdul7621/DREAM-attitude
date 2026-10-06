@@ -31,41 +31,122 @@
         <div class="col-lg-8">
             {{-- Items --}}
             <div class="card mb-3">
-                <div class="card-header d-flex align-items-center gap-2">
-                    <i class="bi bi-bag"></i> Order Items
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-bag-check text-primary"></i>
+                        <span class="fw-bold">Order Items</span>
+                    </div>
+                    <span class="badge bg-secondary-subtle text-secondary border">{{ $order->orderItems->count() }} {{ Str::plural('item', $order->orderItems->count()) }}</span>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-sm mb-0 align-middle">
                         <thead class="table-light">
-                            <tr><th>Product</th><th>SKU</th><th class="text-center">Qty</th><th class="text-end">Price</th><th class="text-end">Line Total</th></tr>
+                            <tr>
+                                <th style="width: 56px;">Item</th>
+                                <th>Product Details</th>
+                                <th style="width: 90px;">SKU</th>
+                                <th class="text-center" style="width: 60px;">Qty</th>
+                                <th class="text-end" style="width: 90px;">MRP</th>
+                                <th class="text-end" style="width: 110px;">Price</th>
+                                <th class="text-end" style="width: 100px;">Line Total</th>
+                            </tr>
                         </thead>
                         <tbody>
                             @foreach ($order->orderItems as $oi)
                                 <tr>
-                                    <td>
-                                        {{ $oi->product_name_snapshot }}
-                                        @if ($oi->variant_title_snapshot) <span class="text-muted">— {{ $oi->variant_title_snapshot }}</span> @endif
+                                    {{-- Product Photo Thumbnail --}}
+                                    <td class="pe-0">
+                                        @if($oi->thumbnail_url)
+                                            <img src="{{ $oi->thumbnail_url }}" alt="{{ $oi->product_name_snapshot }}" class="rounded border shadow-xs" style="width: 48px; height: 48px; object-fit: cover; background: #fff;" loading="lazy">
+                                        @else
+                                            <div class="rounded border d-flex align-items-center justify-content-center bg-light text-muted" style="width: 48px; height: 48px;">
+                                                <i class="bi bi-image" style="font-size: 1.25rem; color: #adb5bd;"></i>
+                                            </div>
+                                        @endif
                                     </td>
-                                    <td class="small text-muted">{{ $oi->sku_snapshot ?? '—' }}</td>
-                                    <td class="text-center">{{ $oi->qty }}</td>
-                                    <td class="text-end">₹{{ number_format((float) $oi->unit_price, 2) }}</td>
-                                    <td class="text-end fw-semibold">₹{{ number_format((float) $oi->line_total, 2) }}</td>
+                                    {{-- Product Name & Bold Volume/Size Badge --}}
+                                    <td>
+                                        @if($oi->product_id)
+                                            <a href="{{ route('admin.products.edit', $oi->product_id) }}" class="fw-semibold text-dark text-decoration-none" target="_blank" title="View in Catalog">
+                                                {{ $oi->product_name_snapshot }}
+                                                <i class="bi bi-box-arrow-up-right text-muted ms-1" style="font-size: 0.7rem;"></i>
+                                            </a>
+                                        @else
+                                            <span class="fw-semibold text-dark">{{ $oi->product_name_snapshot }}</span>
+                                        @endif
+
+                                        {{-- Distinct Highlighted Volume/Variant Badge (Eliminates ml confusion) --}}
+                                        @if($badge = $oi->volume_badge)
+                                            <div class="mt-1">
+                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1" style="font-size: 0.78rem; font-weight: 600; letter-spacing: 0.3px;">
+                                                    <i class="bi bi-tag-fill me-1" style="font-size: 0.65rem;"></i>{{ $badge }}
+                                                </span>
+                                            </div>
+                                        @elseif($oi->variant_title_snapshot && !in_array(strtolower(trim($oi->variant_title_snapshot)), ['default', 'default title', 'default-title']))
+                                            <div class="mt-1">
+                                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1" style="font-size: 0.75rem;">
+                                                    {{ $oi->variant_title_snapshot }}
+                                                </span>
+                                            </div>
+                                        @endif
+                                    </td>
+                                    {{-- SKU --}}
+                                    <td><code class="text-muted small">{{ $oi->sku_snapshot ?? '—' }}</code></td>
+                                    {{-- Qty --}}
+                                    <td class="text-center">
+                                        <span class="badge bg-light text-dark border px-2 py-1 fw-semibold fs-6">{{ $oi->qty }}</span>
+                                    </td>
+                                    {{-- MRP Column --}}
+                                    <td class="text-end">
+                                        @if($oi->mrp > (float)$oi->unit_price)
+                                            <span class="text-decoration-line-through text-muted small">₹{{ number_format($oi->mrp, 2) }}</span>
+                                        @else
+                                            <span class="text-muted small">₹{{ number_format($oi->mrp, 2) }}</span>
+                                        @endif
+                                    </td>
+                                    {{-- Selling Price Column with Discount Badge --}}
+                                    <td class="text-end">
+                                        <span class="fw-semibold text-dark">₹{{ number_format((float) $oi->unit_price, 2) }}</span>
+                                        @if($oi->discount_percent > 0)
+                                            <div>
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.65rem;">
+                                                    {{ $oi->discount_percent }}% OFF
+                                                </span>
+                                            </div>
+                                        @endif
+                                    </td>
+                                    {{-- Line Total --}}
+                                    <td class="text-end fw-bold text-dark">₹{{ number_format((float) $oi->line_total, 2) }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
                 <div class="card-body border-top">
-                    <table class="table table-sm table-borderless mb-0" style="max-width:300px;margin-left:auto;">
+                    @php
+                        $orderTotalMrp = $order->orderItems->sum(fn($i) => $i->mrp * $i->qty);
+                        $orderTotalSavings = max(0, $orderTotalMrp - (float)$order->subtotal);
+                    @endphp
+                    <table class="table table-sm table-borderless mb-0" style="max-width:320px;margin-left:auto;">
+                        @if($orderTotalSavings > 0)
+                            <tr>
+                                <td class="text-muted">Total MRP</td>
+                                <td class="text-end text-muted"><del>₹{{ number_format($orderTotalMrp, 2) }}</del></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Retail Savings</td>
+                                <td class="text-end text-success fw-semibold">−₹{{ number_format($orderTotalSavings, 2) }}</td>
+                            </tr>
+                        @endif
                         <tr><td class="text-muted">Subtotal</td><td class="text-end">₹{{ number_format((float) $order->subtotal, 2) }}</td></tr>
                         @if ((float) $order->discount_total > 0)
-                            <tr><td class="text-muted">Discount</td><td class="text-end text-success">−₹{{ number_format((float) $order->discount_total, 2) }}</td></tr>
+                            <tr><td class="text-muted">Coupon Discount</td><td class="text-end text-success">−₹{{ number_format((float) $order->discount_total, 2) }}</td></tr>
                         @endif
                         <tr><td class="text-muted">Shipping</td><td class="text-end">₹{{ number_format((float) $order->shipping_total, 2) }}</td></tr>
                         @if ((float) $order->tax_total > 0)
                             <tr><td class="text-muted">Tax</td><td class="text-end">₹{{ number_format((float) $order->tax_total, 2) }}</td></tr>
                         @endif
-                        <tr class="fw-bold border-top"><td>Grand Total</td><td class="text-end">₹{{ number_format((float) $order->grand_total, 2) }}</td></tr>
+                        <tr class="fw-bold border-top fs-6"><td>Grand Total</td><td class="text-end text-primary">₹{{ number_format((float) $order->grand_total, 2) }}</td></tr>
                     </table>
                 </div>
             </div>

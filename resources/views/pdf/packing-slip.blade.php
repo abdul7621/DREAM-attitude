@@ -16,13 +16,25 @@
     <p>{{ $order->address_line1 }}@if ($order->address_line2), {{ $order->address_line2 }}@endif<br>
         {{ $order->city }}, {{ $order->state }} {{ $order->postal_code }}, {{ $order->country }}</p>
     <table>
-        <thead><tr><th>Product</th><th>SKU</th><th>Qty</th></tr></thead>
+        <thead>
+            <tr>
+                <th>Product Item</th>
+                <th style="width: 90px; text-align: center;">Size / Volume</th>
+                <th style="width: 110px;">SKU</th>
+                <th style="width: 50px; text-align: center;">Qty</th>
+            </tr>
+        </thead>
         <tbody>
             @foreach ($order->orderItems as $oi)
                 <tr>
-                    <td>{{ $oi->product_name_snapshot }} @if ($oi->variant_title_snapshot) — {{ $oi->variant_title_snapshot }} @endif</td>
-                    <td>{{ $oi->sku_snapshot }}</td>
-                    <td>{{ $oi->qty }}</td>
+                    <td>
+                        <strong>{{ $oi->product_name_snapshot }}</strong>
+                    </td>
+                    <td style="text-align: center; font-weight: bold; font-size: 13px; color: #111;">
+                        {{ $oi->volume_badge ?? ($oi->variant_title_snapshot ?: '—') }}
+                    </td>
+                    <td><code>{{ $oi->sku_snapshot ?? '—' }}</code></td>
+                    <td style="text-align: center; font-weight: bold; font-size: 14px;">{{ $oi->qty }}</td>
                 </tr>
             @endforeach
         </tbody>

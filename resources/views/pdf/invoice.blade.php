@@ -108,23 +108,33 @@
         <thead>
             <tr>
                 <th>Item</th>
-                <th>Qty</th>
-                <th class="text-right">Unit Price</th>
-                <th class="text-right">Total</th>
+                <th style="width: 50px; text-align: center;">Qty</th>
+                <th class="text-right" style="width: 80px;">MRP</th>
+                <th class="text-right" style="width: 80px;">Unit Price</th>
+                <th class="text-right" style="width: 90px;">Total</th>
             </tr>
         </thead>
         <tbody>
             @foreach($order->orderItems as $item)
             <tr>
                 <td>
-                    {{ $item->product_name_snapshot }}
-                    @if($item->variant_title_snapshot)
+                    <strong>{{ $item->product_name_snapshot }}</strong>
+                    @if($badge = $item->volume_badge)
+                        <br><span style="display:inline-block; padding: 1px 5px; background: #f1f5f9; color: #0f172a; border-radius: 3px; font-size: 11px; font-weight: bold; margin-top: 3px;">{{ $badge }}</span>
+                    @elseif($item->variant_title_snapshot && !in_array(strtolower(trim($item->variant_title_snapshot)), ['default', 'default title', 'default-title']))
                         <br><small style="color: #777;">{{ $item->variant_title_snapshot }}</small>
                     @endif
                 </td>
-                <td>{{ $item->qty }}</td>
+                <td style="text-align: center;">{{ $item->qty }}</td>
+                <td class="text-right">
+                    @if($item->mrp > (float)$item->unit_price)
+                        <span style="text-decoration: line-through; color: #888;">₹{{ number_format($item->mrp, 2) }}</span>
+                    @else
+                        ₹{{ number_format($item->mrp, 2) }}
+                    @endif
+                </td>
                 <td class="text-right">₹{{ number_format((float)$item->unit_price, 2) }}</td>
-                <td class="text-right">₹{{ number_format((float)$item->line_total, 2) }}</td>
+                <td class="text-right" style="font-weight: bold;">₹{{ number_format((float)$item->line_total, 2) }}</td>
             </tr>
             @endforeach
         </tbody>

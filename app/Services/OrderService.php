@@ -74,7 +74,11 @@ class OrderService
                 /** @var \App\Models\ProductVariant $variant */
                 $variant = $row['variant'];
                 $product = $variant->product;
-                OrderItem::query()->create([
+                $mrpVal = ($variant->compare_at_price && (float) $variant->compare_at_price > 0)
+                    ? $variant->compare_at_price
+                    : $variant->price_retail;
+
+                $orderItemPayload = [
                     'order_id' => $order->id,
                     'product_id' => $product->id,
                     'product_variant_id' => $variant->id,
@@ -84,7 +88,11 @@ class OrderService
                     'qty' => $row['item']->qty,
                     'unit_price' => $row['unit_price'],
                     'line_total' => $row['line_total'],
-                ]);
+                ];
+                if (\Illuminate\Support\Facades\Schema::hasColumn('order_items', 'mrp_snapshot')) {
+                    $orderItemPayload['mrp_snapshot'] = $mrpVal;
+                }
+                OrderItem::query()->create($orderItemPayload);
                 // COD: stock deducts immediately (order is confirmed on creation)
                 // Since we already locked the variants in assertAndLockStock, we can decrement safely.
                 if ($variant->track_inventory) {
@@ -193,7 +201,11 @@ class OrderService
                 /** @var \App\Models\ProductVariant $variant */
                 $variant = $row['variant'];
                 $product = $variant->product;
-                OrderItem::query()->create([
+                $mrpVal = ($variant->compare_at_price && (float) $variant->compare_at_price > 0)
+                    ? $variant->compare_at_price
+                    : $variant->price_retail;
+
+                $orderItemPayload = [
                     'order_id' => $order->id,
                     'product_id' => $product->id,
                     'product_variant_id' => $variant->id,
@@ -203,7 +215,11 @@ class OrderService
                     'qty' => $row['item']->qty,
                     'unit_price' => $row['unit_price'],
                     'line_total' => $row['line_total'],
-                ]);
+                ];
+                if (\Illuminate\Support\Facades\Schema::hasColumn('order_items', 'mrp_snapshot')) {
+                    $orderItemPayload['mrp_snapshot'] = $mrpVal;
+                }
+                OrderItem::query()->create($orderItemPayload);
                 // Fix #1: NO stock deduction here for online orders.
                 // Stock deducts only on payment confirmation in finalizeOnlinePayment().
             }

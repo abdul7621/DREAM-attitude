@@ -40,7 +40,15 @@ class OrderController extends Controller
 
     public function show(Order $order): View
     {
-        $order->load(['orderItems', 'shipments', 'coupon', 'user', 'returnRequests', 'statusLogs']);
+        $order->load([
+            'orderItems.variant.images',
+            'orderItems.product.images',
+            'shipments',
+            'coupon',
+            'user',
+            'returnRequests',
+            'statusLogs'
+        ]);
 
         $previousOrders = collect();
         if ($order->user_id) {
@@ -152,7 +160,7 @@ class OrderController extends Controller
 
     public function invoicePdf(Order $order): Response
     {
-        $order->load('orderItems');
+        $order->load(['orderItems.variant', 'orderItems.product']);
 
         return Pdf::loadView('pdf.invoice', ['order' => $order])
             ->download('invoice-'.$order->order_number.'.pdf');
@@ -160,7 +168,7 @@ class OrderController extends Controller
 
     public function packingPdf(Order $order): Response
     {
-        $order->load('orderItems');
+        $order->load(['orderItems.variant', 'orderItems.product']);
 
         return Pdf::loadView('pdf.packing-slip', ['order' => $order])
             ->download('packing-'.$order->order_number.'.pdf');
