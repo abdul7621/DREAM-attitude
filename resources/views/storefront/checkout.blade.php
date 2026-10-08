@@ -61,32 +61,34 @@
                             @endforeach
                         </ul>
 
-                        {{-- ── Coupon / Promo Code Box ──────────────────────── --}}
+                        {{-- ── Luxury Coupon / Promo Code Box ──────────────────────── --}}
                         <div class="sf-chk-coupon-section mb-3 pb-3 border-bottom" style="border-color: var(--color-border) !important;">
                             {{-- Applied Coupon State --}}
                             <div id="chk-coupon-applied-box" style="{{ $totals['coupon'] ? 'display: block;' : 'display: none;' }}">
-                                <div class="d-flex align-items-center justify-content-between p-2 rounded" style="background: rgba(34, 197, 94, 0.08); border: 1px dashed #22c55e;">
+                                <div class="d-flex align-items-center justify-content-between p-2 px-3 rounded" style="background: rgba(201, 150, 58, 0.08); border: 1px solid var(--color-gold); border-radius: var(--radius-md) !important;">
                                     <div class="d-flex align-items-center gap-2">
-                                        <i class="bi bi-tag-fill text-success" style="font-size: 1rem;"></i>
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 26px; height: 26px; background: var(--color-gold); color: #0A0A0A;">
+                                            <i class="bi bi-tag-fill" style="font-size: 0.75rem;"></i>
+                                        </div>
                                         <div>
-                                            <span class="fw-bold text-success" id="chk-applied-code" style="font-size: 0.85rem; letter-spacing: 0.5px;">{{ $totals['coupon']?->code }}</span>
-                                            <span class="badge bg-success-subtle text-success ms-1" style="font-size: 0.65rem;">APPLIED</span>
+                                            <span class="fw-bold font-monospace" id="chk-applied-code" style="font-size: 0.9rem; letter-spacing: 0.8px; color: var(--color-gold-dark);">{{ $totals['coupon']?->code }}</span>
+                                            <span class="badge ms-1" style="background: var(--color-gold); color: #0A0A0A; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.5px;">APPLIED</span>
                                         </div>
                                     </div>
-                                    <button type="button" class="btn btn-link text-danger p-0 text-decoration-none fw-semibold" id="btn-remove-coupon" style="font-size: 0.8rem;">
-                                        <i class="bi bi-x-circle me-1"></i>Remove
+                                    <button type="button" class="btn btn-link p-0 text-decoration-none fw-semibold" id="btn-remove-coupon" style="font-size: 0.8rem; color: #dc3545; transition: opacity 0.2s ease;">
+                                        <i class="bi bi-x-lg me-1"></i>Remove
                                     </button>
                                 </div>
                             </div>
 
                             {{-- Coupon Input Form (When no coupon is applied) --}}
                             <div id="chk-coupon-input-box" style="{{ $totals['coupon'] ? 'display: none;' : 'display: block;' }}">
-                                <div class="input-group">
-                                    <input type="text" id="chk_coupon_code" name="coupon_code" class="form-control text-uppercase" placeholder="Discount Code" style="font-size: 0.85rem; letter-spacing: 0.5px; text-transform: uppercase;">
-                                    <button class="btn sf-btn-primary" type="button" id="btn-apply-coupon" style="font-size: 0.82rem; padding: 6px 16px; font-weight: 600;">Apply</button>
+                                <div class="input-group" style="border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                                    <input type="text" id="chk_coupon_code" name="coupon_code" class="form-control text-uppercase" placeholder="DISCOUNT / PROMO CODE" style="font-size: 0.85rem; letter-spacing: 0.8px; font-weight: 600; padding: 10px 14px; border-color: var(--color-border); background: #FAFAFA;" autocomplete="off">
+                                    <button class="btn" type="button" id="btn-apply-coupon" style="background: var(--color-gold); color: #0A0A0A; font-size: 0.82rem; padding: 10px 20px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; border: 1px solid var(--color-gold); transition: all 0.2s ease;">Apply</button>
                                 </div>
-                                <div id="chk-coupon-error" class="text-danger mt-1 small" style="display: {{ $errors->has('coupon') ? 'block' : 'none' }}; font-size: 0.78rem;">
-                                    <i class="bi bi-exclamation-circle me-1"></i><span id="chk-coupon-error-text">{{ $errors->first('coupon') }}</span>
+                                <div id="chk-coupon-error" class="text-danger mt-2 small" style="display: {{ $errors->has('coupon') ? 'block' : 'none' }}; font-size: 0.8rem; font-weight: 500;">
+                                    <i class="bi bi-exclamation-circle-fill me-1"></i><span id="chk-coupon-error-text">{{ $errors->first('coupon') }}</span>
                                 </div>
                             </div>
                         </div>

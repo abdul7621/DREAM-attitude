@@ -113,6 +113,12 @@ class OrderService
                 }
             }
 
+            try {
+                app(\App\Services\InfluencerService::class)->recordCommissionForOrder($order);
+            } catch (\Throwable $e) {
+                Log::warning('Influencer commission recording skipped: ' . $e->getMessage());
+            }
+
             $this->createPendingShipment($order);
 
             $this->cartService->clear($cart);
@@ -309,6 +315,12 @@ class OrderService
                 if ($c) {
                     $this->couponService->incrementUsage($c);
                 }
+            }
+
+            try {
+                app(\App\Services\InfluencerService::class)->recordCommissionForOrder($locked);
+            } catch (\Throwable $e) {
+                Log::warning('Influencer commission recording skipped for online order: ' . $e->getMessage());
             }
 
             $cart = $this->cartService->getCart();

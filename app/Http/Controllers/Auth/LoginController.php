@@ -14,9 +14,13 @@ class LoginController extends Controller
     public function show(): View|RedirectResponse
     {
         if (Auth::check()) {
-            return Auth::user()->isAdmin()
-                ? redirect()->route('admin.products.index')
-                : redirect()->route('account.dashboard');
+            if (Auth::user()->isAdmin()) {
+                return redirect()->route('admin.dashboard');
+            }
+            if (Auth::user()->isInfluencer()) {
+                return redirect()->route('influencer.dashboard');
+            }
+            return redirect()->route('account.dashboard');
         }
 
         return view('auth.login');
@@ -46,9 +50,13 @@ class LoginController extends Controller
                     ->with('warning', 'Welcome back! We have upgraded our website. A password reset link has been sent to your email. Please check your inbox to set a new password.');
             }
 
-            $intended = Auth::user()->isAdmin()
-                ? route('admin.products.index')
-                : route('account.dashboard');
+            if (Auth::user()->isAdmin()) {
+                $intended = route('admin.dashboard');
+            } elseif (Auth::user()->isInfluencer()) {
+                $intended = route('influencer.dashboard');
+            } else {
+                $intended = route('account.dashboard');
+            }
 
             return redirect()->intended($intended);
         }

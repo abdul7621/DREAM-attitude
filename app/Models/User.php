@@ -60,6 +60,16 @@ class User extends Authenticatable
         return (bool) $this->is_admin;
     }
 
+    public function isInfluencer(): bool
+    {
+        return $this->role === 'influencer' || $this->influencer()->exists();
+    }
+
+    public function influencer(): HasOne
+    {
+        return $this->hasOne(Influencer::class);
+    }
+
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);

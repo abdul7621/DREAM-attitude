@@ -83,4 +83,9 @@ class Coupon extends Model
     {
         return $this->hasMany(Order::class, 'coupon_id');
     }
+
+    public function influencer(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Influencer::class);
+    }
 }

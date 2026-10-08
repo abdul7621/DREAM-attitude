@@ -145,6 +145,15 @@ class Order extends Model
                     \Illuminate\Support\Facades\Log::error("Loyalty point allocation failed: " . $e->getMessage());
                 }
             }
+
+            // Sync Influencer commission status when order status changes
+            if (array_key_exists('order_status', $changes)) {
+                try {
+                    app(\App\Services\InfluencerService::class)->syncOrderStatus($order, $changes['order_status']);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning("Influencer status sync failed: " . $e->getMessage());
+                }
+            }
         });
     }
 
@@ -209,5 +218,10 @@ class Order extends Model
     public function statusLogs(): HasMany
     {
         return $this->hasMany(OrderStatusLog::class)->orderBy('created_at');
+    }
+
+    public function influencerCommission(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(InfluencerCommission::class);
     }
 }

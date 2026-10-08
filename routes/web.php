@@ -4,6 +4,8 @@ use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\InfluencerController as AdminInfluencerController;
+use App\Http\Controllers\Influencer\DashboardController as InfluencerDashboardController;
 use App\Http\Controllers\Admin\ImportController as AdminImportController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PageController as AdminPageController;
@@ -132,6 +134,17 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
     Route::get('api/addresses', [\App\Http\Controllers\Storefront\AddressController::class, 'apiList'])->name('api.addresses');
 });
 
+// ── Influencer Portal ──────────────────────────────────────────────────────
+Route::view('/influencer/login', 'influencer.login')->name('influencer.login');
+
+Route::middleware(['auth', 'role:influencer'])->prefix('influencer')->name('influencer.')->group(function (): void {
+    Route::get('/', [InfluencerDashboardController::class, 'dashboard'])->name('dashboard');
+    Route::get('orders', [InfluencerDashboardController::class, 'orders'])->name('orders');
+    Route::get('payouts', [InfluencerDashboardController::class, 'payouts'])->name('payouts');
+    Route::post('payout-settings', [InfluencerDashboardController::class, 'updatePayoutSettings'])->name('payout.settings');
+    Route::post('password', [InfluencerDashboardController::class, 'updatePassword'])->name('password.update');
+});
+
 // ── Webhooks ───────────────────────────────────────────────────────────────
 Route::post('/api/shiprocket/webhook', [\App\Http\Controllers\Api\ShiprocketWebhookController::class, 'handle'])->name('webhook.shiprocket');
 Route::post('/api/webhooks/phonepe', [\App\Http\Controllers\Api\PhonePeWebhookController::class, 'handle'])->name('api.webhooks.phonepe');
@@ -179,6 +192,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Search Synonyms
     Route::resource('search-synonyms', \App\Http\Controllers\Admin\SearchSynonymController::class)->only(['index', 'store', 'destroy']);
+
+    // Influencers
+    Route::post('influencers/{influencer}/payout-settle', [AdminInfluencerController::class, 'settlePayout'])->name('influencers.payout.settle');
+    Route::resource('influencers', AdminInfluencerController::class);
 
     // Coupons
     Route::resource('coupons', AdminCouponController::class)->except(['show']);

@@ -212,6 +212,10 @@
 
         {{-- ─── MARKETING ──────────────────────────────────── --}}
         <div class="sidebar-section-label">Marketing</div>
+        <a href="{{ route('admin.influencers.index') }}"
+           class="sidebar-link {{ request()->routeIs('admin.influencers.*') ? 'active' : '' }}">
+            <i class="bi bi-stars"></i> Influencer Partners
+        </a>
         <a href="{{ route('admin.coupons.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.coupons.*') ? 'active' : '' }}">
             <i class="bi bi-ticket-perforated"></i> Coupons & Discounts
