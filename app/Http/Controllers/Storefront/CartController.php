@@ -141,26 +141,88 @@ class CartController extends Controller
         return redirect()->route('cart.index')->with('status', __('Item removed.'));
     }
 
-    public function applyCoupon(Request $request): RedirectResponse
+    public function applyCoupon(Request $request): RedirectResponse|\Illuminate\Http\JsonResponse
     {
         $data = $request->validate([
             'code' => ['required', 'string', 'max:64'],
+            'postal_code' => ['nullable', 'string', 'max:16'],
+            'payment_method' => ['nullable', 'string', 'max:32'],
+            'country' => ['nullable', 'string', 'max:8'],
         ]);
 
         try {
-            $this->cart->applyCouponCode($data['code']);
+            $coupon = $this->cart->applyCouponCode($data['code']);
         } catch (RuntimeException $e) {
-            return back()->withErrors(['coupon' => $e->getMessage()]);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                ], 422);
+            }
+            return back()->withErrors(['coupon' => $e->getMessage()])->withInput();
         }
 
-        return redirect()->route('cart.index')->with('status', __('Coupon applied.'));
+        if ($request->wantsJson() || $request->ajax()) {
+            $postal = $data['postal_code'] ?? '';
+            $paymentMethod = $data['payment_method'] ?? 'phonepe';
+            $country = $data['country'] ?? 'IN';
+            $totals = $this->cart->computeTotals($postal, $paymentMethod, $country);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Coupon :code applied successfully.', ['code' => $coupon->code]),
+                'coupon' => [
+                    'code' => $coupon->code,
+                    'type' => $coupon->type,
+                    'value' => (float) $coupon->value,
+                ],
+                'totals' => [
+                    'subtotal' => (float) $totals['subtotal'],
+                    'subtotal_formatted' => '₹' . number_format((float) $totals['subtotal'], 2),
+                    'discount' => (float) $totals['discount'],
+                    'discount_formatted' => '−₹' . number_format((float) $totals['discount'], 2),
+                    'shipping' => (float) $totals['shipping'],
+                    'shipping_formatted' => (float) $totals['shipping'] === 0.0 ? 'FREE (Online Payment)' : '₹' . number_format((float) $totals['shipping'], 2),
+                    'tax' => (float) $totals['tax'],
+                    'tax_formatted' => '₹' . number_format((float) $totals['tax'], 2),
+                    'grand' => (float) $totals['grand'],
+                    'grand_formatted' => '₹' . number_format((float) $totals['grand'], 2),
+                ]
+            ]);
+        }
+
+        return back()->with('status', __('Coupon applied.'));
     }
 
-    public function removeCoupon(): RedirectResponse
+    public function removeCoupon(Request $request): RedirectResponse|\Illuminate\Http\JsonResponse
     {
         $this->cart->removeCoupon();
 
-        return redirect()->route('cart.index')->with('status', __('Coupon removed.'));
+        if ($request->wantsJson() || $request->ajax()) {
+            $postal = $request->input('postal_code', '');
+            $paymentMethod = $request->input('payment_method', 'phonepe');
+            $country = $request->input('country', 'IN');
+            $totals = $this->cart->computeTotals($postal, $paymentMethod, $country);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Coupon removed.'),
+                'totals' => [
+                    'subtotal' => (float) $totals['subtotal'],
+                    'subtotal_formatted' => '₹' . number_format((float) $totals['subtotal'], 2),
+                    'discount' => 0.0,
+                    'discount_formatted' => '₹0.00',
+                    'shipping' => (float) $totals['shipping'],
+                    'shipping_formatted' => (float) $totals['shipping'] === 0.0 ? 'FREE (Online Payment)' : '₹' . number_format((float) $totals['shipping'], 2),
+                    'tax' => (float) $totals['tax'],
+                    'tax_formatted' => '₹' . number_format((float) $totals['tax'], 2),
+                    'grand' => (float) $totals['grand'],
+                    'grand_formatted' => '₹' . number_format((float) $totals['grand'], 2),
+                ]
+            ]);
+        }
+
+        return back()->with('status', __('Coupon removed.'));
     }
 
     public function capture(Request $request): \Illuminate\Http\JsonResponse

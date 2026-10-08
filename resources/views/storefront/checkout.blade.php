@@ -60,16 +60,45 @@
                                 </li>
                             @endforeach
                         </ul>
+
+                        {{-- ── Coupon / Promo Code Box ──────────────────────── --}}
+                        <div class="sf-chk-coupon-section mb-3 pb-3 border-bottom" style="border-color: var(--color-border) !important;">
+                            {{-- Applied Coupon State --}}
+                            <div id="chk-coupon-applied-box" style="{{ $totals['coupon'] ? 'display: block;' : 'display: none;' }}">
+                                <div class="d-flex align-items-center justify-content-between p-2 rounded" style="background: rgba(34, 197, 94, 0.08); border: 1px dashed #22c55e;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi bi-tag-fill text-success" style="font-size: 1rem;"></i>
+                                        <div>
+                                            <span class="fw-bold text-success" id="chk-applied-code" style="font-size: 0.85rem; letter-spacing: 0.5px;">{{ $totals['coupon']?->code }}</span>
+                                            <span class="badge bg-success-subtle text-success ms-1" style="font-size: 0.65rem;">APPLIED</span>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-link text-danger p-0 text-decoration-none fw-semibold" id="btn-remove-coupon" style="font-size: 0.8rem;">
+                                        <i class="bi bi-x-circle me-1"></i>Remove
+                                    </button>
+                                </div>
+                            </div>
+
+                            {{-- Coupon Input Form (When no coupon is applied) --}}
+                            <div id="chk-coupon-input-box" style="{{ $totals['coupon'] ? 'display: none;' : 'display: block;' }}">
+                                <div class="input-group">
+                                    <input type="text" id="chk_coupon_code" name="coupon_code" class="form-control text-uppercase" placeholder="Discount Code" style="font-size: 0.85rem; letter-spacing: 0.5px; text-transform: uppercase;">
+                                    <button class="btn sf-btn-primary" type="button" id="btn-apply-coupon" style="font-size: 0.82rem; padding: 6px 16px; font-weight: 600;">Apply</button>
+                                </div>
+                                <div id="chk-coupon-error" class="text-danger mt-1 small" style="display: {{ $errors->has('coupon') ? 'block' : 'none' }}; font-size: 0.78rem;">
+                                    <i class="bi bi-exclamation-circle me-1"></i><span id="chk-coupon-error-text">{{ $errors->first('coupon') }}</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px; color: var(--color-text-secondary);">
                             <span>Subtotal</span>
-                            <span style="font-weight: 500;">₹{{ number_format((float) $totals['subtotal'], 2) }}</span>
+                            <span style="font-weight: 500;" id="summary-subtotal-val">₹{{ number_format((float) $totals['subtotal'], 2) }}</span>
                         </div>
-                        @if ((float) $totals['discount'] > 0)
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px; color: var(--color-success);">
-                                <span>Discount</span>
-                                <span style="font-weight: 600;">−₹{{ number_format((float) $totals['discount'], 2) }}</span>
-                            </div>
-                        @endif
+                        <div id="summary-discount-row" style="display: {{ (float) $totals['discount'] > 0 ? 'flex' : 'none' }}; justify-content: space-between; margin-bottom: 12px; font-size: 13px; color: var(--color-success);">
+                            <span>Discount</span>
+                            <span style="font-weight: 600;" id="summary-discount-val">−₹{{ number_format((float) $totals['discount'], 2) }}</span>
+                        </div>
                         <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px; color: var(--color-text-secondary);">
                             <span>Shipping</span>
                             <span id="summary-shipping-val">
@@ -83,16 +112,13 @@
                         @if ((float) $totals['tax'] > 0)
                             <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px; color: var(--color-text-secondary);">
                                 <span>Tax ({{ app(\App\Services\SettingsService::class)->get('gst.inclusive', true) ? 'Incl.' : 'Excl.' }})</span>
-                                <span style="font-weight: 500;">₹{{ number_format((float) $totals['tax'], 2) }}</span>
+                                <span style="font-weight: 500;" id="summary-tax-val">₹{{ number_format((float) $totals['tax'], 2) }}</span>
                             </div>
                         @endif
                         <div class="sf-cart-total">
                             <span>Total</span>
                             <span id="summary-grand-val">₹{{ number_format((float) $totals['grand'], 2) }}</span>
                         </div>
-                        @if ($totals['coupon'])
-                            <p style="font-size: 11px; color: var(--color-text-muted); margin: 16px 0 0 0; background: var(--color-bg-elevated); padding: 8px; border-radius: var(--radius-sm);"><i class="bi bi-tag-fill text-success me-1"></i> {{ __('Coupon :code applied.', ['code' => $totals['coupon']->code]) }}</p>
-                        @endif
                     </div>
                 </div>
             </div>
@@ -972,6 +998,167 @@
             refreshShippingQuote();
         });
     });
+
+    // ── Coupon Apply / Remove Handler via AJAX ──
+    var applyCouponBtn = document.getElementById('btn-apply-coupon');
+    var removeCouponBtn = document.getElementById('btn-remove-coupon');
+    var couponInput = document.getElementById('chk_coupon_code');
+    var couponErrorBox = document.getElementById('chk-coupon-error');
+    var couponErrorText = document.getElementById('chk-coupon-error-text');
+    var couponInputBox = document.getElementById('chk-coupon-input-box');
+    var couponAppliedBox = document.getElementById('chk-coupon-applied-box');
+    var appliedCodeSpan = document.getElementById('chk-applied-code');
+    var discountRow = document.getElementById('summary-discount-row');
+    var discountVal = document.getElementById('summary-discount-val');
+    var grandEl = document.getElementById('summary-grand-val');
+    var subtotalEl = document.getElementById('summary-subtotal-val');
+    var shippingEl = document.getElementById('summary-shipping-val');
+    var taxEl = document.getElementById('summary-tax-val');
+
+    function updateSummaryTotals(totals, coupon) {
+        if (subtotalEl && totals.subtotal_formatted) subtotalEl.textContent = totals.subtotal_formatted;
+        if (shippingEl && totals.shipping_formatted) {
+            if (parseFloat(totals.shipping) === 0.0) {
+                shippingEl.innerHTML = '<span style="color: var(--color-success); font-weight: 600;">FREE (Online Payment)</span>';
+            } else {
+                shippingEl.innerHTML = '<span style="font-weight: 500;">' + totals.shipping_formatted + '</span>';
+            }
+        }
+        if (taxEl && totals.tax_formatted) taxEl.textContent = totals.tax_formatted;
+        if (grandEl && totals.grand_formatted) grandEl.textContent = totals.grand_formatted;
+        
+        var stickyGrandEl = document.querySelector('.sf-mobile-checkout-btn span:first-child');
+        if (stickyGrandEl && totals.grand) {
+            stickyGrandEl.textContent = '₹' + Math.round(parseFloat(totals.grand));
+        }
+
+        if (totals.discount && parseFloat(totals.discount) > 0) {
+            if (discountRow) discountRow.style.display = 'flex';
+            if (discountVal) discountVal.textContent = totals.discount_formatted;
+        } else {
+            if (discountRow) discountRow.style.display = 'none';
+        }
+
+        if (coupon && coupon.code) {
+            if (appliedCodeSpan) appliedCodeSpan.textContent = coupon.code;
+            if (couponAppliedBox) couponAppliedBox.style.display = 'block';
+            if (couponInputBox) couponInputBox.style.display = 'none';
+            if (couponInput) couponInput.value = '';
+            if (couponErrorBox) couponErrorBox.style.display = 'none';
+        } else {
+            if (couponAppliedBox) couponAppliedBox.style.display = 'none';
+            if (couponInputBox) couponInputBox.style.display = 'block';
+        }
+    }
+
+    if (applyCouponBtn && couponInput) {
+        applyCouponBtn.addEventListener('click', function() {
+            var code = couponInput.value.trim();
+            if (!code) {
+                if (couponErrorBox) {
+                    couponErrorText.textContent = 'Please enter a discount code.';
+                    couponErrorBox.style.display = 'block';
+                }
+                return;
+            }
+
+            if (couponErrorBox) couponErrorBox.style.display = 'none';
+            var originalBtnText = applyCouponBtn.innerHTML;
+            applyCouponBtn.disabled = true;
+            applyCouponBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+            var pin = (pinInput && pinInput.value) ? pinInput.value.trim() : '';
+            var method = document.querySelector('input[name="payment_method"]:checked');
+            var methodVal = method ? method.value : '';
+            var country = countrySelect ? countrySelect.value : 'IN';
+
+            fetch('{{ route("cart.coupon.apply") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    code: code,
+                    postal_code: pin,
+                    payment_method: methodVal,
+                    country: country
+                })
+            })
+            .then(function(r) { return r.json().then(function(data) { return { status: r.status, data: data }; }); })
+            .then(function(res) {
+                applyCouponBtn.disabled = false;
+                applyCouponBtn.innerHTML = originalBtnText;
+
+                if (res.status === 200 && res.data.success) {
+                    updateSummaryTotals(res.data.totals, res.data.coupon);
+                    if (window.Store) Store.emit('toast', { type: 'success', message: res.data.message });
+                } else {
+                    if (couponErrorBox) {
+                        couponErrorText.textContent = (res.data && res.data.message) ? res.data.message : 'Invalid or expired coupon.';
+                        couponErrorBox.style.display = 'block';
+                    }
+                    if (window.Store) Store.emit('toast', { type: 'error', message: (res.data && res.data.message) ? res.data.message : 'Could not apply coupon.' });
+                }
+            })
+            .catch(function(err) {
+                applyCouponBtn.disabled = false;
+                applyCouponBtn.innerHTML = originalBtnText;
+                if (couponErrorBox) {
+                    couponErrorText.textContent = 'Failed to apply coupon. Please try again.';
+                    couponErrorBox.style.display = 'block';
+                }
+            });
+        });
+
+        couponInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                applyCouponBtn.click();
+            }
+        });
+    }
+
+    if (removeCouponBtn) {
+        removeCouponBtn.addEventListener('click', function() {
+            var originalText = removeCouponBtn.innerHTML;
+            removeCouponBtn.disabled = true;
+            removeCouponBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+            var pin = (pinInput && pinInput.value) ? pinInput.value.trim() : '';
+            var method = document.querySelector('input[name="payment_method"]:checked');
+            var methodVal = method ? method.value : '';
+            var country = countrySelect ? countrySelect.value : 'IN';
+
+            fetch('{{ route("cart.coupon.remove") }}', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    postal_code: pin,
+                    payment_method: methodVal,
+                    country: country
+                })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+                removeCouponBtn.disabled = false;
+                removeCouponBtn.innerHTML = originalText;
+                if (res.success) {
+                    updateSummaryTotals(res.totals, null);
+                    if (window.Store) Store.emit('toast', { type: 'success', message: res.message });
+                }
+            })
+            .catch(function(err) {
+                removeCouponBtn.disabled = false;
+                removeCouponBtn.innerHTML = originalText;
+            });
+        });
+    }
 
     // Analytics and Form Submit
     var form = document.getElementById('checkout-form');

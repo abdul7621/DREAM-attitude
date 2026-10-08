@@ -9,6 +9,7 @@ class Coupon extends Model
     public const TYPE_PERCENT = 'percent';
 
     public const TYPE_FIXED = 'fixed';
+    public const TYPE_FLAT = 'flat';
 
     protected $fillable = [
         'code', 'type', 'value', 'min_subtotal', 'max_discount',
